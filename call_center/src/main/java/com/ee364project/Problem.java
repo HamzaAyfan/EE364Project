@@ -1,31 +1,43 @@
 package com.ee364project;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 import com.ee364project.helpers.Utilities;
 import com.ee364project.helpers.Vars;
 
 public class Problem implements HasData {
-    private static ArrayList<Problem> allProblems = new ArrayList<>();
-    private static final String CLSNAME = "Problem";
-    private static final String[] HEADERS = new String[]{"identifier", "department", "customerIntro", "customerResponses", "agentIntro", "agentResponses"};
-    public static final  Problem NO_PROBLEM = new Problem();
+    public static HashMap<String, Problem> allProblems = new HashMap<>();
+    public static final String CLSNAME = "Problem";
+    public static final String[] HEADERS = new String[] { "identifier", "department", "customerIntro",
+            "customerResponses", "agentIntro", "agentResponses" };
+    public static final Problem NO_PROBLEM = new Problem();
 
-    private Department department;
-    private String identifier;
-    private String[] customerIntro;
-    private String[] customerResponses;
-    private String[] agentIntro;
-    private String[] agentResponses;
+    public Department department;
+    public String identifier;
+    public HashSet<Solution> solutions;
 
-    public Problem(String identifier, Department department, String[] customerIntro, String[] customerResponses, String[] agentIntro, String[] agentResponses) {
+    static public Problem getProblem(String identifier) {
+        Problem problem = allProblems.get(identifier);
+        if (identifier == null) {
+            problem = new Problem();
+            problem.identifier = identifier;
+        }
+        return problem;
+    }
+
+    static public Problem getProblem() {
+        return NO_PROBLEM;
+    }
+
+    public Problem(String identifier, Department department, String[] customerIntro, String[] customerResponses,
+            String[] agentIntro, String[] agentResponses) {
         this.identifier = identifier;
         this.department = department;
-        this.customerIntro = customerIntro;
-        this.customerResponses = customerResponses;
-        this.agentIntro = agentIntro;
-        this.agentResponses = agentResponses;
-        allProblems.add(this);
+        new Solution(this, customerIntro, customerResponses, agentIntro, agentResponses);
+        this.solutions = Solution.allSolutions.get(this);
+        allProblems.put(this.identifier, this);
     }
 
     public Problem() {
@@ -45,44 +57,37 @@ public class Problem implements HasData {
         return this.identifier;
     }
 
-    public String[] getCustomerIntro() {
-        return this.customerIntro;
-    }
-
-    public String[] getCustomerResponses() {
-        return this.customerResponses;
-    }
-
-    public String[] getAgentIntro() {
-        return this.agentIntro;
-    }
-
-    public String[] getAgentResponses() {
-        return this.agentResponses;
+    public Solution[] getSolutions() {
+        return this.solutions.toArray(new Solution[this.solutions.size()]);
     }
 
     @Override
     public String getDataTypeName() {
         return CLSNAME;
     }
-    
+
     @Override
     public String[] getHeaders() {
         return HEADERS;
     }
 
     @Override
-    public String[] getData() {
-        return new String[]{
-            this.identifier,
-            this.department.getName(),
-            Utilities.joinStrings(this.customerIntro, ";"),
-            Utilities.joinStrings(this.customerResponses, ";"),
-
-            Utilities.joinStrings(this.agentIntro, ";"),
-            Utilities.joinStrings(this.agentResponses, ";"),
-
-        };
+    public String[][] getData() {
+        String[][] arr = new String[this.solutions.size()][];
+        String[] inArr;
+        int i = 0;
+        for (Solution solution : this.solutions) {
+            inArr = new String[] {
+                    this.identifier,
+                    this.department.getName(),
+                    Utilities.joinStrings(solution.customerIntro, ";"),
+                    Utilities.joinStrings(solution.customerResponses, ";"),
+                    Utilities.joinStrings(solution.agentIntro, ";"),
+                    Utilities.joinStrings(solution.agentResponses, ";"),
+            };
+            arr[i] = inArr;
+        }
+        return arr;
     }
 
     @Override
@@ -99,11 +104,12 @@ public class Problem implements HasData {
                 d1.add(ds[i]);
             }
         }
-        this.customerResponses = d1.toArray(new String[d1.size()]);
-        this.agentResponses = d2.toArray(new String[d2.size()]);
-
-        this.customerIntro = dataFields[3].split(";");
-        this.agentIntro = dataFields[4].split(";");
+        String[] customerResponses = d1.toArray(new String[d1.size()]);
+        String[] agentResponses = d2.toArray(new String[d2.size()]);
+        String[] customerIntro = dataFields[3].split(";");
+        String[] agentIntro = dataFields[4].split(";");
+        this.solutions = Solution.removeEmptySolutions(this.solutions);
+        new Solution(this, customerIntro, customerResponses, agentIntro, agentResponses);
         return this;
     }
 
@@ -111,17 +117,123 @@ public class Problem implements HasData {
     public Problem shuffle() {
         this.identifier = Utilities.faker.azure().appServiceEnvironment();
         this.department = Department.getRandomDepartment();
-        this.customerIntro = Utilities.getRandomStringArray();
-        this.customerResponses = Utilities.getRandomStringArray();
-        this.agentIntro = Utilities.getRandomStringArray();
-        this.agentResponses = Utilities.getRandomStringArray();
+        allProblems.put(this.identifier, this);
+        this.solutions = Solution.removeEmptySolutions(this.solutions);
+        Solution.addRandomSolution(this);
         return this;
     }
 
-
     public static Problem[] getAllProblems() {
-        return allProblems.toArray(new Problem[allProblems.size()]);
+        return allProblems.values().toArray(new Problem[allProblems.size()]);
+    }
+
+    public Solution getRandomSolution() {
+        return this.solutions.toArray(new Solution[this.solutions.size()])[Utilities.random.nextInt(this.solutions.size())];
+    }
+
+    public boolean equals(Problem other) {
+        return this.identifier == other.identifier;
+    }
+
+    // TODO: add problem related stuff like `state`. Note: Did that in
+    // Customer.ProblemState.
+}
+
+class Solution {
+    public static HashMap<Problem, HashSet<Solution>> allSolutions = new HashMap<>();
+    public String[] customerIntro;
+    public String[] customerResponses;
+    public String[] agentIntro;
+    public String[] agentResponses;
+
+    public boolean equals(Solution other) {
+        if (this.customerIntro != other.customerIntro) {
+            return false;
+        }
+        if (this.customerResponses != other.customerResponses) {
+            return false;
+        }
+        if (this.agentIntro != other.agentIntro) {
+            return false;
+        }
+        if (this.agentResponses != other.agentResponses) {
+            return false;
+        }
+        return true;
+    }
+
+    public Solution(Problem problem, String[] customerIntro, String[] customerResponses, String[] agentIntro,
+            String[] agentResponses) {
+        this.customerIntro = customerIntro;
+        this.customerResponses = customerResponses;
+        this.agentIntro = agentIntro;
+        this.agentResponses = agentResponses;
+        if (allSolutions.get(problem) == null) {
+            HashSet<Solution> arr = new HashSet<>();
+            arr.add(this);
+            allSolutions.put(problem, arr);
+        } else {
+            allSolutions.get(problem).add(this);
+        }
     }
     
-    // TODO: add problem related stuff like `state`. Note: Did that in ProblemState.
+    public static boolean checkIfAllEmptySolution(Solution solution) {
+        if (solution.customerIntro != Vars.NONE2D) {
+            return false;
+        }
+        if (solution.customerResponses != Vars.NONE2D) {
+            return false;
+        }
+        if (solution.agentIntro != Vars.NONE2D) {
+            return false;
+        }
+        if (solution.agentResponses != Vars.NONE2D) {
+            return false;
+        }
+        return true;
+    }
+
+    public static boolean checkIfAnyEmptySolution(Solution solution) {
+        if (solution.customerIntro == Vars.NONE2D) {
+            return true;
+        }
+        if (solution.customerResponses == Vars.NONE2D) {
+            return true;
+        }
+        if (solution.agentIntro == Vars.NONE2D) {
+            return true;
+        }
+        if (solution.agentResponses == Vars.NONE2D) {
+            return true;
+        }
+        return false;
+    }
+
+    public static HashSet<Solution> removeEmptySolutions(HashSet<Solution> solutions) {
+        HashSet<Solution> solutionsClone = new HashSet<>();
+        for (Solution solution : solutions) {
+            solutionsClone.add(solution);
+        }
+        for (Solution solution : solutions) {
+            if (checkIfAllEmptySolution(solution)) {  // NOTE: maybe change to any instead of all.
+                solutionsClone.remove(solution);
+            }
+        }
+        return solutionsClone;
+    }
+
+    public static Solution addRandomSolution(Problem problem) {
+        String[] customerIntro = Utilities.getRandomStringArray();
+        String[] customerResponses = Utilities.getRandomStringArray();
+        String[] agentIntro = Utilities.getRandomStringArray();
+        String[] agentResponses = Utilities.getRandomStringArray();
+        return new Solution(problem, customerIntro, customerResponses, agentIntro, agentResponses);
+    }
+
+    // only thing missing is:
+    //  1. maintained data structure instead of HashSet
+    //      becomes solutions[n]
+    //  2. or sort solution on the go.
+    //   Solutions.getSolutionFromLevel(int n): Solution // solution is the (n+1)th best solution
+    // 
 }

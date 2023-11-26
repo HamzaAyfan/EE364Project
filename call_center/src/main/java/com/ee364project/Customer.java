@@ -6,14 +6,15 @@ import java.util.HashMap;
 import com.ee364project.exceptions.InvalidPhoneNumberException;
 import com.ee364project.helpers.*;
 
-
 public class Customer extends Person implements CanCall {
     private static ArrayList<Customer> allCustomers = new ArrayList<>();
+
     public static Customer[] allCustomers() {
         return allCustomers.toArray(new Customer[allCustomers.size()]);
     }
+
     private static final String CLSNAME = "Customer";
-    private static final String[] HEADERS = new String[]{"phone_number", "behaviour", "name"};
+    private static final String[] HEADERS = new String[] { "phone_number", "behaviour", "name" };
 
     private String phoneNumber;
     private CustomerBehaviour behaviour;
@@ -35,7 +36,7 @@ public class Customer extends Person implements CanCall {
     }
 
     public Customer clone() {
-        try { 
+        try {
             return new Customer(this.phoneNumber, this.behaviour, this.getName());
         } catch (InvalidPhoneNumberException e) {
             return null;
@@ -61,31 +62,32 @@ public class Customer extends Person implements CanCall {
         this.behaviour = behaviour;
     }
 
-
     @Override
     public String toString() {
         return Utilities.prettyToString(CLSNAME, this.phoneNumber, this.behaviour, getName());
     }
 
-    // related to data
     @Override
     public String getDataTypeName() {
         return CLSNAME;
     }
-    
+
     @Override
     public String[] getHeaders() {
         return HEADERS;
     }
-    
+
     @Override
-    public String[] getData() {
-        return new String[]{
-            this.phoneNumber,
-            this.behaviour.name,
-            this.getName()
+    public String[][] getData() {
+        String[][] arr = new String[1][3];
+        arr[0] = new String[] {
+                this.phoneNumber,
+                this.behaviour.name,
+                this.getName()
         };
+        return arr;
     }
+
     public Customer parseData(String[] dataFields) {
         this.phoneNumber = dataFields[0];
         this.behaviour = CustomerBehaviour.customerBehaviourByName.get(dataFields[1]);
@@ -105,7 +107,8 @@ public class Customer extends Person implements CanCall {
     public void makeCall() {
         Call call = new Call(this);
         this.callInfo.called(call);
-    }    
+    }
+
     private void idle(String msg) {
         Utilities.log(this, "idles", "", msg);
     }
@@ -131,28 +134,33 @@ public class Customer extends Person implements CanCall {
             }
         }
     }
+
     @Override
     public void step() {
         if (this.callInfo.getLastCall() == null) {
             defaultRoutine();
             return;
-        } 
+        }
         switch (this.callInfo.getLastCall().getState()) {
             case WAITING:
                 idle("waiting for answer");
                 return;
-        
+
             case INCALL:
                 if (this.problemState.isGotProblem()) {
                     if (this.behaviour.solveChancePartial.check()) {
                         this.problemState.solve();
                         Utilities.log(this, "got his", this.problemState.getProblem(), "solved.");
-                    } else {Utilities.log(this, "idles", "", "");}
+                    } else {
+                        Utilities.log(this, "idles", "", "");
+                    }
                 } else {
                     if (this.behaviour.callEndChancePartial.check()) {
                         Call.endACall(this.callInfo.getLastCall());
                         Utilities.log(this, "ended", this.callInfo.getLastCall(), "");
-                    } else {Utilities.log(this, "idles", "", "");}
+                    } else {
+                        Utilities.log(this, "idles", "", "");
+                    }
                 }
                 return;
 
@@ -161,53 +169,7 @@ public class Customer extends Person implements CanCall {
                 return;
         }
     }
-
-    // public void step() {
-    //     // check if is in call
-    //     if (this.callInfo.isInCall()) {
-    //         // is in call right now.
-    //         // let's check if the problem is solved
-    //         if (this.problemState.isGotProblem()) {
-    //             // has a problem.
-    //             if (this.behaviour.solveChancePartial.check()) {  // FIXME: PARTIAL: used a partial as sole factor
-    //                 // check passed problem solved.
-    //                 this.problemState.solve();
-    //             } else {
-    //                 // idle
-    //             }
-    //         } else {
-    //             // is in a call + the problem is solved = try to end the call
-    //             if (this.behaviour.callEndChancePartial.check()) {  // FIXME: PARTIAL: used a partial as sole factor
-    //                 Call.endACall(this.callInfo.getLastCall());
-    //                 Utilities.log(this, "ended call", this.callInfo.getLastCall(), "");
-    //             }
-    //         }
-    //     }
-    //     if (this.problemState.isGotProblem()) {
-    //         // has a problem but not in a call
-    //         if (this.behaviour.callChance.check()) {
-    //             // TODO: make a call
-    //             Utilities.log(this, "calls", "UnknownForNow", "");;
-    //         } else {
-    //             // does not make a call
-    //             if (this.call)
-    //             Utilities.log(this, "idles", "", "");
-    //         }
-    //     } else {
-    //         // does not have a problem
-    //         if (this.behaviour.problemAffinity.check()) {
-    //             // gets a problem
-    //             this.problemState.acquireProblem();
-    //             Utilities.log(this, "gets Problem->", this.problemState.getProblem(), "");
-    //         } else {
-    //             // gets to see another day :)
-    //             Utilities
-    //         }
-    //     }
-    // }
-
 }
-
 
 class CustomerBehaviour {
     public static HashMap<String, CustomerBehaviour> customerBehaviourByName = new HashMap<>();
@@ -216,33 +178,32 @@ class CustomerBehaviour {
         customerBehaviourByName.put(PreMade.SAVVY.name, PreMade.SAVVY);
         customerBehaviourByName.put(PreMade.CHALLENGED.name, PreMade.CHALLENGED);
     }
+
     public static CustomerBehaviour getRandomCustomerBehaviour() {
-        return customerBehaviourByName.get(customerBehaviourByName.keySet().toArray()[Utilities.random.nextInt(customerBehaviourByName.size())]);
+        return customerBehaviourByName.get(
+                customerBehaviourByName.keySet().toArray()[Utilities.random.nextInt(customerBehaviourByName.size())]);
     }
-    
+
     public static final class PreMade {
         public static final CustomerBehaviour DEFAULT = new CustomerBehaviour(
-            "default",
-            new Ratio(0.5),
-            new Ratio(0.5),
-            new Ratio(0.5),
-            new Ratio(0.5)
-            );
+                "default",
+                new Ratio(0.5),
+                new Ratio(0.5),
+                new Ratio(0.5),
+                new Ratio(0.5));
         public static final CustomerBehaviour SAVVY = new CustomerBehaviour(
-            "savvy",
-            new Ratio(0.1),
-            new Ratio(0.2),
-            new Ratio(0.5),
-            new Ratio(0.7)
-            );
-            public static final CustomerBehaviour CHALLENGED = new CustomerBehaviour(
+                "savvy",
+                new Ratio(0.1),
+                new Ratio(0.2),
+                new Ratio(0.5),
+                new Ratio(0.7));
+        public static final CustomerBehaviour CHALLENGED = new CustomerBehaviour(
                 "challenged",
                 new Ratio(0.7),
                 new Ratio(0.9),
                 new Ratio(0.2),
-                new Ratio(0.5)
-                );
-            }
+                new Ratio(0.5));
+    }
 
     public String name;
     public Ratio problemAffinity;
@@ -250,7 +211,8 @@ class CustomerBehaviour {
     public Ratio solveChancePartial;
     public Ratio callEndChancePartial;
 
-    public CustomerBehaviour(String name, Ratio problemAffinity, Ratio callChance, Ratio solveChancePartial, Ratio callEndChancePartial) {
+    public CustomerBehaviour(String name, Ratio problemAffinity, Ratio callChance, Ratio solveChancePartial,
+            Ratio callEndChancePartial) {
         this.name = name;
         this.problemAffinity = problemAffinity;
         this.callChance = callChance;
@@ -260,27 +222,20 @@ class CustomerBehaviour {
 
     public CustomerBehaviour() {
         this(
-            Utilities.faker.brand().toString(),
-            Ratio.getRandRatio(),
-            Ratio.getRandRatio(),
-            Ratio.getRandRatio(),
-            Ratio.getRandRatio()
-        );
+                Utilities.faker.brand().toString(),
+                Ratio.getRandRatio(),
+                Ratio.getRandRatio(),
+                Ratio.getRandRatio(),
+                Ratio.getRandRatio());
     }
 
     @Override
     public String toString() {
         return Utilities.prettyToString(
-            "CBehaviour", 
-            this.name
-            // "problemAffinity=" + problemAffinity,
-            // "callChance=" + callChance,
-            // "solveChancePartial=" + solveChancePartial,
-            // "callEndChancePartial=" + callEndChancePartial
-        );
+                "CBehaviour",
+                this.name);
     }
 }
-
 
 class ProblemInfo {
     private HashMap<Problem, Long> history = new HashMap<>();
@@ -347,9 +302,8 @@ class CallInfo {
     }
 
     public boolean isInCall() {
-        return 
-            (call.getState() == Call.CallState.INCALL)
-            || (call.getState() == Call.CallState.WAITING);
+        return (call.getState() == Call.CallState.INCALL)
+                || (call.getState() == Call.CallState.WAITING);
     }
 
     public Call getLastCall() {

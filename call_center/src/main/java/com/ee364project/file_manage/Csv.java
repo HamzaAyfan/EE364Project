@@ -1,10 +1,10 @@
 package com.ee364project.file_manage;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.ArrayList;
 
-import com.ee364project.Department;
 import com.ee364project.HasData;
 import com.ee364project.helpers.Vars;
 
@@ -14,7 +14,7 @@ import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.csv.CSVPrinter;
 
 public final class Csv {
-    
+
     public static void write(HasData[] objects, String path) {
         if (objects.length == 0) {
             System.out.println("no data");
@@ -24,9 +24,10 @@ public final class Csv {
         new File(file.getParent()).mkdirs();
         try {
             CSVPrinter printer = new CSVPrinter(new FileWriter(path), CSVFormat.DEFAULT);
-            printer.printRecord((Object []) objects[0].getHeaders());
+            printer.printRecord((Object[]) objects[0].getHeaders());
             for (HasData datum : objects) {
-                printer.printRecord((Object[]) datum.getData());
+                for (String[] arr : datum.getData())
+                    printer.printRecord((Object[]) arr);
             }
             printer.close();
         } catch (Exception e) {
@@ -69,4 +70,3 @@ public final class Csv {
         return read(path, file.getName().split("\\.")[0]);
     }
 }
-

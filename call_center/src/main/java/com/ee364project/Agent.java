@@ -1,4 +1,5 @@
 package com.ee364project;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
@@ -8,22 +9,19 @@ import com.ee364project.helpers.Vars;
 
 public class Agent extends Person {
     private static ArrayList<Agent> allAgents = new ArrayList<>();
+
     public Agent[] getAllAgents() {
         return allAgents.toArray(new Agent[allAgents.size()]);
     }
+
     private static final String CLSNAME = "Agent";
-    private static final String[] HEADERS = new String[]{"id", "name", "department", "joinDate"};
-    // final String phone;
-    // private int salary;
+    private static final String[] HEADERS = new String[] { "id", "name", "department", "joinDate" };
+
     private String id;
     private Department department;
     private LocalDateTime joinDate;
 
-
-    // public Agent(String phone, int salary, Department department) {
     public Agent(String id, String name, Department department) throws InvalidIdException {
-        // this.phone = phone;
-        // this.salary = salary;
         super(name);
         if (!Utilities.validateId(id)) {
             throw new InvalidIdException(id);
@@ -46,7 +44,7 @@ public class Agent extends Person {
     public LocalDateTime getJoinDate() {
         return this.joinDate;
     }
-    
+
     public Department getDepartment() {
         return this.department;
     }
@@ -66,13 +64,15 @@ public class Agent extends Person {
     }
 
     @Override
-    public String[] getData() {
-        return new String[]{
-            this.id,
-            this.getName(),
-            this.department.getName(),
-            this.joinDate.toString()
+    public String[][] getData() {
+        String[][] arr = new String[1][4];
+        arr[0] = new String[] {
+                this.id,
+                this.getName(),
+                this.department.getName(),
+                this.joinDate.toString()
         };
+        return arr;
     }
 
     @Override
