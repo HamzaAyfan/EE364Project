@@ -26,8 +26,9 @@ public final class Csv {
             CSVPrinter printer = new CSVPrinter(new FileWriter(path), CSVFormat.DEFAULT);
             printer.printRecord((Object[]) objects[0].getHeaders());
             for (HasData datum : objects) {
-                for (String[] arr : datum.getData())
+                for (String[] arr : datum.getData()) {
                     printer.printRecord((Object[]) arr);
+                }
             }
             printer.close();
         } catch (Exception e) {
