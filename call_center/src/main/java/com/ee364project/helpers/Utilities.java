@@ -84,13 +84,13 @@ public class Utilities {
             x = random.nextInt(19);
             inStr = "";
             for (int j = 0; j < (1 + x); j++) {
-                inStr += faker.hearthstone().mainCharacter() + " ";
+                inStr += faker.job().seniority() + " ";
             }
             str[i] = inStr.strip();
         }
         return str;
     }
-
+// hearthstone().mainCharacter() + " ";
     public static String[] getRandomStringArray() {
         return getRandomStringArray(random.nextInt(10));
     }

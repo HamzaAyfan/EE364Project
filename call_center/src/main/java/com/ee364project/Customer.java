@@ -3,10 +3,12 @@ package com.ee364project;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+
 import com.ee364project.exceptions.InvalidPhoneNumberException;
 import com.ee364project.helpers.*;
 
 public class Customer extends Person implements CanCall {
+    static int i;
     private static ArrayList<Customer> allCustomers = new ArrayList<>();
 
     public static Customer[] allCustomers() {
@@ -32,7 +34,8 @@ public class Customer extends Person implements CanCall {
     }
 
     public Customer() throws InvalidPhoneNumberException {
-        this("0500000000", CustomerBehaviour.getRandomCustomerBehaviour(), Vars.NONE);
+        this("050000000"+i, CustomerBehaviour.getRandomCustomerBehaviour(), Vars.NONE);
+        i++;
     }
 
     public Customer clone() {

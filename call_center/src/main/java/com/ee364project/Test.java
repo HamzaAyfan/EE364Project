@@ -1,18 +1,47 @@
 package com.ee364project;
 
-import com.ee364project.file_manage.Csv;
-import com.ee364project.helpers.Utilities;
-import com.ee364project.helpers.Vars;
 
-public class Test {
-    public static void main(String[] args) {
-        Utilities.getFakeData(5, Vars.DataClasses.Department);
-        Csv.write(Utilities.getFakeData(10, Vars.DataClasses.Problem), "call_center\\input\\Problem.csv");
+import java.util.LinkedList;
 
-        HasData[] data = Csv.read("call_center\\input\\Problem.csv");
-        for (HasData datum : data) {
-            System.out.println(datum);
+import com.ee364project.exceptions.InvalidIdException;
+import com.ee364project.exceptions.InvalidPhoneNumberException;
+
+
+
+import javafx.application.Application;
+import javafx.stage.Stage;
+
+
+public class Test extends Application {
+    LinkedList<Customer> customers = new LinkedList<Customer>();
+	LinkedList<Agent> agents = new LinkedList<Agent>();
+	LinkedList<Call> calls = new LinkedList<Call>();
+
+
+    public void start(Stage primaryStage) {		
+		for (int i = 0;i<5;i++){
+            try {
+                Customer customer = new Customer();
+                customer.shuffle();
+                customers.add(customer);
+                Agent agent = new Agent();
+                agent.shuffle();
+                agents.add(agent);
+            } catch (InvalidPhoneNumberException e) {
+                e.printStackTrace();
+            } catch (InvalidIdException e) {
+                e.printStackTrace();
+            }          
         }
-    }
-    
+
+		for (int i = 0;i<5;i++) {
+			customers.get(i).problemState.acquireProblem();
+            customers.get(i).problemState.getProblem().shuffle();
+            calls.add(new Call(customers.get(i)));
+            calls.get(i).connectCall(customers.get(i), agents.get(i));
+		}
+	}
+    public static void main(String[] args) {
+        launch(args);
+    }   
 }

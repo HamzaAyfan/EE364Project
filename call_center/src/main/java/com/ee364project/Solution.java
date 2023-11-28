@@ -7,15 +7,24 @@ package com.ee364project;
 import java.util.HashMap;
 import java.util.HashSet;
 
+
 import com.ee364project.helpers.Utilities;
 import com.ee364project.helpers.Vars;
 
-public class Solution {
+import java.util.Random;
+
+public class Solution implements Cloneable{
+    private static Random random = new Random();
     public static HashMap<Problem, HashSet<Solution>> allSolutions = new HashMap<>();
     public String[] customerIntro;
     public String[] customerResponses;
     public String[] agentIntro;
     public String[] agentResponses;
+
+    @Override
+    public Object clone() throws CloneNotSupportedException{
+        return super.clone();
+    }
 
     public boolean equals(Solution other) {
         if (this.customerIntro != other.customerIntro) {
@@ -99,10 +108,11 @@ public class Solution {
     }
 
     public static Solution addRandomSolution(Problem problem) {
-        String[] customerIntro = Utilities.getRandomStringArray();
-        String[] customerResponses = Utilities.getRandomStringArray();
-        String[] agentIntro = Utilities.getRandomStringArray();
-        String[] agentResponses = Utilities.getRandomStringArray();
+        int numberOfLines = random.nextInt(10)+1;
+        String[] customerIntro = Utilities.getRandomStringArray(1);
+        String[] customerResponses = Utilities.getRandomStringArray(numberOfLines);
+        String[] agentIntro = Utilities.getRandomStringArray(1);
+        String[] agentResponses = Utilities.getRandomStringArray(numberOfLines);
         return new Solution(problem, customerIntro, customerResponses, agentIntro, agentResponses);
     }
 
