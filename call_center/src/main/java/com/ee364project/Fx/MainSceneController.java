@@ -15,6 +15,8 @@ import com.ee364project.file_manage.Csv;
 import com.ee364project.file_manage.ZipExtractor;
 import com.ee364project.helpers.Utilities;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 
@@ -33,6 +35,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.scene.control.ButtonType;
@@ -40,8 +43,12 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.Modality;
 import javafx.stage.StageStyle;
+import javafx.util.Duration;
 
 public class MainSceneController {
+
+    @FXML
+    private Text timeer;
 
     @FXML
     private AnchorPane anchorPane;
@@ -66,6 +73,36 @@ public class MainSceneController {
 
     @FXML
     private Button playbButton = new Button();
+
+
+
+
+    //////////////// Timer methods (can be modified)//////////////
+    private Timeline timerTimeline;
+    private int secondsElapsed;
+
+    @FXML
+    public void initialize() {
+        // Initialize the timer
+        timerTimeline = new Timeline(new KeyFrame(Duration.seconds(1), this::updateTimer));
+        timerTimeline.setCycleCount(Timeline.INDEFINITE);
+    }
+
+    private void updateTimer(ActionEvent event) {
+        // Update the timer and display in the Text element
+        secondsElapsed++;
+        int minutes = secondsElapsed / 60;
+        int seconds = secondsElapsed % 60;
+        timeer.setText(String.format("%02d:%02d", minutes, seconds));
+    }
+
+
+
+
+    ////////////////////////////////
+
+
+
 
 
     public void showYesNoDialog(Stage primaryStage) {
@@ -195,7 +232,7 @@ public class MainSceneController {
             if(AgentVbox.getChildren().size() != 0){ AgentVbox.getChildren().clear();}
 
             for (int i = 0; i < number; i++) {
-                Image image = new Image("com\\ee364project\\Fx\\resources\\user.png", true);
+                Image image = new Image("com\\ee364project\\Fx\\resources\\agent.png", true);
                 ImageView imageView = new ImageView(image);
                 imageView.setFitWidth(20);
                 imageView.setFitHeight(20);
@@ -318,7 +355,7 @@ public class MainSceneController {
         HasData[] agents = Utilities.getFakeData(number, "Agent");
         
         for (int i = 0; i < number; i++) {
-            Image image = new Image("com\\ee364project\\Fx\\resources\\user.png", true);
+            Image image = new Image("com\\ee364project\\Fx\\resources\\agent.png", true);
             ImageView imageView = new ImageView(image);
             imageView.setFitWidth(20);
             imageView.setFitHeight(20);
@@ -351,17 +388,24 @@ public class MainSceneController {
 
     @FXML
     void pausebtnClicked(ActionEvent event) {
-
+        timerTimeline.pause();
     }
 
     @FXML
     void playbtnClicked(ActionEvent event) {
-
+        timerTimeline.play();
     }
 
     @FXML
     void startbtnClicked(ActionEvent event) {
+        // Check if the timer is not already running
+    if (!timerTimeline.getStatus().equals(Timeline.Status.RUNNING)) {
+        // Start the timer when the "Start" button is clicked
+        timerTimeline.play();
 
+        // Disable the "Start" button to prevent further clicks
+        ((Button) event.getSource()).setDisable(true);
+    }
     }
 
 }
