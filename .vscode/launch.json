@@ -6,11 +6,19 @@
     "configurations": [
         {
             "type": "java",
+            "name": "HelloWorld",
+            "request": "launch",
+            "mainClass": "com.ee364project.HelloWorld",
+            "projectName": "call_center",
+            "vmArgs": "--module-path call_center\\lib\\javaFX\\lib --add-modules javafx.controls,javafx.fxml"
+        },
+        {
+            "type": "java",
             "name": "Test",
             "request": "launch",
             "mainClass": "com.ee364project.Test",
             "projectName": "call_center",
-            "vmArgs": "--module-path call_center\\src\\main\\java\\com\\ee364project\\lib\\javafx-sdk-17.0.9\\lib --add-modules javafx.controls,javafx.fxml"
+            "vmArgs": "--module-path call_center\\lib\\javaFX\\lib --add-modules javafx.controls,javafx.fxml"
         },
         {
             "type": "java",
@@ -18,14 +26,14 @@
             "request": "launch",
             "mainClass": "com.ee364project.Main",
             "projectName": "call_center",
-            "vmArgs": "--module-path call_center\\src\\main\\java\\com\\ee364project\\lib\\javafx-sdk-17.0.9\\lib --add-modules javafx.controls,javafx.fxml"
+            "vmArgs": "--module-path call_center\\lib\\javaFX\\lib --add-modules javafx.controls,javafx.fxml"
         },
         {
             "type": "java",
             "name": "Launch App",
             "request": "launch",
             "mainClass": "com.ee364project.Main",
-            "vmArgs": "--module-path call_center\\src\\main\\java\\com\\ee364project\\lib\\javafx-sdk-17.0.9\\lib --add-modules javafx.controls,javafx.fxml"
+            "vmArgs": "--module-path call_center\\lib\\javaFX\\lib --add-modules javafx.controls,javafx.fxml"
         }
     ]
 }
