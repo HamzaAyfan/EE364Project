@@ -46,6 +46,15 @@ public class Call {
         call.state = CallState.ENDED;
     }
 
+    public void connectCall(Customer caller, Agent receiver){
+        SentenceWriterService window = new SentenceWriterService(caller, receiver);
+		window.start();
+
+    }
+    public static void terminateCall(){
+
+    }
+
     private static void applyExpiry() {  // run after every step.
         Call call;
         while (callQueue.size() > 0 && (Timekeeper.getTime() - callQueue.peek().startTime >= MAXWAITTIME)) {
@@ -105,8 +114,7 @@ class SentenceWriterService extends Service<Void> {
 	public static int counter;
 	public Call call;
 
-    public SentenceWriterService(Call call) {
-    	this.call = call;
+    public SentenceWriterService(Customer caller, Agent receiver) {
         sentences = new LinkedList<>();
     }
 
@@ -131,9 +139,9 @@ class SentenceWriterService extends Service<Void> {
                         Thread.sleep(500);
                     }    
                 }
+                Call.terminateCall();// method after ending the call
                 Stage stage = (Stage)window[0];
-                Platform.runLater(() -> stage.close());
-                
+                Platform.runLater(() -> stage.close());                
 				return null;
             }
         };
