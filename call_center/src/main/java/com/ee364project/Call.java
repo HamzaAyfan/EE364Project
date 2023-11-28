@@ -4,8 +4,6 @@ import java.util.LinkedList;
 
 import com.ee364project.helpers.Utilities;
 
-
-
 import javafx.application.Platform;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
@@ -15,15 +13,16 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-
 public class Call {
+    public static final long MAXWAITTIME = 60;
+
     public static enum CallState {
         WAITING,
         INCALL,
         ENDED,
         EXIRED
     }
-    public static final long MAXWAITTIME = 60;
+
     private static LinkedList<Call> callQueue = new LinkedList<>();
     private static long callCount = 0;
 
@@ -38,18 +37,20 @@ public class Call {
     public static Call getACall() {
         applyExpiry();
         Call call = callQueue.poll();
-        call.state = CallState.INCALL;
+        if (call != null) {
+            call.state = CallState.INCALL;
+        }
         return call;
     }
 
-    public static void endACall(Call call) {
-        call.state = CallState.ENDED;
+    public void endCall() {
+        this.state = CallState.ENDED;
     }
 
-    private static void applyExpiry() {  // run after every step.
+    private static void applyExpiry() { // run after every step.
         Call call;
         while (callQueue.size() > 0 && (Timekeeper.getTime() - callQueue.peek().startTime >= MAXWAITTIME)) {
-            call = callQueue.poll(); 
+            call = callQueue.poll();
             call.state = CallState.EXIRED;
             Utilities.log(call, "expired", "", "");
         }
@@ -61,6 +62,7 @@ public class Call {
         this.answerTime = 0;
         this.callDuration = 0;
         this.waitTime = 0;
+        this.caller = caller;
         this.receiver = null;
         this.state = CallState.WAITING;
         callQueue.add(this);
@@ -69,22 +71,31 @@ public class Call {
     public long getCallDuration() {
         return this.callDuration;
     }
+
     public long getStartTime() {
         return this.startTime;
     }
+
     public long getAnswerTime() {
         return this.answerTime;
     }
+
     public long getWaitTime() {
         return this.waitTime;
     }
+
     public Customer getCaller() {
         return this.caller;
     }
+
     public Agent getReceiver() {
         return this.receiver;
     }
-    
+
+    public void setReciever(Agent agent) {
+        this.receiver = agent;
+    }
+
     public CallState getState() {
         return this.state;
     }
@@ -97,55 +108,97 @@ public class Call {
     static void step() {
         applyExpiry();
     }
+
+    public void startCall(CallCenter callCenter) {
+        new CallSession(this, callCenter).run();
+    }
 }
 
+class CallSession implements Runnable {
+    private Call call;
+    private CallCenter callCenter;
+
+    public CallSession(Call call, CallCenter callCenter) {
+        this.call = call;
+        this.callCenter = callCenter;
+    }
+
+    public void run() {
+        try {
+            Solution solution = call.getCaller().problemState.getProblem().getRandomSolution();
+            String[] cR = solution.customerResponses;
+            String[] aR = solution.agentResponses;
+            int n = Math.min(cR.length, aR.length);
+            for (int i = 0; i < n; i++) {
+                System.out.print("\n\nC(" + this.call.getCaller().getName() + "): ");
+                for (String word : cR[i].split(" ")) {
+                    System.out.print(word + " ");
+                    Thread.sleep(10 * Utilities.random.nextInt(1, 6));
+                }
+                Thread.sleep(10 * Utilities.random.nextInt(1, 11));
+                System.out.print("\n\nA(" + this.call.getReceiver().getName() + "): ");
+                for (String word : aR[i].split(" ")) {
+                    System.out.print(word + " ");
+                    Thread.sleep(10 * Utilities.random.nextInt(1, 6));
+                }
+                Thread.sleep(10 * Utilities.random.nextInt(1, 11));
+            }
+            System.out.println("\n\n");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        call.endCall();
+        this.callCenter.releaseAgent(call.getReceiver());
+    }
+}
 
 class SentenceWriterService extends Service<Void> {
-	private LinkedList<String[]> sentences;
-	public static int counter;
-	public Call call;
+    private LinkedList<String[]> sentences;
+    public static int counter;
+    public Call call;
 
     public SentenceWriterService(Call call) {
-    	this.call = call;
+        this.call = call;
         sentences = new LinkedList<>();
     }
 
     @Override
     protected Task<Void> createTask() {
-    	
-		Object[] window = openEmptyWindow("Call "+ ++counter,100,100);
+
+        Object[] window = openEmptyWindow("Call " + ++counter, 100, 100);
         return new Task<Void>() {
             @Override
             public Void call() throws Exception {
-                for (String[] sentence : sentences) {       
-                	TextField textField = createTextField();
-                	VBox root = (VBox)window[1];                	
+                for (String[] sentence : sentences) {
+                    TextField textField = createTextField();
+                    VBox root = (VBox) window[1];
                     textField.setEditable(false);
-                    
+
                     Platform.runLater(() -> root.getChildren().add(textField));
-                                       
+
                     for (String word : sentence) {
                         // Update UI on JavaFX Application Thread
                         Platform.runLater(() -> textField.appendText(word + " "));
                         // Sleep for 500 milliseconds
                         Thread.sleep(500);
-                    }    
+                    }
                 }
-                Stage stage = (Stage)window[0];
+                Stage stage = (Stage) window[0];
                 Platform.runLater(() -> stage.close());
-                
-				return null;
+
+                return null;
             }
         };
     }
-	private Object[] openEmptyWindow(String windowTitle, double x, double y) {
-		VBox root = new VBox(10);
-		ScrollPane scrollPane = new ScrollPane(root);
+
+    private Object[] openEmptyWindow(String windowTitle, double x, double y) {
+        VBox root = new VBox(10);
+        ScrollPane scrollPane = new ScrollPane(root);
         scrollPane.setFitToWidth(true);
-		
+
         Stage stage = new Stage();
         // Create a Scene and set it on the Stage
-        Scene scene = new Scene(scrollPane, 500, 200); 
+        Scene scene = new Scene(scrollPane, 500, 200);
         stage.setScene(scene);
 
         // Set the title and position of the Stage
@@ -155,9 +208,10 @@ class SentenceWriterService extends Service<Void> {
 
         // Show the Stage
         stage.show();
-        Object[] pointers = {stage, root};
+        Object[] pointers = { stage, root };
         return pointers;
     }
+
     private TextField createTextField() {
         TextField textField = new TextField("");
         textField.setEditable(false);
