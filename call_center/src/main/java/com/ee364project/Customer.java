@@ -86,6 +86,12 @@ public class Customer extends Person implements CanCall {
             this.getName()
         };
     }
+    public String getStringInfo(){
+        return 
+                "Phone Number: " + getPhoneNumber() +
+                "\nName: " + getName() +
+                "\nBehaviour: " + this.behaviour.name ;
+    }
     public Customer parseData(String[] dataFields) {
         this.phoneNumber = dataFields[0];
         this.behaviour = CustomerBehaviour.customerBehaviourByName.get(dataFields[1]);

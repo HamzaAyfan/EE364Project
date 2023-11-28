@@ -54,7 +54,7 @@ public final class Csv {
             for (ArrayList<String> rowInMat : mat.subList(1, mat.size())) {
                 arg = rowInMat.toArray(new String[rowInMat.size()]);
                 object = (HasData) DataClass.getDeclaredConstructor().newInstance();
-                System.out.println(arg);
+                //System.out.println(arg);
                 object.parseData(arg);
                 objects.add(object);
             }

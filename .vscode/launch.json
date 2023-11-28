@@ -6,6 +6,14 @@
     "configurations": [
         {
             "type": "java",
+            "name": "MainFx",
+            "request": "launch",
+            "mainClass": "com.ee364project.Fx.MainFx",
+            "projectName": "call_center",
+            "vmArgs": "--module-path call_center\\lib\\javaFX\\lib --add-modules javafx.controls,javafx.fxml"
+        },
+        {
+            "type": "java",
             "name": "HelloWorld",
             "request": "launch",
             "mainClass": "com.ee364project.HelloWorld",

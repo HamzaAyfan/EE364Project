@@ -74,6 +74,14 @@ public class Agent extends Person {
             this.joinDate.toString()
         };
     }
+    
+    public String getStringInfo(){
+        return 
+                "ID: " + getId() +
+                "\nName: " + getName() +
+                "\nDepartment: " + getDepartment().getName() +
+                "\nJoin Date: " + getJoinDate();
+    }
 
     @Override
     public Agent parseData(String[] dataFields) {

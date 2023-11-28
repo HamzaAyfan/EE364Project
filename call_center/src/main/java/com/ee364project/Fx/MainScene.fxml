@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<AnchorPane fx:id="anchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="518.0" prefWidth="579.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ee364project.Fx.MainSceneController">
+   <children>
+      <HBox alignment="CENTER" layoutX="39.0" layoutY="33.0" prefHeight="35.0" prefWidth="479.0" spacing="20.0">
+         <children>
+            <Button fx:id="oldCostumersbButton" mnemonicParsing="false" onAction="#oldCosbtnClicked" prefHeight="25.0" prefWidth="100.0" text="Old Costumers">
+               <tooltip>
+                  <Tooltip text="Select an csv/txt file which have previously generated costumers" />
+               </tooltip></Button>
+            <Button fx:id="newCostumersbButton" mnemonicParsing="false" onAction="#newCosbtnClicked" prefHeight="25.0" prefWidth="100.0" text="New Costumers">
+               <tooltip>
+                  <Tooltip text="Generate new costumers from your choice" />
+               </tooltip></Button>
+            <Button fx:id="startbButton" mnemonicParsing="false" onAction="#startbtnClicked" prefHeight="25.0" prefWidth="50.0" text="Start">
+               <tooltip>
+                  <Tooltip text="Start the simulation" />
+               </tooltip></Button>
+            <Button fx:id="pausebButton" mnemonicParsing="false" onAction="#pausebtnClicked" prefWidth="50.0" text="Pause">
+               <tooltip>
+                  <Tooltip text="Pause the Simulation" />
+               </tooltip></Button>
+            <Button fx:id="playbButton" mnemonicParsing="false" onAction="#playbtnClicked" prefHeight="25.0" prefWidth="50.0" text="Play">
+               <tooltip>
+                  <Tooltip text="Play the simulation" />
+               </tooltip></Button>
+         </children>
+      </HBox>
+      <ScrollPane fitToHeight="true" fitToWidth="true" layoutX="33.0" layoutY="74.0" nodeOrientation="RIGHT_TO_LEFT" prefHeight="370.0" prefWidth="253.0">
+         <content>
+            <FlowPane fx:id="flowPane" hgap="10.0" nodeOrientation="LEFT_TO_RIGHT" prefHeight="368.0" prefWidth="236.0" vgap="10.0" />
+         </content>
+      </ScrollPane>
+      <MenuBar layoutY="2.0">
+        <menus>
+          <Menu mnemonicParsing="false" text="File">
+            <items>
+              <MenuItem mnemonicParsing="false" text="Close" />
+            </items>
+          </Menu>
+          <Menu mnemonicParsing="false" text="Edit">
+            <items>
+              <MenuItem mnemonicParsing="false" text="Delete" />
+            </items>
+          </Menu>
+          <Menu mnemonicParsing="false" text="Help">
+            <items>
+              <MenuItem mnemonicParsing="false" text="About" />
+            </items>
+          </Menu>
+        </menus>
+      </MenuBar>
+      <ScrollPane fitToHeight="true" fitToWidth="true" layoutX="458.0" layoutY="76.0" prefHeight="376.0" prefWidth="71.0">
+         <content>
+            <VBox fx:id="AgentVbox" prefHeight="200.0" prefWidth="100.0" />
+         </content>
+      </ScrollPane>
+   </children>
+</AnchorPane>
