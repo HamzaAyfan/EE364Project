@@ -3,10 +3,11 @@ package com.ee364project;
 import java.util.HashSet;
 import java.util.LinkedList;
 
+
 import com.ee364project.helpers.Utilities;
 
 
-
+import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
@@ -16,6 +17,8 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+
+
 
 
 public class Call {
@@ -52,15 +55,15 @@ public class Call {
         HashSet<Solution> HSsolutions = caller.problemState.getProblem().solutions;
         LinkedList<Solution> LLsolutions = new LinkedList<>();
         for(Solution soultion:HSsolutions){
-            try {
-                print(soultion.agentIntro[0]);
+            try {                
                 LLsolutions.add((Solution)(soultion.clone()));
             } catch (CloneNotSupportedException e) {
-                // To ba handled later
+                // To be handled later
             }         
         }
-        SentenceWriterService window = new SentenceWriterService(caller, receiver, this, LLsolutions);
-		window.start();
+        DialogeBox window = new DialogeBox(caller, receiver, this, LLsolutions);
+        window.start();
+
 
     }
     public void terminateCall(){
@@ -123,32 +126,27 @@ public class Call {
     }
 }
 
+class DialogeBox extends Thread{
+        Object[] window = openEmptyWindow("Call "+ ++ActiveCallNumber,100,100);
+        private LinkedList<Solution> solutions;
+	    public static int ActiveCallNumber;
+	    private Call currentCall;
+        private Customer caller;
+        private Agent receiver;
+        private boolean firstSolutionSeeked = true; 
 
-class SentenceWriterService extends Service<Void> {
-	private LinkedList<Solution> solutions;
-	public static int ActiveCallNumber;
-	private Call currentCall;
-    private Customer caller;
-    private Agent receiver;
-    private int seekedSolutionNumber; 
+        public DialogeBox(Customer caller, Agent receiver, Call currentCall, LinkedList<Solution> solutions) {
+            this.solutions = solutions;
+            this.caller =caller;
+            this.receiver = receiver;
+            this.currentCall = currentCall;
+        }
 
-    public SentenceWriterService(Customer caller, Agent receiver, Call currentCall, LinkedList<Solution> solutions) {
-        this.solutions = solutions;
-        this.caller =caller;
-        this.receiver = receiver;
-        this.currentCall = currentCall;
-    }
-
-    @Override
-    protected Task<Void> createTask() {
-    	
-		Object[] window = openEmptyWindow("Call "+ ++ActiveCallNumber,100,100);
-        return new Task<Void>() {
-            @Override
-            public Void call() throws Exception {
-                int i = 0;
+        @Override
+        public void run(){
+            int i = 0;
                 do {
-                    int length = solutions.size();
+                    int length = solutions.size();//print(length + " from call " + z + " agent is " + receiver.getlevel());
                     switch(receiver.getlevel()) {
 				        case SAVEY:
 					        i=0;
@@ -162,15 +160,28 @@ class SentenceWriterService extends Service<Void> {
                     Solution selectedSolution = solutions.get(i);
                     solutions.remove(i);
                     VBox root = (VBox)window[1];
-
-                    if (seekedSolutionNumber == 0){
-                            TextArea agentGreets = createTextArea();
+                    Scene scene = (Scene)window[2];
+                    TextArea textArea = createTextArea();
+                    Platform.runLater(() -> root.getChildren().add(textArea));
+                    pacedPrint("Test: ","just a really reailllrlrlrlrl rjthrjthrjh gfhjerhtu4irudjh long string just a really reailllrlrlrlrl rjthrjthrjh gfhjerhtu4irudjh long stringjust a really reailllrlrlrlrl rjthrjthrjh gfhjerhtu4irudjh long stringjust a really reailllrlrlrlrl rjthrjthrjh gfhjerhtu4irudjh long string just a really reailllrlrlrlrl rjthrjthrjh gfhjerhtu4irudjh long string just a really reailllrlrlrlrl rjthrjthrjh gfhjerhtu4irudjh long stringjust a really reailllrlrlrlrl rjthrjthrjh gfhjerhtu4irudjh long stringjust a really reailllrlrlrlrl rjthrjthrjh gfhjerhtu4irudjh long stringjust a really reailllrlrlrlrl rjthrjthrjh gfhjerhtu4irudjh long string just a really reailllrlrlrlrl rjthrjthrjh gfhjerhtu4irudjh long stringjust a really reailllrlrlrlrl rjthrjthrjh gfhjerhtu4irudjh long stringjust a really reailllrlrlrlrl rjthrjthrjh gfhjerhtu4irudjh long stringjust a really reailllrlrlrlrl rjthrjthrjh gfhjerhtu4irudjh long string just a really reailllrlrlrlrl rjthrjthrjh gfhjerhtu4irudjh long stringjust a really reailllrlrlrlrl rjthrjthrjh gfhjerhtu4irudjh long stringjust a really reailllrlrlrlrl rjthrjthrjh gfhjerhtu4irudjh long string" , textArea);
+                    if (firstSolutionSeeked == true){
+                            TextField agentGreets = createTextField();
                             agentGreets.setStyle("-fx-alignment: CENTER-RIGHT;");
                             Platform.runLater(() -> root.getChildren().add(agentGreets));
+                            agentGreets.prefWidthProperty().bind(scene.widthProperty().subtract(20));
                             pacedPrint("Agent: ", selectedSolution.agentIntro[0], agentGreets);
                             TextField customerGivesProblem = createTextField();
                             Platform.runLater(() -> root.getChildren().add(customerGivesProblem));
-                            pacedPrint("Customer: ", selectedSolution.customerIntro[0], customerGivesProblem);                            
+                            pacedPrint("Customer: ", selectedSolution.customerIntro[0], customerGivesProblem);   
+                            firstSolutionSeeked = false;                          
+                        }else{
+                            TextField customerResponds = createTextField();
+                            Platform.runLater(() -> root.getChildren().add(customerResponds));
+                            pacedPrint("Customer: ", "I just did that but it did not work", customerResponds);
+                            TextField solutionDidNotWork = createTextField();
+                            solutionDidNotWork.setStyle("-fx-alignment: CENTER-RIGHT;");
+                            Platform.runLater(() -> root.getChildren().add(solutionDidNotWork));                          
+                            pacedPrint("Agent: ", "sorry it did not work let me seek an alternative", solutionDidNotWork);                             
                         }
 
                     for (int j = 0; j<selectedSolution.agentResponses.length;j++){
@@ -189,12 +200,8 @@ class SentenceWriterService extends Service<Void> {
                 Stage stage = (Stage)window[0];
                 ActiveCallNumber--;
                 Platform.runLater(() -> stage.close());                
-				return null;
             }
-        };
-        
-    }
-	private Object[] openEmptyWindow(String windowTitle, double x, double y) {
+        private Object[] openEmptyWindow(String windowTitle, double x, double y) {
 		VBox root = new VBox(10);
 		ScrollPane scrollPane = new ScrollPane(root);
         scrollPane.setFitToWidth(true);
@@ -211,7 +218,7 @@ class SentenceWriterService extends Service<Void> {
 
         // Show the Stage
         stage.show();
-        Object[] pointers = {stage, root};
+        Object[] pointers = {stage, root, scene};
         return pointers;
     }
     private TextField createTextField() {
@@ -221,10 +228,12 @@ class SentenceWriterService extends Service<Void> {
     }
     private TextArea createTextArea() {
         TextArea textArea = new TextArea("");
-        textArea.setEditable(false);
-        textArea.setPrefRowCount(1);
+        textArea.setEditable(true);
+        textArea.setWrapText(true);
+        textArea.setPrefHeight(0);     
         return textArea;
     }
+    
     private void pacedPrint(String speakerID, String sentence,TextField textField){
         String[] words = sentence.split("\\s+");
         Platform.runLater(() -> textField.appendText(speakerID));
@@ -237,6 +246,7 @@ class SentenceWriterService extends Service<Void> {
             }
         }
     }
+    
     private void pacedPrint(String speakerID, String sentence,TextArea textaArea){
         String[] words = sentence.split("\\s+");
         Platform.runLater(() -> textaArea.appendText(speakerID));
@@ -249,10 +259,7 @@ class SentenceWriterService extends Service<Void> {
             }
         }
     }
-    private static void print(String string){
-        System.out.println(string);
     }
-}
 
 class RandomInt {
 	public static int generateRandom(int options) {
