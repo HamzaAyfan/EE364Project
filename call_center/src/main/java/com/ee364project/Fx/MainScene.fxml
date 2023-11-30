@@ -38,9 +38,9 @@
                </tooltip></Button>
          </children>
       </HBox>
-      <ScrollPane fitToHeight="true" fitToWidth="true" layoutX="33.0" layoutY="74.0" nodeOrientation="RIGHT_TO_LEFT" prefHeight="370.0" prefWidth="253.0">
+      <ScrollPane fitToHeight="true" fitToWidth="true" layoutX="27.0" layoutY="74.0" nodeOrientation="RIGHT_TO_LEFT" prefHeight="370.0" prefWidth="241.0">
          <content>
-            <FlowPane fx:id="flowPane" hgap="10.0" nodeOrientation="LEFT_TO_RIGHT" prefHeight="368.0" prefWidth="236.0" vgap="10.0" />
+            <FlowPane fx:id="flowPane" hgap="10.0" nodeOrientation="LEFT_TO_RIGHT" prefHeight="380.0" prefWidth="239.0" vgap="10.0" />
          </content>
       </ScrollPane>
       <MenuBar layoutY="2.0">

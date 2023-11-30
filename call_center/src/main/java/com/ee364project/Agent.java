@@ -104,7 +104,7 @@ public class Agent extends Person {
         } else {
             idle("no call assigned");
         }
-        // TODO
+        
         // NOTE: for now, agents don't require active simulation.
 
         /*
@@ -140,5 +140,13 @@ public class Agent extends Person {
 
     public void assignCall(Call call) {
         this.callInfo.called(call);
+    }
+
+    public String getStringInfo() {
+        return  
+        "ID: " + getId() +
+        "\nName: " + getName() +
+        "\nDepartment: " + getDepartment().getName() +
+        "\nJoin Date: " + getJoinDate();
     }
 }

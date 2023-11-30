@@ -1,6 +1,4 @@
-// TODO: get rid of all the static methods and make Solution embedded in Problem instead of its own class.
-// TODO: intro variables should be String not String[].
-// TODO: a way to make "speech" out of the solution class. Preferably an iterable of words. Or two iterables of words (one for the agent and one for the speaker.)
+
 
 package com.ee364project;
 
@@ -106,7 +104,7 @@ public class Solution {
         return new Solution(problem, customerIntro, customerResponses, agentIntro, agentResponses);
     }
 
-    // TODO: Better data structure:
+   
     // 1. maintained data structure instead of HashSet
     // becomes solutions[n]
     // 2. or sort solution on the go.
