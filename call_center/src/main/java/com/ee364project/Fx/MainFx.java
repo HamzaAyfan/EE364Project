@@ -2,8 +2,14 @@ package com.ee364project.Fx;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.CornerRadii;
+import javafx.scene.layout.GridPane;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 
@@ -15,12 +21,15 @@ public class MainFx extends Application {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("MainScene.fxml"));
         Parent root = loader.load();
 
+        
         primaryStage.setTitle("Call Centre Simulation");
         primaryStage.setScene(new Scene(root, 600, 550));
         primaryStage.show();
 
+      
         MainSceneController controller = loader.getController();
         controller.showYesNoDialog(primaryStage);
+
 
     } catch (Exception e) {
         e.printStackTrace(); // Print the stack trace to the console

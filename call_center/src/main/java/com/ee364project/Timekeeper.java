@@ -11,7 +11,7 @@ public class Timekeeper {
         return time;
     }
 
-    public static void stepTime() {
+    public static void step() {
         time += step;
         // System.out.println("Time now: " + getProperTime());
     }

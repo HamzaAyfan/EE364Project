@@ -5,12 +5,14 @@ import java.io.IOException;
 //import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 //import java.util.ArrayList;
 import java.util.Optional;
 
 import com.ee364project.Agent;
 import com.ee364project.Customer;
 import com.ee364project.HasData;
+import com.ee364project.Timekeeper;
 import com.ee364project.file_manage.Csv;
 import com.ee364project.file_manage.ZipExtractor;
 import com.ee364project.helpers.Utilities;
@@ -19,7 +21,7 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-
+import javafx.geometry.Insets;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextInputDialog;
@@ -28,8 +30,16 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.BackgroundImage;
+import javafx.scene.layout.BackgroundPosition;
+import javafx.scene.layout.BackgroundRepeat;
+import javafx.scene.layout.BackgroundSize;
+import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -40,6 +50,8 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.stage.Modality;
 import javafx.stage.StageStyle;
@@ -47,58 +59,70 @@ import javafx.util.Duration;
 
 public class MainSceneController {
 
+    
     @FXML
-    private Text timeer;
+    private VBox AgentVbox;
+
+
+    @FXML
+    private Menu MenBar;
+
+    @FXML
+    private MenuItem MenNew;
+
+    @FXML
+    private MenuItem MenPasue;
+
+    @FXML
+    private MenuItem MenPlay;
+
+    @FXML
+    private MenuItem MenStart;
+
+    @FXML
+    private MenuItem MenuOld;
 
     @FXML
     private AnchorPane anchorPane;
-    
+
     @FXML
     private FlowPane flowPane;
 
     @FXML
-    private VBox AgentVbox;
+    private Text timeer;
 
     @FXML
-    private Button oldCostumersbButton = new Button();
+    private VBox Vox;
 
+       
     @FXML
-    private Button newCostumersbButton = new Button();
-
-    @FXML
-    private Button startbButton = new Button();
-
-    @FXML
-    private Button pausebButton = new Button();
-
-    @FXML
-    private Button playbButton = new Button();
+    public void initializes() {
+        Vox.setStyle("-fx-background-color: gray;");
+    }
 
 
 
 
-    //////////////// Timer methods (can be modified)//////////////
+    //////////////// Timer methods from TimeKeeper Class//////////////
     private Timeline timerTimeline;
-    private int secondsElapsed;
+    private Timekeeper timekeeper;
 
     @FXML
     public void initialize() {
-        // Initialize the timer
+        
+        timekeeper = new Timekeeper();
         timerTimeline = new Timeline(new KeyFrame(Duration.seconds(1), this::updateTimer));
         timerTimeline.setCycleCount(Timeline.INDEFINITE);
+        
     }
 
     private void updateTimer(ActionEvent event) {
-        // Update the timer and display in the Text element
-        secondsElapsed++;
-        int minutes = secondsElapsed / 60;
-        int seconds = secondsElapsed % 60;
+        timekeeper.step();
+        LocalDateTime properTime = timekeeper.getProperTime();
+        int minutes = properTime.getMinute();
+        int seconds = properTime.getSecond();
         timeer.setText(String.format("%02d:%02d", minutes, seconds));
     }
-
-
-
-
     ////////////////////////////////
 
 
@@ -123,14 +147,16 @@ public class MainSceneController {
         // Show and wait for user response
         alert.showAndWait().ifPresent(response -> {
             if (response == costumeYesButtonType) {
-                oldCosbtnClicked(primaryStage);
+                oldCosbtnClicked();
             } else if (response == costumeNoButtonType) {
                 newCosbtnClicked();
             }
         });
     }
 
-    void oldCosbtnClicked(Stage stage) {
+
+
+    void oldCosbtnClicked() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Choose zip file");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Zip Files", "*.zip"));
@@ -148,7 +174,7 @@ public class MainSceneController {
             }
         }
     }
-
+    
     private void processCsvFiles(String extractedDirectory) {
         String[] csvFileNames = {"Customer.csv", "Department.csv", "Agent.csv", "Problem.csv"};
 
@@ -176,8 +202,8 @@ public class MainSceneController {
 
     @FXML
     void oldCosbtnClicked(ActionEvent event) {
-        Stage stage = (Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
-        oldCosbtnClicked(stage);
+        //Stage stage = (Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
+        oldCosbtnClicked();
     }
     
 
@@ -281,7 +307,7 @@ public class MainSceneController {
         inputDialog.setHeaderText("Enter two integers");
         inputDialog.initStyle(StageStyle.UNDECORATED);
         inputDialog.initModality(Modality.APPLICATION_MODAL);
-        inputDialog.initOwner(newCostumersbButton.getScene().getWindow());
+        
 
         // Create a GridPane to organize the layout
         GridPane gridPane = new GridPane();
@@ -404,7 +430,7 @@ public class MainSceneController {
         timerTimeline.play();
 
         // Disable the "Start" button to prevent further clicks
-        ((Button) event.getSource()).setDisable(true);
+        ((MenuItem) event.getSource()).setDisable(true);
     }
     }
 

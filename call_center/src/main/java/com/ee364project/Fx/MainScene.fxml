@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.input.KeyCodeCombination?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
@@ -14,28 +13,10 @@
 
 <AnchorPane fx:id="anchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="518.0" prefWidth="579.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ee364project.Fx.MainSceneController">
    <children>
+      <VBox fx:id="Vox" onMouseMoved="#initializes" prefHeight="518.0" prefWidth="579.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
       <HBox alignment="CENTER" layoutX="39.0" layoutY="33.0" prefHeight="35.0" prefWidth="479.0" spacing="20.0">
          <children>
-            <Button fx:id="oldCostumersbButton" mnemonicParsing="false" onAction="#oldCosbtnClicked" prefHeight="25.0" prefWidth="100.0" text="Old Costumers">
-               <tooltip>
-                  <Tooltip text="Select an csv/txt file which have previously generated costumers" />
-               </tooltip></Button>
-            <Button fx:id="newCostumersbButton" mnemonicParsing="false" onAction="#newCosbtnClicked" prefHeight="25.0" prefWidth="100.0" text="New Costumers">
-               <tooltip>
-                  <Tooltip text="Generate new costumers from your choice" />
-               </tooltip></Button>
-            <Button fx:id="startbButton" mnemonicParsing="false" onAction="#startbtnClicked" prefHeight="25.0" prefWidth="50.0" text="Start">
-               <tooltip>
-                  <Tooltip text="Start the simulation" />
-               </tooltip></Button>
-            <Button fx:id="pausebButton" mnemonicParsing="false" onAction="#pausebtnClicked" prefWidth="50.0" text="Pause">
-               <tooltip>
-                  <Tooltip text="Pause the Simulation" />
-               </tooltip></Button>
-            <Button fx:id="playbButton" mnemonicParsing="false" onAction="#playbtnClicked" prefHeight="25.0" prefWidth="50.0" text="Play">
-               <tooltip>
-                  <Tooltip text="Play the simulation" />
-               </tooltip></Button>
+            <Text fx:id="timeer" strokeType="OUTSIDE" strokeWidth="0.0" text="Timer" wrappingWidth="37.9765625" />
          </children>
       </HBox>
       <ScrollPane fitToHeight="true" fitToWidth="true" layoutX="33.0" layoutY="74.0" nodeOrientation="RIGHT_TO_LEFT" prefHeight="370.0" prefWidth="253.0">
@@ -43,21 +24,28 @@
             <FlowPane fx:id="flowPane" hgap="10.0" nodeOrientation="LEFT_TO_RIGHT" prefHeight="368.0" prefWidth="236.0" vgap="10.0" />
          </content>
       </ScrollPane>
-      <MenuBar layoutY="2.0">
+      <MenuBar layoutY="2.0" prefHeight="25.0" prefWidth="579.0">
         <menus>
-          <Menu mnemonicParsing="false" text="File">
+          <Menu fx:id="MenBar" mnemonicParsing="false" text="File">
             <items>
-              <MenuItem mnemonicParsing="false" text="Close" />
+              <MenuItem mnemonicParsing="false" text="Save as " />
+                  <MenuItem fx:id="MenNew" mnemonicParsing="false" onAction="#newCosbtnClicked" text="New Customer ">
+                     <accelerator>
+                        <KeyCodeCombination alt="DOWN" code="N" control="UP" meta="UP" shift="UP" shortcut="UP" />
+                     </accelerator>
+                  </MenuItem>
+                  <MenuItem fx:id="MenuOld" mnemonicParsing="false" onAction="#oldCosbtnClicked" text="Old  Customer ">
+                     <accelerator>
+                        <KeyCodeCombination alt="DOWN" code="O" control="UP" meta="UP" shift="UP" shortcut="UP" />
+                     </accelerator>
+                  </MenuItem>
             </items>
           </Menu>
-          <Menu mnemonicParsing="false" text="Edit">
+          <Menu mnemonicParsing="false" text="Simulation">
             <items>
-              <MenuItem mnemonicParsing="false" text="Delete" />
-            </items>
-          </Menu>
-          <Menu mnemonicParsing="false" text="Help">
-            <items>
-              <MenuItem mnemonicParsing="false" text="About" />
+              <MenuItem fx:id="MenStart" mnemonicParsing="false" onAction="#startbtnClicked" text="Start" />
+                  <MenuItem fx:id="MenPasue" mnemonicParsing="false" onAction="#pausebtnClicked" text="Pasue" />
+                  <MenuItem fx:id="MenPlay" mnemonicParsing="false" onAction="#playbtnClicked" text="Play" />
             </items>
           </Menu>
         </menus>
@@ -67,6 +55,5 @@
             <VBox fx:id="AgentVbox" prefHeight="200.0" prefWidth="100.0" />
          </content>
       </ScrollPane>
-      <Text fx:id="timeer" layoutX="86.0" layoutY="478.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Timer" />
    </children>
 </AnchorPane>
