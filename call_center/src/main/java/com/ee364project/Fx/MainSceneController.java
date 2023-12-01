@@ -2,6 +2,7 @@ package com.ee364project.Fx;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.Socket;
 //import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -10,12 +11,14 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 import com.ee364project.Agent;
+import com.ee364project.CallCenter;
 import com.ee364project.Customer;
 import com.ee364project.HasData;
 import com.ee364project.Timekeeper;
 import com.ee364project.file_manage.Csv;
 import com.ee364project.file_manage.ZipExtractor;
 import com.ee364project.helpers.Utilities;
+import com.ee364project.helpers.Vars;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -59,6 +62,10 @@ import javafx.util.Duration;
 
 public class MainSceneController {
 
+
+    Agent[] agents;
+    Customer[] customers;
+
     
     @FXML
     private VBox AgentVbox;
@@ -97,7 +104,7 @@ public class MainSceneController {
        
     @FXML
     public void initializes() {
-        Vox.setStyle("-fx-background-color: gray;");
+        //Vox.setStyle("-fx-background-color: white;");
     }
 
 
@@ -177,6 +184,9 @@ public class MainSceneController {
     
     private void processCsvFiles(String extractedDirectory) {
         String[] csvFileNames = {"Customer.csv", "Department.csv", "Agent.csv", "Problem.csv"};
+
+        Utilities.getFakeData(5, Vars.DataClasses.Department);
+        Utilities.getFakeData(20, Vars.DataClasses.Problem);
 
         for (String fileName : csvFileNames) {
             Path csvFilePath = Paths.get(extractedDirectory, fileName);
@@ -333,6 +343,9 @@ public class MainSceneController {
                 int numberOfCustomers = Integer.parseInt(textField1.getText());
                 int numberOfAgents = Integer.parseInt(textField2.getText());
 
+                Utilities.getFakeData(5, Vars.DataClasses.Department);
+                Utilities.getFakeData(20, Vars.DataClasses.Problem);
+
                 generateNewCustomers(numberOfCustomers);
                 generateNewAgents(numberOfAgents);
                 
@@ -349,10 +362,13 @@ public class MainSceneController {
 
     private void generateNewCustomers(int number) {
         if(flowPane.getChildren().size() != 0){ flowPane.getChildren().clear();}
-              
-        HasData[] customers = Utilities.getFakeData(number, "Customer");
         
-        for (int i = 0; i < number; i++) {
+        customers = new Customer[number];
+        
+        int i = 0;
+        for (HasData datum : Utilities.getFakeData(number, Vars.DataClasses.Customer)) {
+            customers[i] = (Customer) datum;
+
             Image image = new Image("com\\ee364project\\Fx\\resources\\user.png", true);
             ImageView imageView = new ImageView(image);
             imageView.setFitWidth(20);
@@ -366,11 +382,14 @@ public class MainSceneController {
             stackPane.getChildren().addAll(imageView, rectangle);    
             //rectangle.setStyle("-fx-fill: green;");
 
-            Customer customer = (Customer) customers[i];
-            addTooltip(rectangle, customer.getStringInfo());
+            //Customer customer = customers[i];
+            
+            addTooltip(rectangle, customers[i].getStringInfo());
 
             flowPane.getChildren().add(stackPane);
 
+            i = i + 1;
+            
             //System.out.println(((Customer) customers[i]).getStringInfo()); Done
         }
     }
@@ -378,9 +397,13 @@ public class MainSceneController {
     private void generateNewAgents(int number) {
         if(AgentVbox.getChildren().size() != 0){ AgentVbox.getChildren().clear();}
               
-        HasData[] agents = Utilities.getFakeData(number, "Agent");
-        
-        for (int i = 0; i < number; i++) {
+        //HasData[] agents = Utilities.getFakeData(number, Vars.DataClasses.Agent);
+        agents = new Agent[number];
+
+        int i = 0;
+        for (HasData datum : Utilities.getFakeData(number, Vars.DataClasses.Agent)) {
+            agents[i] = (Agent) datum;
+
             Image image = new Image("com\\ee364project\\Fx\\resources\\agent.png", true);
             ImageView imageView = new ImageView(image);
             imageView.setFitWidth(20);
@@ -394,13 +417,16 @@ public class MainSceneController {
             stackPane.getChildren().addAll(imageView, rectangle);    
             //rectangle.setStyle("-fx-fill: green;");
 
-            Agent agent = (Agent) agents[i];
-            addTooltip(rectangle, agent.getStringInfo());
+            //Agent agent = (Agent) agents[i];
+            addTooltip(rectangle, agents[i].getStringInfo());
 
             AgentVbox.getChildren().add(stackPane);
 
+            i = i + 1;
             //System.out.println(((Customer) customers[i]).getStringInfo()); Done
         }
+        //CallCenter callCenter = new CallCenter(agents);
+        System.out.println("Finished agents");
     }
     
     private void showErrorAlert(String title, String content) {
