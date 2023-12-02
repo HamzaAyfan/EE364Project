@@ -13,10 +13,11 @@ import java.util.Optional;
 import com.ee364project.Agent;
 import com.ee364project.CallCenter;
 import com.ee364project.Customer;
+import com.ee364project.Department;
 import com.ee364project.HasData;
 import com.ee364project.Timekeeper;
 import com.ee364project.file_manage.Csv;
-import com.ee364project.file_manage.ZipExtractor;
+import com.ee364project.file_manage.Zip;
 import com.ee364project.helpers.Utilities;
 import com.ee364project.helpers.Vars;
 
@@ -65,14 +66,18 @@ public class MainSceneController {
 
     Agent[] agents;
     Customer[] customers;
+    HasData[] problems;
+    HasData[] departments;
 
     
     @FXML
     private VBox AgentVbox;
 
-
     @FXML
     private Menu MenBar;
+
+    @FXML
+    private MenuItem saveAsbtn;
 
     @FXML
     private MenuItem MenNew;
@@ -93,7 +98,7 @@ public class MainSceneController {
     private AnchorPane anchorPane;
 
     @FXML
-    private FlowPane flowPane;
+    private FlowPane flowPane; // Customers FlowPane
 
     @FXML
     private Text timeer;
@@ -112,23 +117,24 @@ public class MainSceneController {
 
     //////////////// Timer methods from TimeKeeper Class//////////////
     private Timeline timerTimeline;
-    private Timekeeper timekeeper;
+    //private Timekeeper timekeeper;
 
     @FXML
     public void initialize() {
         
-        timekeeper = new Timekeeper();
+        //timekeeper = new Timekeeper();
         timerTimeline = new Timeline(new KeyFrame(Duration.seconds(1), this::updateTimer));
         timerTimeline.setCycleCount(Timeline.INDEFINITE);
         
     }
 
     private void updateTimer(ActionEvent event) {
-        timekeeper.step();
-        LocalDateTime properTime = timekeeper.getProperTime();
+        Timekeeper.step();
+        LocalDateTime properTime = Timekeeper.getProperTime();
         int minutes = properTime.getMinute();
         int seconds = properTime.getSecond();
-        timeer.setText(String.format("%02d:%02d", minutes, seconds));
+        // timeer.setText(String.format("%02d:%02d", minutes, seconds));
+        timeer.setText(properTime.toString());
     }
     ////////////////////////////////
 
@@ -173,30 +179,33 @@ public class MainSceneController {
             String outputDirectory = "extracted";
 
             try {
-                ZipExtractor.extractZip(zipFile, outputDirectory);
+                Zip.extractZip(zipFile, outputDirectory);
                 processCsvFiles(outputDirectory);
                 System.out.println("CSV files processed successfully.");
+
+                Zip.deleteExtracted(outputDirectory);
+
             } catch (IOException e) {
                 e.printStackTrace();
-            }
+
+            } 
         }
     }
     
     private void processCsvFiles(String extractedDirectory) {
-        String[] csvFileNames = {"Customer.csv", "Department.csv", "Agent.csv", "Problem.csv"};
+        String[] csvFileNames = { "Problem.csv", "Customer.csv", "Agent.csv",};
 
-        Utilities.getFakeData(5, Vars.DataClasses.Department);
-        Utilities.getFakeData(20, Vars.DataClasses.Problem);
 
         for (String fileName : csvFileNames) {
             Path csvFilePath = Paths.get(extractedDirectory, fileName);
 
-            // Now you can work with each CSV file
-            // Example: Read the CSV file and perform some operations
             try {
-                // Read the CSV file using Files.readAllLines
-                //Files.readAllLines(csvFilePath).forEach(System.out::println);
+                
                 if(fileName.contains(csvFileNames[0])){
+                    File problemFile = csvFilePath.toFile();
+                    processProblemFile(problemFile);
+                }
+                else if(fileName.contains(csvFileNames[1])){
                     File customerFile = csvFilePath.toFile();
                     processCustomerFile(customerFile);
                 }
@@ -204,6 +213,7 @@ public class MainSceneController {
                     File agentFile = csvFilePath.toFile();
                     processAgentFile(agentFile);
                 }
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -253,6 +263,9 @@ public class MainSceneController {
         } catch (NumberFormatException e) {
             System.out.println("Please enter a a valid CSV file.");
         }
+        finally{
+            
+        }
 
 
     }
@@ -289,11 +302,22 @@ public class MainSceneController {
             System.out.println("Finished loading FP");
 
 
-        } catch (NumberFormatException e) {
+        } catch (Exception e) {
             System.out.println("Please enter a a valid CSV file.");
         }
 
+    }
 
+    public void processProblemFile(File problemFile){
+        try{
+            // Utilities.getFakeData(5, Vars.DataClasses.Department);
+            problems = Csv.read(problemFile.getAbsolutePath(), Vars.DataClasses.Problem);
+            Department.removeEmpty();
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+        
     }
 
     @FXML
@@ -314,7 +338,7 @@ public class MainSceneController {
     void newCosbtnClicked() {
         TextInputDialog inputDialog = new TextInputDialog();
         inputDialog.setTitle("Input Dialog");
-        inputDialog.setHeaderText("Enter two integers");
+        inputDialog.setHeaderText("Enter new environment parameters");
         inputDialog.initStyle(StageStyle.UNDECORATED);
         inputDialog.initModality(Modality.APPLICATION_MODAL);
         
@@ -332,8 +356,17 @@ public class MainSceneController {
         TextField textField2 = new TextField();
         gridPane.add(textField2, 1, 1);
 
+        gridPane.add(new Label("Enter No. Departments:"), 0, 2);
+        TextField textField3 = new TextField();
+        gridPane.add(textField3, 1, 2);
+
+        gridPane.add(new Label("Enter No. Problems:"), 0, 3);
+        TextField textField4 = new TextField();
+        gridPane.add(textField4, 1, 3);
+
         // Set the content of the TextInputDialog to the GridPane
         inputDialog.getDialogPane().setContent(gridPane);
+        inputDialog.getDialogPane().setStyle("-fx-border-color: black");
 
         // Show and wait for user response
         Optional<String> result = inputDialog.showAndWait();
@@ -342,10 +375,14 @@ public class MainSceneController {
             try {
                 int numberOfCustomers = Integer.parseInt(textField1.getText());
                 int numberOfAgents = Integer.parseInt(textField2.getText());
+                int numberOfDepartments = Integer.parseInt(textField3.getText());
+                int numberOfProblems = Integer.parseInt(textField4.getText());
 
-                Utilities.getFakeData(5, Vars.DataClasses.Department);
-                Utilities.getFakeData(20, Vars.DataClasses.Problem);
+                // generate fake problems and departments
+                departments = Utilities.getFakeData(numberOfDepartments, Vars.DataClasses.Department);
+                problems = Utilities.getFakeData(numberOfProblems, Vars.DataClasses.Problem);
 
+                // generate fake customers and agents
                 generateNewCustomers(numberOfCustomers);
                 generateNewAgents(numberOfAgents);
                 
@@ -437,6 +474,10 @@ public class MainSceneController {
         alert.showAndWait();
     }
 
+    @FXML
+    void saveAsbtnClicked(ActionEvent event) {
+
+    }
 
     @FXML
     void pausebtnClicked(ActionEvent event) {
@@ -451,13 +492,13 @@ public class MainSceneController {
     @FXML
     void startbtnClicked(ActionEvent event) {
         // Check if the timer is not already running
-    if (!timerTimeline.getStatus().equals(Timeline.Status.RUNNING)) {
-        // Start the timer when the "Start" button is clicked
-        timerTimeline.play();
+        if (!timerTimeline.getStatus().equals(Timeline.Status.RUNNING)) {
+            // Start the timer when the "Start" button is clicked
+            timerTimeline.play();
 
-        // Disable the "Start" button to prevent further clicks
-        ((MenuItem) event.getSource()).setDisable(true);
-    }
+            // Disable the "Start" button to prevent further clicks
+            ((MenuItem) event.getSource()).setDisable(true);
+        }
     }
 
 }
