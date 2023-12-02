@@ -71,6 +71,7 @@ public class MainSceneController {
     HasData[] departments;
 
     
+     
     @FXML
     private VBox AgentVbox;
 
@@ -107,6 +108,81 @@ public class MainSceneController {
     @FXML
     private VBox Vox;
 
+    @FXML
+    private VBox CallVbox;
+
+    @FXML
+    private Button connected;
+
+    
+    
+    //************************Mshari Edit****************************** *//
+    private CallCenter callCenter;
+   
+   
+
+    @FXML
+    private void connectCallsBtnClicked(ActionEvent event) {
+        updateUIForCall();
+    }
+
+    private void updateUIForCall() {
+        
+            Image customerImage = new Image("com\\ee364project\\Fx\\resources\\user.png", true);
+            Image agentImage = new Image("com\\ee364project\\Fx\\resources\\agent.png", true);
+    
+            ImageView customerImageView = new ImageView(customerImage);
+            ImageView agentImageView = new ImageView(agentImage);
+    
+            customerImageView.setFitWidth(20);
+            customerImageView.setFitHeight(20);
+            agentImageView.setFitWidth(20);
+            agentImageView.setFitHeight(20);
+    
+            StackPane customerStackPane = new StackPane();
+            StackPane agentStackPane = new StackPane();
+    
+            Rectangle customerRectangle = new Rectangle(20, 20, Color.TRANSPARENT);
+            Rectangle agentRectangle = new Rectangle(20, 20, Color.TRANSPARENT);
+    
+            
+            Customer customer = getRandomCustomer();
+            Agent agent = getRandomAgent();
+    
+            if (customer != null && agent != null) {
+                
+                addTooltip(customerRectangle, customer.getStringInfo());
+                addTooltip(agentRectangle, agent.getStringInfo());
+    
+                customerStackPane.getChildren().addAll(customerImageView, customerRectangle);
+                agentStackPane.getChildren().addAll(agentImageView, agentRectangle);
+                CallVbox.getChildren().addAll(customerStackPane, agentStackPane);
+            }
+    }
+    
+   
+    private Customer getRandomCustomer() {
+        int numberOfCustomers = customers.length;
+        if (numberOfCustomers > 0) {
+            int randomIndex = (int) (Math.random() * numberOfCustomers);
+            return customers[randomIndex];
+        } else {
+            return null;
+        }
+    }
+    
+    private Agent getRandomAgent() {
+        int numberOfAgents = agents.length;
+        if (numberOfAgents > 0) {
+            int randomIndex = (int) (Math.random() * numberOfAgents);
+            return agents[randomIndex];
+        } else {
+            return null;
+        }
+    }
+
+
+    //******************************************************** *//
        
     @FXML
     public void initializes() {
