@@ -32,6 +32,7 @@ public class Zip {
     }
 
     public static void compressToZip(String outputZip, String csvFilesPlace){
+
         
         String tempDirectory = "temp";
 
@@ -55,6 +56,8 @@ public class Zip {
             }
 
             System.out.println("CSV files compressed to " + outputZip + " and original files deleted.");
+
+            deleteExtracted(tempDirectory);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -113,6 +116,5 @@ public class Zip {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 }

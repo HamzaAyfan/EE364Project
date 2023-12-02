@@ -28,7 +28,8 @@ public class Write {
         //Csv.write(agents, "call_center\\output\\Agent.csv");
         //Csv.write(Problem.getAllProblems(), "call_center\\output\\Problem.csv");
 
-        //Zip.compressToZip("output2.zip", "extracted");
+        // Zip.compressToZip("output3.zip", "call_center\\output");
+        Zip.deleteExtracted("call_center\\output");
         //Zip.deleteExtracted("extracted");
 
     }    

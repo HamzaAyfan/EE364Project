@@ -15,6 +15,7 @@ import com.ee364project.CallCenter;
 import com.ee364project.Customer;
 import com.ee364project.Department;
 import com.ee364project.HasData;
+import com.ee364project.Problem;
 import com.ee364project.Timekeeper;
 import com.ee364project.file_manage.Csv;
 import com.ee364project.file_manage.Zip;
@@ -475,7 +476,28 @@ public class MainSceneController {
     }
 
     @FXML
-    void saveAsbtnClicked(ActionEvent event) {
+    void saveAsbtnClicked(ActionEvent event) throws IOException {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("ZIP Files", "*.zip"));
+
+        // Show Save As dialog
+        File saveFile = fileChooser.showSaveDialog(new Stage());
+
+        if (saveFile != null) {
+            // Get the chosen file path from the user
+            String zipFilePath = saveFile.getAbsolutePath();
+
+            // write the csvfiles in the output directory
+            Csv.write((HasData[]) customers, "call_center/output/Customer.csv");
+            Csv.write((HasData[]) agents, "call_center/output/Agent.csv");
+            Csv.write((HasData[]) Problem.getAllProblems(), "call_center/output/Problem.csv");
+
+            // Perform the saving logic
+            Zip.compressToZip(zipFilePath, "call_center/output"); // generate the zip file
+            Zip.deleteExtracted("call_center/output"); // delete the extraction directory
+            
+            System.out.println("ZIP file saved to: " + zipFilePath);
+        }
 
     }
 
