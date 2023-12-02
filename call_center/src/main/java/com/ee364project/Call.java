@@ -5,23 +5,30 @@ import java.util.LinkedList;
 
 
 import com.ee364project.helpers.Utilities;
+import javafx.util.Duration;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 
-
-import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.concurrent.Service;
-import javafx.concurrent.Task;
+
 import javafx.scene.Scene;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextArea;
+
 import javafx.scene.control.TextField;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import java.util.NoSuchElementException;
 
+import javafx.geometry.Pos;
 
 
 
 public class Call {
+    
     public static enum CallState {
         WAITING,
         INCALL,
@@ -30,6 +37,7 @@ public class Call {
     }
     public static final long MAXWAITTIME = 60;
     private static LinkedList<Call> callQueue = new LinkedList<>();
+    private static LinkedList<Call> calls = new LinkedList<>();
     private static long callCount = 0;
 
     private long startTime;
@@ -39,6 +47,8 @@ public class Call {
     private Customer caller;
     private Agent receiver;
     private CallState state;
+    private static int counter;
+    private int callNumber;
 
     public static Call getACall() {
         applyExpiry();
@@ -50,24 +60,46 @@ public class Call {
     public static void endACall(Call call) {
         call.state = CallState.ENDED;
     }
-
+    Timeline callTime;
+    
     public void connectCall(Customer caller, Agent receiver){
         HashSet<Solution> HSsolutions = caller.problemState.getProblem().solutions;
         LinkedList<Solution> LLsolutions = new LinkedList<>();
         for(Solution soultion:HSsolutions){
-            try {                
+            try {
                 LLsolutions.add((Solution)(soultion.clone()));
             } catch (CloneNotSupportedException e) {
                 // To be handled later
             }         
-        }
-        DialogeBox window = new DialogeBox(caller, receiver, this, LLsolutions);
-        window.start();
-
-
+        }        
+       
+        // if (calls.indexOf(this)>4){ 
+            // MockDialoge dialoge = new MockDialoge(caller, receiver, this, LLsolutions);
+            // int numberOfWords = dialoge.getContentlength();
+            // int time = numberOfWords*10;
+            // callTime = new Timeline(new KeyFrame(Duration.millis(time), e -> terminateCall()));
+            // callTime.setCycleCount(1);
+            // callTime.play();        
+        // }else{  
+                     
+        // }
+        try{
+            DialogeBox dialoge = DialogeBox.windows.poll();
+            dialoge.setupCall(caller, receiver, this, LLsolutions);
+            dialoge.start(); 
+        }catch (NullPointerException e ){
+            MockDialoge dialoge = new MockDialoge(caller, receiver, this, LLsolutions);
+            int numberOfWords = dialoge.getContentlength();
+            int time = numberOfWords*10;
+            callTime = new Timeline(new KeyFrame(Duration.millis(time), run -> terminateCall()));
+            callTime.setCycleCount(1);
+            callTime.play();
+        }catch (Exception e){}
+        
     }
+    
     public void terminateCall(){
-        print("done");
+        print(" done");
     }
 
     private static void applyExpiry() {  // run after every step.
@@ -87,7 +119,9 @@ public class Call {
         this.waitTime = 0;
         this.receiver = null;
         this.state = CallState.WAITING;
+        this.callNumber= counter++;
         callQueue.add(this);
+        calls.add(this);
     }
 
     public long getCallDuration() {
@@ -125,25 +159,34 @@ public class Call {
     System.out.println(string);
     }
 }
-
-class DialogeBox extends Thread{
-        Object[] window = openEmptyWindow("Call "+ ++ActiveCallNumber,100,100);
-        private LinkedList<Solution> solutions;
+class MockDialoge {
+        LinkedList<Solution> solutions = new LinkedList<>();
 	    public static int ActiveCallNumber;
 	    private Call currentCall;
         private Customer caller;
         private Agent receiver;
         private boolean firstSolutionSeeked = true; 
+        LinkedList<String> content = new LinkedList<>();
 
-        public DialogeBox(Customer caller, Agent receiver, Call currentCall, LinkedList<Solution> solutions) {
+        public MockDialoge(Customer caller, Agent receiver, Call currentCall, LinkedList<Solution> solutions) {
             this.solutions = solutions;
             this.caller =caller;
             this.receiver = receiver;
             this.currentCall = currentCall;
         }
+        public int getContentlength(){
+            getWords();
+            return content.size();
+        }
 
-        @Override
-        public void run(){
+        private void pacedPrint(int ID, String sentence){    
+        String[] words = sentence.split("\\s+");    
+        for(String word:words){   
+            content.add(word);
+        }   
+    }
+
+        private void getWords(){
             int i = 0;
                 do {
                     int length = solutions.size();//print(length + " from call " + z + " agent is " + receiver.getlevel());
@@ -159,56 +202,134 @@ class DialogeBox extends Thread{
 			        }
                     Solution selectedSolution = solutions.get(i);
                     solutions.remove(i);
-                    VBox root = (VBox)window[1];
-                    Scene scene = (Scene)window[2];
-                    TextArea textArea = createTextArea();
-                    Platform.runLater(() -> root.getChildren().add(textArea));
-                    pacedPrint("Test: ","just a really reailllrlrlrlrl rjthrjthrjh gfhjerhtu4irudjh long string just a really reailllrlrlrlrl rjthrjthrjh gfhjerhtu4irudjh long stringjust a really reailllrlrlrlrl rjthrjthrjh gfhjerhtu4irudjh long stringjust a really reailllrlrlrlrl rjthrjthrjh gfhjerhtu4irudjh long string just a really reailllrlrlrlrl rjthrjthrjh gfhjerhtu4irudjh long string just a really reailllrlrlrlrl rjthrjthrjh gfhjerhtu4irudjh long stringjust a really reailllrlrlrlrl rjthrjthrjh gfhjerhtu4irudjh long stringjust a really reailllrlrlrlrl rjthrjthrjh gfhjerhtu4irudjh long stringjust a really reailllrlrlrlrl rjthrjthrjh gfhjerhtu4irudjh long string just a really reailllrlrlrlrl rjthrjthrjh gfhjerhtu4irudjh long stringjust a really reailllrlrlrlrl rjthrjthrjh gfhjerhtu4irudjh long stringjust a really reailllrlrlrlrl rjthrjthrjh gfhjerhtu4irudjh long stringjust a really reailllrlrlrlrl rjthrjthrjh gfhjerhtu4irudjh long string just a really reailllrlrlrlrl rjthrjthrjh gfhjerhtu4irudjh long stringjust a really reailllrlrlrlrl rjthrjthrjh gfhjerhtu4irudjh long stringjust a really reailllrlrlrlrl rjthrjthrjh gfhjerhtu4irudjh long string" , textArea);
-                    if (firstSolutionSeeked == true){
-                            TextField agentGreets = createTextField();
-                            agentGreets.setStyle("-fx-alignment: CENTER-RIGHT;");
-                            Platform.runLater(() -> root.getChildren().add(agentGreets));
-                            agentGreets.prefWidthProperty().bind(scene.widthProperty().subtract(20));
-                            pacedPrint("Agent: ", selectedSolution.agentIntro[0], agentGreets);
-                            TextField customerGivesProblem = createTextField();
-                            Platform.runLater(() -> root.getChildren().add(customerGivesProblem));
-                            pacedPrint("Customer: ", selectedSolution.customerIntro[0], customerGivesProblem);   
-                            firstSolutionSeeked = false;                          
-                        }else{
-                            TextField customerResponds = createTextField();
-                            Platform.runLater(() -> root.getChildren().add(customerResponds));
-                            pacedPrint("Customer: ", "I just did that but it did not work", customerResponds);
-                            TextField solutionDidNotWork = createTextField();
-                            solutionDidNotWork.setStyle("-fx-alignment: CENTER-RIGHT;");
-                            Platform.runLater(() -> root.getChildren().add(solutionDidNotWork));                          
-                            pacedPrint("Agent: ", "sorry it did not work let me seek an alternative", solutionDidNotWork);                             
+                    if (firstSolutionSeeked == true){                             
+                            pacedPrint(0, selectedSolution.agentIntro[0]);                            
+                            pacedPrint(1, selectedSolution.customerIntro[0]);   
+                            firstSolutionSeeked = false;
+                        }else{                            
+                            pacedPrint(1, "I just did that but it did not work");                         
+                            pacedPrint(0, "sorry it did not work let me seek an alternative");                           
                         }
 
-                    for (int j = 0; j<selectedSolution.agentResponses.length;j++){
-                        
-                        TextField agentTextField = createTextField();
-                        agentTextField.setStyle("-fx-alignment: CENTER-RIGHT;");
-                        Platform.runLater(() -> root.getChildren().add(agentTextField));
-                        pacedPrint("Agent: ", selectedSolution.agentResponses[j], agentTextField);
-                        TextField customerTextField = createTextField();
-                        Platform.runLater(() -> root.getChildren().add(customerTextField));
-                        pacedPrint("Customer: ", selectedSolution.customerResponses[j], customerTextField);
+                    for (int j = 0; j<selectedSolution.agentResponses.length;j++){                        
+                        pacedPrint(0, selectedSolution.agentResponses[j]);                        
+                        pacedPrint(1, selectedSolution.customerResponses[j]);
                     }               
-		        }while(i != 0);	
+		        }while(i != 0);	      
+            }
+}
 
-                currentCall.terminateCall();// method after ending the call
-                Stage stage = (Stage)window[0];
+class DialogeBox extends Thread{
+        Stage stage = new Stage();
+        VBox root = new VBox(10);
+        
+        public static LinkedList<DialogeBox> windows = new LinkedList<>();
+        private LinkedList<Solution> solutions;
+	    public static int ActiveCallNumber;
+	    private Call currentCall;
+        private Customer caller;
+        private Agent receiver;
+        private boolean firstSolutionSeeked = true; 
+        ProgressBar customerVoice;
+        ProgressBar agentVoice;
+        String customerTag = "Customer: ";
+        String agentTag = "Agent: ";
+        String speakerTag;
+        Timeline timeline;
+        LinkedList<String> content = new LinkedList<>();
+
+        public void setupCall(Customer caller, Agent receiver, Call currentCall, LinkedList<Solution> solutions){
+            this.solutions = solutions;
+            this.caller =caller;
+            this.receiver = receiver;
+            this.currentCall = currentCall;
+        }
+
+        @Override
+        public void run(){            
+            int i = 0;
+                do {
+                    int length = solutions.size();//print(length + " from call " + z + " agent is " + receiver.getlevel());
+                    switch(receiver.getlevel()) {
+				        case SAVEY:
+					        i=0;
+					        break;
+				        case CHALLENGED:
+					        i=RandomInt.generateWithinRange(length/2,length);
+					        break;					
+				        default:
+					        i=RandomInt.generateWithinRange(0,length/2);				
+			        }
+                    Solution selectedSolution = solutions.get(i);
+                    solutions.remove(i);                    
+                    if (firstSolutionSeeked == true){
+                            this.createTextField(receiver,selectedSolution.getRandomIntro(receiver),agentTag);
+                            this.createTextField(caller,selectedSolution.getRandomIntro(caller),customerTag);           
+                            firstSolutionSeeked = false;
+                        }else{
+                            this.createTextField(caller,"I just did that but it did not work",customerTag); 
+                            this.createTextField(receiver,"sorry it did not work let me seek an alternative",agentTag);                            
+                        }
+
+                    for (int j = 0; j<selectedSolution.agentResponses.length;j++){ 
+                        this.createTextField(receiver,selectedSolution.agentResponses[j],agentTag);
+                        this.createTextField(caller,selectedSolution.customerResponses[j],customerTag);                                    
+                    }               
+		        }while(i != 0);	                
                 ActiveCallNumber--;
                 Platform.runLater(() -> stage.close());                
             }
-        private Object[] openEmptyWindow(String windowTitle, double x, double y) {
-		VBox root = new VBox(10);
+
+        private void createTextField(Person person,String sentence, String tag) {
+            TextField textField = new TextField(tag);
+            textField.setEditable(false);
+            int identifier = 0;
+            if (person instanceof Agent){
+                textField.setStyle("-fx-alignment: CENTER-RIGHT;");                            
+            }else{
+                identifier=1;
+            }
+            Platform.runLater(() -> root.getChildren().add(textField));                            
+            pacedPrint(identifier, sentence, textField);        
+        }
+            
+        public void openEmptyWindow(String windowTitle, double x, double y) {
 		ScrollPane scrollPane = new ScrollPane(root);
         scrollPane.setFitToWidth(true);
-		
-        Stage stage = new Stage();
+
+        try {
+        Image volume = new Image("call_center\\src\\main\\java\\com\\ee364project\\image\\volume.png");
+        ImageView volumeIcon1 = new ImageView(volume);
+        ImageView volumeIcon2 = new ImageView(volume);
+        // Further code using the image
+        } catch (Exception e) {
+        e.getStackTrace();
+        }
+        
+
+        ProgressBar agentVolumeBar = new ProgressBar();
+        agentVolumeBar.setRotate(-90);
+        VBox agentVolumeBarBox = new VBox(agentVolumeBar);
+        agentVolumeBar.setProgress(0);
+        ProgressBar customerVolumeBar = new ProgressBar();
+        customerVolumeBar.setRotate(-90);
+        customerVolumeBar.setProgress(0);
+        VBox customerVolumeBarBox = new VBox(customerVolumeBar);
+
+	    agentVolumeBarBox.setAlignment(Pos.CENTER);
+        customerVolumeBarBox.setAlignment(Pos.CENTER);
+        HBox mainPane = new HBox(customerVolumeBarBox,scrollPane,agentVolumeBarBox); 
+        agentVolumeBarBox.prefWidthProperty().bind(mainPane.widthProperty().divide(5));  
+        agentVolumeBarBox.prefHeightProperty().bind(mainPane.heightProperty());  
+        customerVolumeBarBox.prefWidthProperty().bind(mainPane.widthProperty().divide(5));  
+        customerVolumeBarBox.prefHeightProperty().bind(mainPane.heightProperty());  
+        scrollPane.prefWidthProperty().bind(mainPane.widthProperty().multiply(0.6));
+
         // Create a Scene and set it on the Stage
-        Scene scene = new Scene(scrollPane, 500, 200); 
+        Scene scene = new Scene(mainPane, 700, 200); 
+
+        mainPane.prefWidthProperty().bind(scene.widthProperty());
+        mainPane.prefHeightProperty().bind(scene.heightProperty());
         stage.setScene(scene);
 
         // Set the title and position of the Stage
@@ -217,49 +338,50 @@ class DialogeBox extends Thread{
         stage.setY(y);
 
         // Show the Stage
+        stage.setResizable(false);
         stage.show();
-        Object[] pointers = {stage, root, scene};
-        return pointers;
+        windows.add(this);
     }
-    private TextField createTextField() {
-        TextField textField = new TextField("");
-        textField.setEditable(false);
-        return textField;
-    }
-    private TextArea createTextArea() {
-        TextArea textArea = new TextArea("");
-        textArea.setEditable(true);
-        textArea.setWrapText(true);
-        textArea.setPrefHeight(0);     
-        return textArea;
-    }
+
     
-    private void pacedPrint(String speakerID, String sentence,TextField textField){
+    private void pacedPrint(int ID, String sentence,TextField textField){
+        // ProgressBar selectedVoice = selectVoice(ID);
+        
         String[] words = sentence.split("\\s+");
-        Platform.runLater(() -> textField.appendText(speakerID));
-        for(String word:words){            
+        for(String word:words){ 
+            // Platform.runLater(()->selectedVoice.setProgress(0.75));   
+            // new Thread(()->{runProgressBar(selectedVoice);}).start();      
             Platform.runLater(() -> textField.appendText(word + " "));
             try {
-                Thread.sleep(300);
+                Thread.sleep(100);
             } catch (InterruptedException e) {
                 // To be added later
             }
         }
+        // Platform.runLater(()->selectedVoice.setProgress(0));   
     }
-    
-    private void pacedPrint(String speakerID, String sentence,TextArea textaArea){
-        String[] words = sentence.split("\\s+");
-        Platform.runLater(() -> textaArea.appendText(speakerID));
-        for(String word:words){            
-            Platform.runLater(() -> textaArea.appendText(word + " "));
-            try {
-                Thread.sleep(300);
-            } catch (InterruptedException e) {
-                // To be added later
-            }
-        }
-    }
-    }
+    // private void runProgressBar(ProgressBar selectedProgressBar) {
+    //     timeline = new Timeline(        
+    //     new KeyFrame(Duration.seconds(0.1), e -> decreaseProgressBar(selectedProgressBar)));
+    //     timeline.play();
+    // }
+
+    // private void decreaseProgressBar(ProgressBar selectedProgressBar) {
+    //     double currentProgress = selectedProgressBar.getProgress();
+
+    //     double newProgress = currentProgress - 0.1;
+    //     Platform.runLater(()->selectedProgressBar.setProgress(newProgress));  
+    //     timeline.stop();           
+    // }
+
+    // private ProgressBar selectVoice(int ID){
+    //     if (ID==0){
+    //         return agentVoice;
+    //     }else{
+    //         return customerVoice;
+    //     }
+    // }
+}
 
 class RandomInt {
 	public static int generateRandom(int options) {

@@ -10,9 +10,9 @@ public abstract class Person implements HasData, Simulated {
     private String name;
     Random random = new Random();
 
-    private double defultRateOfSpeech = random.nextDouble() * 10;
-    private double defultSoundLevel = random.nextDouble() * 10;
-    private double hearingLevel = random.nextDouble() * 10;
+    private double defultRateOfSpeech = random.nextDouble();
+    private double defultSoundLevel = random.nextDouble();
+    private double hearingLevel = random.nextDouble();
 
     private double rateOfSpeech = defultRateOfSpeech; 
     private double soundLevel = defultSoundLevel;
@@ -35,7 +35,7 @@ public abstract class Person implements HasData, Simulated {
     }
 
     public void decreaseSoundLevel(){
-        soundLevel = soundLevel*(random.nextDouble()/50);
+        soundLevel = soundLevel*(1 - random.nextDouble()/50);
     }
 
     public void speedUp(){
@@ -43,10 +43,10 @@ public abstract class Person implements HasData, Simulated {
     }
 
     public void slowDown(){
-        rateOfSpeech = rateOfSpeech*(random.nextDouble()/10);
+        rateOfSpeech = rateOfSpeech*(1 - random.nextDouble()/10);
     }
 
-    public int charecterPerSecond(){
+    public int sleeptime(){
         return 0;
     }
 }

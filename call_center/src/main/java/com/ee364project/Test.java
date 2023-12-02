@@ -19,7 +19,7 @@ public class Test extends Application {
 
 
     public void start(Stage primaryStage) {		
-		for (int i = 0;i<5;i++){
+		for (int i = 0;i<10;i++){
             try {
                 Customer customer = new Customer();
                 customer.shuffle();
@@ -33,8 +33,13 @@ public class Test extends Application {
                 e.printStackTrace();
             }          
         }
+        for (int i =1;i<=5;i++){
+            DialogeBox dialoge = new DialogeBox();
+            dialoge.openEmptyWindow("Call "+i,500,200);
+        }
 
-		for (int i = 0;i<5;i++) {
+
+		for (int i = 0;i<10;i++) {
 			customers.get(i).problemState.acquireProblem();
             customers.get(i).problemState.getProblem().shuffle();
             calls.add(new Call(customers.get(i)));

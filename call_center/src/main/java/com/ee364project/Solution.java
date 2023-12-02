@@ -25,6 +25,16 @@ public class Solution implements Cloneable{
     public Object clone() throws CloneNotSupportedException{
         return super.clone();
     }
+    public String getRandomIntro(Person person){
+        String[] intro=null;
+        if (person instanceof Agent){
+            intro = agentIntro;
+        }else{
+            intro = customerIntro;
+        }
+        int selectedIndex = (int)(Math.random()*intro.length);
+        return agentIntro[selectedIndex];
+    }
 
     public boolean equals(Solution other) {
         if (this.customerIntro != other.customerIntro) {
