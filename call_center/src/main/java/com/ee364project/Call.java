@@ -2,33 +2,32 @@ package com.ee364project;
 
 import java.util.HashSet;
 import java.util.LinkedList;
-
-
-import com.ee364project.helpers.Utilities;
+import javafx.scene.input.KeyCode;
+import javafx.animation.KeyFrame;
 import javafx.util.Duration;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
-
+import javafx.animation.Animation;
 import javafx.application.Platform;
-
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.Scene;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.ScrollPane;
-
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import java.util.NoSuchElementException;
-
 import javafx.geometry.Pos;
 
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import com.ee364project.helpers.Utilities;
 
 public class Call {
-    
+    private static ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
     public static enum CallState {
         WAITING,
         INCALL,
@@ -47,8 +46,7 @@ public class Call {
     private Customer caller;
     private Agent receiver;
     private CallState state;
-    private static int counter;
-    private int callNumber;
+    Timeline callTime = new Timeline();
 
     public static Call getACall() {
         applyExpiry();
@@ -60,7 +58,6 @@ public class Call {
     public static void endACall(Call call) {
         call.state = CallState.ENDED;
     }
-    Timeline callTime;
     
     public void connectCall(Customer caller, Agent receiver){
         HashSet<Solution> HSsolutions = caller.problemState.getProblem().solutions;
@@ -72,35 +69,33 @@ public class Call {
                 // To be handled later
             }         
         }        
-       
-        // if (calls.indexOf(this)>4){ 
-            // MockDialoge dialoge = new MockDialoge(caller, receiver, this, LLsolutions);
-            // int numberOfWords = dialoge.getContentlength();
-            // int time = numberOfWords*10;
-            // callTime = new Timeline(new KeyFrame(Duration.millis(time), e -> terminateCall()));
-            // callTime.setCycleCount(1);
-            // callTime.play();        
-        // }else{  
-                     
-        // }
         try{
-            DialogeBox dialoge = DialogeBox.windows.poll();
-            dialoge.setupCall(caller, receiver, this, LLsolutions);
-            dialoge.start(); 
-        }catch (NullPointerException e ){
+            Runnable dialoge = DialogeBox.windows.poll();
+            ((DialogeBox)dialoge).setupCall(caller, receiver, this, LLsolutions);
+            // dialoge.start(); 
+            executor.execute(dialoge);
+        }catch (NullPointerException e ){            
             MockDialoge dialoge = new MockDialoge(caller, receiver, this, LLsolutions);
             int numberOfWords = dialoge.getContentlength();
-            int time = numberOfWords*10;
-            callTime = new Timeline(new KeyFrame(Duration.millis(time), run -> terminateCall()));
+            int time = numberOfWords*1;
+            KeyFrame keyFrame = new KeyFrame(Duration.millis(time), run -> {terminateCall();} );
+            callTime.getKeyFrames().add(keyFrame);
+            // callTime = new Timeline(new KeyFrame(Duration.millis(time), run -> {terminateCall();} ));
             callTime.setCycleCount(1);
             callTime.play();
-        }catch (Exception e){}
+            
+        }catch (Exception e){System.out.println("error");}
         
     }
-    
-    public void terminateCall(){
-        print(" done");
-    }
+
+    // public static void closeExecutor(){
+    //     executor.shutdown();
+    //     DialogeBox.closeExecutor();
+    //     }
+
+    public synchronized void terminateCall(){
+        System.out.println(" done");
+    }  
 
     private static void applyExpiry() {  // run after every step.
         Call call;
@@ -119,7 +114,6 @@ public class Call {
         this.waitTime = 0;
         this.receiver = null;
         this.state = CallState.WAITING;
-        this.callNumber= counter++;
         callQueue.add(this);
         calls.add(this);
     }
@@ -142,7 +136,6 @@ public class Call {
     public Agent getReceiver() {
         return this.receiver;
     }
-    
     public CallState getState() {
         return this.state;
     }
@@ -220,10 +213,12 @@ class MockDialoge {
 }
 
 class DialogeBox extends Thread{
+    private static ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
         Stage stage = new Stage();
         VBox root = new VBox(10);
         
         public static LinkedList<DialogeBox> windows = new LinkedList<>();
+        public DialogeBox thisWindow;
         private LinkedList<Solution> solutions;
 	    public static int ActiveCallNumber;
 	    private Call currentCall;
@@ -234,9 +229,14 @@ class DialogeBox extends Thread{
         ProgressBar agentVoice;
         String customerTag = "Customer: ";
         String agentTag = "Agent: ";
-        String speakerTag;
         Timeline timeline;
         LinkedList<String> content = new LinkedList<>();
+        KeyFrame kfTalking;
+        KeyFrame kfTransitionalPause;
+        KeyFrame kfStopTalking;
+        ScrollPane scrollPane;
+        boolean scrollDown=true;
+        boolean scrollDownCheck=true;
 
         public void setupCall(Customer caller, Agent receiver, Call currentCall, LinkedList<Solution> solutions){
             this.solutions = solutions;
@@ -277,7 +277,9 @@ class DialogeBox extends Thread{
                     }               
 		        }while(i != 0);	                
                 ActiveCallNumber--;
-                Platform.runLater(() -> stage.close());                
+                Platform.runLater(() -> stage.close());
+                Platform.runLater(() -> root.getChildren().clear());
+                windows.add(this);              
             }
 
         private void createTextField(Person person,String sentence, String tag) {
@@ -289,32 +291,56 @@ class DialogeBox extends Thread{
             }else{
                 identifier=1;
             }
-            Platform.runLater(() -> root.getChildren().add(textField));                            
+            Platform.runLater(() -> {root.getChildren().add(textField); });
+            
             pacedPrint(identifier, sentence, textField);        
         }
             
-        public void openEmptyWindow(String windowTitle, double x, double y) {
-		ScrollPane scrollPane = new ScrollPane(root);
-        scrollPane.setFitToWidth(true);
-
-        try {
-        Image volume = new Image("call_center\\src\\main\\java\\com\\ee364project\\image\\volume.png");
-        ImageView volumeIcon1 = new ImageView(volume);
-        ImageView volumeIcon2 = new ImageView(volume);
-        // Further code using the image
-        } catch (Exception e) {
-        e.getStackTrace();
+    
+    private void pacedPrint(int ID, String sentence,TextField textField){
+        // ProgressBar selectedVoice = selectVoice(ID);
+        
+        String[] words = sentence.split("\\s+");
+        
+        
+        for(String word:words){ 
+            if (scrollDown){scrollPane.setVvalue(1.0);}          
+          
+            // executor.submit(()->this.runProgressBar(selectedVoice)); 
+            // this.playFromKeyframe(kfTalking);   
+            // this.playFromKeyframe(kfTransitionalPause);
+            Platform.runLater(() -> textField.appendText(word + " "));
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+                // To be added later
+            }
         }
         
+        // this.playFromKeyframe(kfStopTalking);  
+    }
+    
 
-        ProgressBar agentVolumeBar = new ProgressBar();
-        agentVolumeBar.setRotate(-90);
-        VBox agentVolumeBarBox = new VBox(agentVolumeBar);
-        agentVolumeBar.setProgress(0);
-        ProgressBar customerVolumeBar = new ProgressBar();
-        customerVolumeBar.setRotate(-90);
-        customerVolumeBar.setProgress(0);
-        VBox customerVolumeBarBox = new VBox(customerVolumeBar);
+    public void openEmptyWindow(String windowTitle, double x, double y) {
+		scrollPane = new ScrollPane(root);
+        scrollPane.setFitToWidth(true);
+        // try {
+        // Image volume = new Image("call_center\\src\\main\\java\\com\\ee364project\\image\\volume.png");
+        // ImageView volumeIcon1 = new ImageView(volume);
+        // ImageView volumeIcon2 = new ImageView(volume);
+        // // Further code using the image
+        // } catch (Exception e) {
+        // e.getStackTrace();
+        // }       
+
+        agentVoice = new ProgressBar();
+        agentVoice.setRotate(-90);
+        VBox agentVolumeBarBox = new VBox(agentVoice);
+        agentVoice.setProgress(0);
+        customerVoice = new ProgressBar();
+        customerVoice.setRotate(-90);
+        customerVoice.setProgress(0);
+        VBox customerVolumeBarBox = new VBox(customerVoice);
 
 	    agentVolumeBarBox.setAlignment(Pos.CENTER);
         customerVolumeBarBox.setAlignment(Pos.CENTER);
@@ -324,6 +350,25 @@ class DialogeBox extends Thread{
         customerVolumeBarBox.prefWidthProperty().bind(mainPane.widthProperty().divide(5));  
         customerVolumeBarBox.prefHeightProperty().bind(mainPane.heightProperty());  
         scrollPane.prefWidthProperty().bind(mainPane.widthProperty().multiply(0.6));
+
+        scrollPane.vvalueProperty().addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {                
+                // Check if the scroll pane is at the bottom
+                if (scrollDownCheck){
+                    scrollDown = true;
+                }else{
+                    scrollDown=false;
+
+                }
+                if (newValue.doubleValue() == scrollPane.getVmax()) {
+                    scrollDownCheck=true;
+                } else {
+                    scrollDownCheck=false;               
+                }}});
+                
+                System.out.print(scrollDown);
+            
 
         // Create a Scene and set it on the Stage
         Scene scene = new Scene(mainPane, 700, 200); 
@@ -342,36 +387,43 @@ class DialogeBox extends Thread{
         stage.show();
         windows.add(this);
     }
-
-    
-    private void pacedPrint(int ID, String sentence,TextField textField){
-        // ProgressBar selectedVoice = selectVoice(ID);
         
-        String[] words = sentence.split("\\s+");
-        for(String word:words){ 
-            // Platform.runLater(()->selectedVoice.setProgress(0.75));   
-            // new Thread(()->{runProgressBar(selectedVoice);}).start();      
-            Platform.runLater(() -> textField.appendText(word + " "));
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                // To be added later
-            }
-        }
-        // Platform.runLater(()->selectedVoice.setProgress(0));   
+}
+
+class ControlProgressBar{
+    private ProgressBar progressBar;
+    ControlProgressBar(){
+        this.progressBar = new ProgressBar();
     }
+    public ProgressBar getProgressBar(){
+        return progressBar;
+    }
+    
     // private void runProgressBar(ProgressBar selectedProgressBar) {
-    //     timeline = new Timeline(        
-    //     new KeyFrame(Duration.seconds(0.1), e -> decreaseProgressBar(selectedProgressBar)));
+    //     kfTalking = new KeyFrame(Duration.seconds(0.1), e -> Platform.runLater(()->{selectedProgressBar.setProgress(0);}));
+    //     kfTransitionalPause = new KeyFrame(Duration.seconds(0.1), e -> decreaseProgressBar(selectedProgressBar));
+    //     kfStopTalking = new KeyFrame(Duration.seconds(0.1), e -> Platform.runLater(()->{selectedProgressBar.setProgress(0);}));
+
+
+    //     timeline = new Timeline(kfTalking,kfTransitionalPause,kfStopTalking);
+    //     timeline.setCycleCount(Animation.INDEFINITE);
     //     timeline.play();
     // }
 
     // private void decreaseProgressBar(ProgressBar selectedProgressBar) {
     //     double currentProgress = selectedProgressBar.getProgress();
 
-    //     double newProgress = currentProgress - 0.1;
+    //     double newProgress = currentProgress - 0.01;
     //     Platform.runLater(()->selectedProgressBar.setProgress(newProgress));  
-    //     timeline.stop();           
+                   
+    // }
+    // private void stabalizeProgressBar(int value){
+    //     Platform.runLater(()->selectedProgressBar.setProgress(newProgress));
+    // }
+    // private void playFromKeyframe(KeyFrame keyFrame) {
+
+    //     timeline.stop();
+    //     timeline.playFrom(keyFrame.getTime());
     // }
 
     // private ProgressBar selectVoice(int ID){

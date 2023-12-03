@@ -9,6 +9,7 @@ import com.ee364project.helpers.*;
 
 public class Customer extends Person implements CanCall {
     static int i;
+    static int j;
     private static ArrayList<Customer> allCustomers = new ArrayList<>();
 
     public static Customer[] allCustomers() {
@@ -34,8 +35,12 @@ public class Customer extends Person implements CanCall {
     }
 
     public Customer() throws InvalidPhoneNumberException {
-        this("050000000"+i, CustomerBehaviour.getRandomCustomerBehaviour(), Vars.NONE);
+        this("05000"+j+"000"+i, CustomerBehaviour.getRandomCustomerBehaviour(), Vars.NONE);
         i++;
+        if (i==10) {
+            i=0;
+            j++;
+        }
     }
 
     public Customer clone() {
