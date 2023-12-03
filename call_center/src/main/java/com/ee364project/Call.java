@@ -18,10 +18,15 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.CycleMethod;
 import javafx.stage.Stage;
 import javafx.geometry.Pos;
 
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import com.ee364project.helpers.Utilities;
@@ -70,10 +75,10 @@ public class Call {
             }         
         }        
         try{
-            Runnable dialoge = DialogeBox.windows.poll();
-            ((DialogeBox)dialoge).setupCall(caller, receiver, this, LLsolutions);
-            // dialoge.start(); 
-            executor.execute(dialoge);
+            // Runnable dialoge = DialogeBox.windows.poll();
+            // ((DialogeBox)dialoge).setupCall(caller, receiver, this, LLsolutions);
+            // // dialoge.start(); 
+            // executor.execute(dialoge);
         }catch (NullPointerException e ){            
             MockDialoge dialoge = new MockDialoge(caller, receiver, this, LLsolutions);
             int numberOfWords = dialoge.getContentlength();
@@ -86,6 +91,9 @@ public class Call {
             
         }catch (Exception e){System.out.println("error");}
         
+    }
+    public void setReciever(Agent receiver){
+        this.receiver=receiver;
     }
 
     // public static void closeExecutor(){
@@ -108,6 +116,7 @@ public class Call {
 
     public Call(Customer caller) {
         callCount++;
+        this.caller = caller;
         this.startTime = Timekeeper.getTime();
         this.answerTime = 0;
         this.callDuration = 0;
@@ -237,12 +246,41 @@ class DialogeBox extends Thread{
         ScrollPane scrollPane;
         boolean scrollDown=true;
         boolean scrollDownCheck=true;
+        int index;
+        AtomicBoolean state;
+        CyclicBarrier cyclicBarrier;
 
-        public void setupCall(Customer caller, Agent receiver, Call currentCall, LinkedList<Solution> solutions){
-            this.solutions = solutions;
-            this.caller =caller;
-            this.receiver = receiver;
+        public DialogeBox(String callNumber, CyclicBarrier cyclicBarrier){
+            if (DialogeBox.windows.size()<=5){
+                // this.state=state;
+                this.cyclicBarrier=cyclicBarrier;
+                windows.add(this);
+                this.openEmptyWindow(callNumber,500,200);
+                index = windows.indexOf(this);                
+            }else{
+                System.out.println("You can view a maximuim of 5 calls at a time");
+            }
+        }
+        public DialogeBox(){
+            this("empty for now",null);
+        }
+
+        public void setupCall(Call currentCall){
             this.currentCall = currentCall;
+            this.caller = currentCall.getCaller();
+            this.receiver = currentCall.getReceiver();
+            
+            HashSet<Solution> HSsolutions = caller.problemState.getProblem().solutions;
+            LinkedList<Solution> LLsolutions = new LinkedList<>();
+            for(Solution soultion:HSsolutions){
+            try {
+                LLsolutions.add((Solution)(soultion.clone()));
+            } catch (CloneNotSupportedException e) {
+                // To be handled later
+            }         
+        }   
+            this.solutions = LLsolutions;
+            
         }
 
         @Override
@@ -305,11 +343,19 @@ class DialogeBox extends Thread{
         
         for(String word:words){ 
             if (scrollDown){scrollPane.setVvalue(1.0);}          
-          
+                try {
+                    // latch.countDown();
+                    cyclicBarrier.await();
+                    
+                } catch (InterruptedException | BrokenBarrierException e) {
+                    System.out.println(e.getMessage());
+                    System.out.println("the other was null");
+                    // TODO Auto-generated catch block
+                }
             // executor.submit(()->this.runProgressBar(selectedVoice)); 
             // this.playFromKeyframe(kfTalking);   
             // this.playFromKeyframe(kfTransitionalPause);
-            Platform.runLater(() -> textField.appendText(word + " "));
+                Platform.runLater(() -> textField.appendText(word + " "));
             try {
                 Thread.sleep(50);
             } catch (InterruptedException e) {
@@ -385,7 +431,7 @@ class DialogeBox extends Thread{
         // Show the Stage
         stage.setResizable(false);
         stage.show();
-        windows.add(this);
+        
     }
         
 }
