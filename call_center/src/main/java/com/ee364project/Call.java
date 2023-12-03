@@ -110,11 +110,11 @@ public class Call {
     }
 
     public void startCall(CallCenter callCenter) {
-        new CallSession(this, callCenter).run();
+        new CallSession(this, callCenter).start();
     }
 }
 
-class CallSession implements Runnable {
+class CallSession extends Thread {
     private Call call;
     private CallCenter callCenter;
 
@@ -123,10 +123,11 @@ class CallSession implements Runnable {
         this.callCenter = callCenter;
     }
 
+    @Override
     public void run() {
         try {
-            Solution solution = call.getCaller().problemState.getProblem().getRandomSolution();
-            String[] cR = solution.customerResponses;
+                        Solution solution = call.getCaller().problemState.getProblem().getRandomSolution();
+                        String[] cR = solution.customerResponses;
             String[] aR = solution.agentResponses;
             int n = Math.min(cR.length, aR.length);
             for (int i = 0; i < n; i++) {
@@ -141,10 +142,10 @@ class CallSession implements Runnable {
                     System.out.print(word + " ");
                     Thread.sleep(10 * Utilities.random.nextInt(1, 6));
                 }
-                Thread.sleep(10 * Utilities.random.nextInt(1, 11));
+                Thread.sleep(100 * Utilities.random.nextInt(1, 11));
             }
-            System.out.println("\n\n");
-        } catch (InterruptedException e) {
+            System.out.println("\nDone Call...\n");
+        } catch (Exception e) {
             e.printStackTrace();
         }
         call.endCall();

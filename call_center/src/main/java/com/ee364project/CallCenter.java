@@ -9,10 +9,10 @@ public class CallCenter implements Simulated {
     // TODO: operating times
     private HashMap<Agent, Boolean> agentAvailability = new HashMap<>();
     private LinkedList<Agent> availableAgents;
-    private int availableAgentsCount;
+    // private int availableAgentsCount;
 
     public CallCenter(Agent[] agents) {
-        this.availableAgentsCount = agents.length;
+        // this.availableAgentsCount = agents.length;
         this.availableAgents = new LinkedList<>();
         for (int i = 0; i < agents.length; i++) {
             this.availableAgents.add(agents[i]);
@@ -20,15 +20,38 @@ public class CallCenter implements Simulated {
         }
     }
 
+    public int getAvailableAgentsCount() {
+        return availableAgents.size();
+    }
+
+    public Agent[] getAvailableAgents() {
+        return this.availableAgents.toArray(new Agent[getAvailableAgentsCount()]);
+    }
+
+    public Agent[] getUnavailableAgents() {
+        Agent[] availableAgents = new Agent[getUnavailableAgentsCount()];
+        int i = 0;
+        for (Agent agent : agentAvailability.keySet()) {
+            if (agentAvailability.get(agent)) {
+                availableAgents[i++] = agent;
+            }
+        }
+        return availableAgents;
+    }
+
+    public int getUnavailableAgentsCount() {
+        return agentAvailability.size() - availableAgents.size();
+    }
+
     public void releaseAgent(Agent agent) {
         availableAgents.add(agent);
         agentAvailability.put(agent, true);
-        availableAgentsCount++;
+        // availableAgentsCount++;
     }
 
     public Agent assignAgent() {
         Agent agent = availableAgents.poll();
-        availableAgentsCount--;
+        // availableAgentsCount--;
         agentAvailability.put(agent, false);
         return agent;
     }
@@ -44,7 +67,7 @@ public class CallCenter implements Simulated {
 
     @Override
     public void step() {
-        if (availableAgentsCount > 0) {
+        if (getAvailableAgentsCount() > 0) {
             Call call = Call.getACall();
             if (call == null) {
                 // agents avaialable but no calls...
