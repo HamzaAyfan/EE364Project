@@ -248,12 +248,15 @@ class DialogeBox extends Thread{
         boolean scrollDownCheck=true;
         int index;
         AtomicBoolean state;
-        CyclicBarrier cyclicBarrier;
+        CyclicBarrier[] cyclicBarrier;
+        public static int numberOfThreads = 1;
 
-        public DialogeBox(String callNumber, CyclicBarrier cyclicBarrier){
+        public DialogeBox(String callNumber, CyclicBarrier[] cyclicBarrier){
             if (DialogeBox.windows.size()<=5){
                 // this.state=state;
                 this.cyclicBarrier=cyclicBarrier;
+                cyclicBarrier[1]=cyclicBarrier[0];
+                cyclicBarrier[0]=new CyclicBarrier(++numberOfThreads); 
                 windows.add(this);
                 this.openEmptyWindow(callNumber,500,200);
                 index = windows.indexOf(this);                
@@ -344,8 +347,10 @@ class DialogeBox extends Thread{
         for(String word:words){ 
             if (scrollDown){scrollPane.setVvalue(1.0);}          
                 try {
-                    // latch.countDown();
-                    cyclicBarrier.await();
+                    // while(cyclicBarrier[0].await())
+                    
+                    cyclicBarrier[0].await();
+                    
                     
                 } catch (InterruptedException | BrokenBarrierException e) {
                     System.out.println(e.getMessage());

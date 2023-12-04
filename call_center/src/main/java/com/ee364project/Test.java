@@ -15,6 +15,7 @@ import org.w3c.dom.css.Counter;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.Phaser;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -32,10 +33,13 @@ public class Test extends Application {
     AtomicBoolean state = new AtomicBoolean(false);
     CountDownLatch latch = new CountDownLatch(1);
     Counter sharedCounter = new Counter(executor.getPoolSize());
-    int numberOfThreads=1;
-    CyclicBarrier cyclicBarrier= new CyclicBarrier(6,sharedCounter::reset); 
+    static int numberOfThreads=1;
+    // CyclicBarrier[] cyclicBarrier= {new CyclicBarrier(1,sharedCounter::reset)};
+    CyclicBarrier[] cyclicBarrier= {new CyclicBarrier(1),null};  
     VBox vbox;
     int checkboxCount;
+    Phaser[] phaser = {new Phaser()};
+    public static boolean newThreadAdded;
     
     public static HashMap<CheckBox,Call> links = new HashMap<CheckBox,Call>();
 
@@ -97,18 +101,21 @@ public class Test extends Application {
             CheckBox checkBox =this.ui_addCall("Call " + i) ;
             links.put(checkBox, call);
         }
+        // cyclicBarrier[0]= new CyclicBarrier(1);
         new Thread(()->{
         while(true){  
             latch = new CountDownLatch(1);          
             try {
                 
                 Thread.sleep(1000);
-                cyclicBarrier.await();
-            } catch (InterruptedException | BrokenBarrierException e) {
+                
+                
+                this.signalToThreads();
+                // phaser[0].arriveAndAwaitAdvance();
+            } catch (InterruptedException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-            }
-            
+            } 
             
             System.out.println("no error");
             // state.set(true);
@@ -120,6 +127,16 @@ public class Test extends Application {
 		// }).start();
 
 	}
+    public void signalToThreads(){        
+                try {
+                    if (newThreadAdded){
+                        if (cyclicBarrier[1]!=null){cyclicBarrier[1].await();}newThreadAdded = false;}
+                    cyclicBarrier[0].await();
+                } catch (InterruptedException | BrokenBarrierException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+    }
     public static void main(String[] args) {
         launch(args);
     }  
@@ -134,8 +151,11 @@ public class Test extends Application {
         return checkbox;
     }
     private void handleCheckboxAction(String callNumber,CheckBox checkbox) {        
-        if (checkbox.isSelected()) {            
+        if (checkbox.isSelected()) { 
+            newThreadAdded = true;
             Runnable dialoge = new DialogeBox(callNumber,cyclicBarrier);
+            System.out.println(numberOfThreads);
+            
             Call call = links.get(checkbox);
             ((DialogeBox)dialoge).setupCall(call);
             System.out.println(call.getCaller());//.problemState.getProblem().solutions
