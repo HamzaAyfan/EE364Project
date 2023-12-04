@@ -17,6 +17,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Phaser;
 
+
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.CheckBox;
@@ -33,15 +34,18 @@ public class Test extends Application {
     AtomicBoolean state = new AtomicBoolean(false);
     CountDownLatch latch = new CountDownLatch(1);
     Counter sharedCounter = new Counter(executor.getPoolSize());
+    static Integer threadsNumber = 1;
     static int numberOfThreads=1;
+    public static boolean waiting = false;
     // CyclicBarrier[] cyclicBarrier= {new CyclicBarrier(1,sharedCounter::reset)};
-    CyclicBarrier[] cyclicBarrier= {new CyclicBarrier(1),null};  
+    CyclicBarrier[] cyclicBarrier= {new CyclicBarrier(threadsNumber),null};  
     VBox vbox;
     int checkboxCount;
-    Phaser[] phaser = {new Phaser()};
+    Phaser phaser = new Phaser(0);
     public static boolean newThreadAdded;
     
-    public static HashMap<CheckBox,Call> links = new HashMap<CheckBox,Call>();
+    public static HashMap<CheckBox,Call> linkCBtoCall = new HashMap<CheckBox,Call>();
+    public static HashMap<CheckBox,DialogeBox> linkCBtoDB = new HashMap<>();
 
 
     public void start(Stage primaryStage) {	
@@ -99,25 +103,27 @@ public class Test extends Application {
             // System.out.println(customers.get(i));
             // calls.get(i).connectCall(customers.get(i), agents.get(i));
             CheckBox checkBox =this.ui_addCall("Call " + i) ;
-            links.put(checkBox, call);
+            linkCBtoCall.put(checkBox, call);
         }
         // cyclicBarrier[0]= new CyclicBarrier(1);
         new Thread(()->{
+            phaser.register();
         while(true){  
-            latch = new CountDownLatch(1);          
+            // latch = new CountDownLatch(1);
+             System.out.println("no error");          
             try {
                 
-                Thread.sleep(1000);
+                Thread.sleep(10);
                 
-                
-                this.signalToThreads();
-                // phaser[0].arriveAndAwaitAdvance();
+                // cyclicBarrier.wait();
+                // this.signalToThreads();
+                phaser.arriveAndAwaitAdvance();
             } catch (InterruptedException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             } 
             
-            System.out.println("no error");
+           
             // state.set(true);
             // state.set(false);                         
         }    }
@@ -127,16 +133,21 @@ public class Test extends Application {
 		// }).start();
 
 	}
-    public void signalToThreads(){        
-                try {
-                    if (newThreadAdded){
-                        if (cyclicBarrier[1]!=null){cyclicBarrier[1].await();}newThreadAdded = false;}
-                    cyclicBarrier[0].await();
-                } catch (InterruptedException | BrokenBarrierException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-    }
+    // public void signalToThreads(){        
+    //             try {
+    //                 if (newThreadAdded){
+    //                     // if (!waiting)
+    //                     // {}
+    //                     // else if (cyclicBarrier[1]!=null)
+    //                     {cyclicBarrier[1].await();}
+    //                     newThreadAdded = false;}
+    //                 cyclicBarrier[0].await();
+    //             } catch (InterruptedException | BrokenBarrierException e) {
+    //                 // TODO Auto-generated catch block
+    //                 e.printStackTrace();
+    //             }
+    //             waiting = false;
+    // }
     public static void main(String[] args) {
         launch(args);
     }  
@@ -150,19 +161,33 @@ public class Test extends Application {
         checkbox.setOnAction(e -> handleCheckboxAction(callNumber, checkbox));
         return checkbox;
     }
-    private void handleCheckboxAction(String callNumber,CheckBox checkbox) {        
+    private void handleCheckboxAction(String callNumber,CheckBox checkbox) { 
+        int checkedCount = 0;
+
+        // Count the number of checked checkboxes
+        for (int i = 0; i < vbox.getChildren().size(); i++) {
+            CheckBox currentCheckBox = (CheckBox) vbox.getChildren().get(i);
+            if (currentCheckBox.isSelected()) {
+                checkedCount++;
+            }
+        }
+
+        // If more than the allowed checkboxes are checked, uncheck the current checkbox
+        if (checkedCount > 3) {
+            checkbox.setSelected(false);
+        }       
         if (checkbox.isSelected()) { 
             newThreadAdded = true;
-            Runnable dialoge = new DialogeBox(callNumber,cyclicBarrier);
-            System.out.println(numberOfThreads);
+            Runnable dialoge = new DialogeBox(callNumber,phaser);
+            linkCBtoDB.put(checkbox,(DialogeBox)dialoge);
             
-            Call call = links.get(checkbox);
+            Call call = linkCBtoCall.get(checkbox);
             ((DialogeBox)dialoge).setupCall(call);
             System.out.println(call.getCaller());//.problemState.getProblem().solutions
             executor.execute(dialoge);
             System.out.println("Selected");
             } else {
-            // DialogeBox.remove(dialoge.index);
+                linkCBtoDB.get(checkbox).exit();
             }
             
         } 

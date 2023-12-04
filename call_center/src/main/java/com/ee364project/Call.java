@@ -1,5 +1,6 @@
 package com.ee364project;
 
+import java.text.BreakIterator;
 import java.util.HashSet;
 import java.util.LinkedList;
 import javafx.scene.input.KeyCode;
@@ -25,7 +26,7 @@ import javafx.geometry.Pos;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
-
+import java.util.concurrent.Phaser;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -250,13 +251,19 @@ class DialogeBox extends Thread{
         AtomicBoolean state;
         CyclicBarrier[] cyclicBarrier;
         public static int numberOfThreads = 1;
+        Phaser phaser;
+        private boolean stop;
 
-        public DialogeBox(String callNumber, CyclicBarrier[] cyclicBarrier){
-            if (DialogeBox.windows.size()<=5){
+        public DialogeBox(String callNumber, Phaser phaser){
+            if (DialogeBox.windows.size()<=4){
                 // this.state=state;
-                this.cyclicBarrier=cyclicBarrier;
-                cyclicBarrier[1]=cyclicBarrier[0];
-                cyclicBarrier[0]=new CyclicBarrier(++numberOfThreads); 
+                // ++Test.threadsNumber;
+                // this.cyclicBarrier=cyclicBarrier;
+                // cyclicBarrier[1]=cyclicBarrier[0];
+                // cyclicBarrier[0]=new CyclicBarrier(++numberOfThreads);
+                this.phaser=phaser; 
+                phaser.register();
+                
                 windows.add(this);
                 this.openEmptyWindow(callNumber,500,200);
                 index = windows.indexOf(this);                
@@ -266,6 +273,10 @@ class DialogeBox extends Thread{
         }
         public DialogeBox(){
             this("empty for now",null);
+        }
+        public void exit(){
+            stop=true;
+            
         }
 
         public void setupCall(Call currentCall){
@@ -315,12 +326,14 @@ class DialogeBox extends Thread{
                     for (int j = 0; j<selectedSolution.agentResponses.length;j++){ 
                         this.createTextField(receiver,selectedSolution.agentResponses[j],agentTag);
                         this.createTextField(caller,selectedSolution.customerResponses[j],customerTag);                                    
-                    }               
-		        }while(i != 0);	                
+                    }  
+                                
+		        }while(i != 0 && !stop);	                
                 ActiveCallNumber--;
                 Platform.runLater(() -> stage.close());
                 Platform.runLater(() -> root.getChildren().clear());
-                windows.add(this);              
+                phaser.arriveAndDeregister();
+                windows.remove(this);              
             }
 
         private void createTextField(Person person,String sentence, String tag) {
@@ -346,26 +359,14 @@ class DialogeBox extends Thread{
         
         for(String word:words){ 
             if (scrollDown){scrollPane.setVvalue(1.0);}          
-                try {
-                    // while(cyclicBarrier[0].await())
-                    
-                    cyclicBarrier[0].await();
-                    
-                    
-                } catch (InterruptedException | BrokenBarrierException e) {
-                    System.out.println(e.getMessage());
-                    System.out.println("the other was null");
-                    // TODO Auto-generated catch block
-                }
+                // while(cyclicBarrier[0].await())
+                Test.waiting =true;
+                phaser.arriveAndAwaitAdvance();
+                if(stop){break;} 
             // executor.submit(()->this.runProgressBar(selectedVoice)); 
             // this.playFromKeyframe(kfTalking);   
             // this.playFromKeyframe(kfTransitionalPause);
-                Platform.runLater(() -> textField.appendText(word + " "));
-            try {
-                Thread.sleep(50);
-            } catch (InterruptedException e) {
-                // To be added later
-            }
+                Platform.runLater(() -> textField.appendText(word + " "));            
         }
         
         // this.playFromKeyframe(kfStopTalking);  
