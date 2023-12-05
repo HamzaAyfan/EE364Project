@@ -141,6 +141,6 @@ public class Problem implements HasData {
         return this.identifier == other.identifier;
     }
 
-    // TODO: add problem related stuff like `state`. Note: Did that in
+    
     // Customer.ProblemState.
 }

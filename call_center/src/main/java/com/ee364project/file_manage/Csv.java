@@ -41,24 +41,26 @@ public final class Csv {
         try {
             HasData object;
             File file = new File(path);
-            CSVParser reader = new CSVParser(new FileReader(file), CSVFormat.DEFAULT);
-            Class<?> DataClass = Class.forName(Vars.projectPrefix + clsName);
-            ArrayList<ArrayList<String>> mat = new ArrayList<>();
-            ArrayList<String> row = new ArrayList<>();
-            for (CSVRecord record : reader.getRecords()) {
-                row = new ArrayList<>();
-                for (String word : record.toList()) {
-                    row.add(word);
+            FileReader fileReader = new FileReader(file);
+            try (CSVParser reader = new CSVParser(fileReader, CSVFormat.DEFAULT)) {
+                Class<?> DataClass = Class.forName(Vars.projectPrefix + clsName);
+                ArrayList<ArrayList<String>> mat = new ArrayList<>();
+                ArrayList<String> row = new ArrayList<>();
+                for (CSVRecord record : reader.getRecords()) {
+                    row = new ArrayList<>();
+                    for (String word : record.toList()) {
+                        row.add(word);
+                    }
+                    mat.add(row);
                 }
-                mat.add(row);
-            }
-            String[] arg;
-            for (ArrayList<String> rowInMat : mat.subList(1, mat.size())) {
-                arg = rowInMat.toArray(new String[rowInMat.size()]);
-                object = (HasData) DataClass.getDeclaredConstructor().newInstance();
-                System.out.println(arg);
-                object.parseData(arg);
-                objects.add(object);
+                String[] arg;
+                for (ArrayList<String> rowInMat : mat.subList(1, mat.size())) {
+                    arg = rowInMat.toArray(new String[rowInMat.size()]);
+                    object = (HasData) DataClass.getDeclaredConstructor().newInstance();
+                    //System.out.println(arg);
+                    object.parseData(arg);
+                    objects.add(object);
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -70,4 +72,5 @@ public final class Csv {
         File file = new File(path);
         return read(path, file.getName().split("\\.")[0]);
     }
+
 }

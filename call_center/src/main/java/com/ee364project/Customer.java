@@ -173,6 +173,13 @@ public class Customer extends Person implements CanCall {
                 return;
         }
     }
+
+    public String getStringInfo() {
+        return 
+        "Phone Number: " + getPhoneNumber() +
+        "\nName: " + getName() +
+        "\nBehaviour: " + this.behaviour.name ;
+    }
 }
 
 class CustomerBehaviour {

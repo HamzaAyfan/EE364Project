@@ -5,8 +5,9 @@ import java.time.temporal.ChronoUnit;
 
 public class Timekeeper {
     private static LocalDateTime startPoint = LocalDateTime.of(2001, 1, 1, 0, 0, 0);
-    private static long step = 1;
+    private static long step = 30;
     private static long time = 0;
+
     public static long getTime() {
         return time;
     }

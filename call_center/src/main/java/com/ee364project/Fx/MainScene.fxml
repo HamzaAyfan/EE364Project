@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.input.KeyCodeCombination?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
+
+<AnchorPane fx:id="anchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="518.0" prefWidth="579.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ee364project.Fx.MainSceneController">
+   <children>
+      <ScrollPane fitToHeight="true" fitToWidth="true" layoutX="33.0" layoutY="74.0" nodeOrientation="RIGHT_TO_LEFT" prefHeight="370.0" prefWidth="253.0">
+         <content>
+            <FlowPane fx:id="flowPane" hgap="10.0" nodeOrientation="LEFT_TO_RIGHT" prefHeight="368.0" prefWidth="236.0" vgap="10.0" />
+         </content>
+      </ScrollPane>
+      <MenuBar layoutY="2.0" prefHeight="25.0" prefWidth="579.0">
+        <menus>
+          <Menu fx:id="MenBar" mnemonicParsing="false" text="File">
+            <items>
+              <MenuItem fx:id="saveAsbtn" mnemonicParsing="false" onAction="#saveAsbtnClicked" text="Save as ">
+                     <accelerator>
+                        <KeyCodeCombination alt="DOWN" code="S" control="UP" meta="UP" shift="UP" shortcut="UP" />
+                     </accelerator></MenuItem>
+                  <MenuItem fx:id="MenNew" mnemonicParsing="false" onAction="#newCosbtnClicked" text="New Customer ">
+                     <accelerator>
+                        <KeyCodeCombination alt="DOWN" code="N" control="UP" meta="UP" shift="UP" shortcut="UP" />
+                     </accelerator>
+                  </MenuItem>
+                  <MenuItem fx:id="MenuOld" mnemonicParsing="false" onAction="#oldCosbtnClicked" text="Old  Customer ">
+                     <accelerator>
+                        <KeyCodeCombination alt="DOWN" code="O" control="UP" meta="UP" shift="UP" shortcut="UP" />
+                     </accelerator>
+                  </MenuItem>
+                  <Menu fx:id="OpenRecentMenu" mnemonicParsing="false" text="Open Recent" onShowing="#updateRecentFilesMenu" >
+                    <items>
+                      <MenuItem mnemonicParsing="false" text="Action 1" />
+                    </items>
+                  </Menu>
+            </items>
+          </Menu>
+          <Menu mnemonicParsing="false" text="Simulation">
+            <items>
+              <MenuItem fx:id="MenStart" mnemonicParsing="false" onAction="#startbtnClicked" text="Start" />
+                  <MenuItem fx:id="MenPasue" mnemonicParsing="false" onAction="#pausebtnClicked" text="Pasue" />
+                  <MenuItem fx:id="MenPlay" mnemonicParsing="false" onAction="#playbtnClicked" text="Play" />
+            </items>
+          </Menu>
+        </menus>
+      </MenuBar>
+      <ScrollPane fitToHeight="true" fitToWidth="true" layoutX="458.0" layoutY="76.0" prefHeight="370.0" prefWidth="71.0">
+         <content>
+            <VBox fx:id="AgentVbox" prefHeight="341.0" prefWidth="69.0" />
+         </content>
+      </ScrollPane>
+      <Text fx:id="timeer" layoutX="56.0" layoutY="481.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Timer" textAlignment="CENTER" wrappingWidth="175.9765625" />
+      <ScrollPane layoutX="318.0" layoutY="71.0" prefHeight="376.0" prefWidth="102.0">
+         <content>
+            <VBox fx:id="CallVbox" prefHeight="369.0" prefWidth="100.0" />
+         </content>
+      </ScrollPane>
+      <Label layoutX="116.0" layoutY="54.0" text="Customers" />
+      <Label layoutX="381.0" layoutY="46.0" text="Calls" />
+      <Label layoutX="480.0" layoutY="54.0" text="Agetns" />
+      <Button fx:id="connected" layoutX="318.0" layoutY="42.0" mnemonicParsing="false" onAction="#connectCallsBtnClicked" text="Connect" />
+   </children>
+</AnchorPane>

@@ -6,7 +6,7 @@ import java.util.LinkedList;
 import com.ee364project.helpers.Utilities;
 
 public class CallCenter implements Simulated {
-    // TODO: operating times
+    
     private HashMap<Agent, Boolean> agentAvailability = new HashMap<>();
     private LinkedList<Agent> availableAgents;
     // private int availableAgentsCount;
