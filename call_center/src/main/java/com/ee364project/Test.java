@@ -113,7 +113,7 @@ public class Test extends Application {
              System.out.println("no error");          
             try {
                 
-                Thread.sleep(10);
+                Thread.sleep(100);
                 
                 // cyclicBarrier.wait();
                 // this.signalToThreads();
@@ -187,7 +187,8 @@ public class Test extends Application {
             executor.execute(dialoge);
             System.out.println("Selected");
             } else {
-                linkCBtoDB.get(checkbox).exit();
+                try{linkCBtoDB.get(checkbox).exit();}catch(NullPointerException e){}
+                
             }
             
         } 

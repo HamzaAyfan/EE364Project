@@ -1,6 +1,7 @@
 package com.ee364project;
 
 import java.text.BreakIterator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import javafx.scene.input.KeyCode;
@@ -170,6 +171,9 @@ class MockDialoge {
         private Agent receiver;
         private boolean firstSolutionSeeked = true; 
         LinkedList<String> content = new LinkedList<>();
+        HashMap<Person,String> sentencesHashMap = new HashMap<>();
+        HashMap<String,Integer> lengthsSaved = new HashMap<>();
+        int discussionLength;
 
         public MockDialoge(Customer caller, Agent receiver, Call currentCall, LinkedList<Solution> solutions) {
             this.solutions = solutions;
@@ -178,48 +182,52 @@ class MockDialoge {
             this.currentCall = currentCall;
         }
         public int getContentlength(){
-            getWords();
-            return content.size();
+            this.getWords();
+            for(String sentence:sentencesHashMap.values()){
+                int length = sentence.split("\\s+").length;
+                discussionLength+=length;
+                lengthsSaved.put(sentence,length);
+            }
+            return discussionLength;
         }
 
-        private void pacedPrint(int ID, String sentence){    
-        String[] words = sentence.split("\\s+");    
-        for(String word:words){   
-            content.add(word);
-        }   
+    private int getSolution(){
+        int length = solutions.size();//print(length + " from call " + z + " agent is " + receiver.getlevel());
+                switch(receiver.getlevel()) {
+				    case SAVEY:
+				        return 0;					    
+				    case CHALLENGED:
+					    return RandomInt.generateWithinRange(length/2,length);					    					
+				    default:
+					    return RandomInt.generateWithinRange(0,length/2);				
+			        }
     }
-
         private void getWords(){
             int i = 0;
                 do {
-                    int length = solutions.size();//print(length + " from call " + z + " agent is " + receiver.getlevel());
-                    switch(receiver.getlevel()) {
-				        case SAVEY:
-					        i=0;
-					        break;
-				        case CHALLENGED:
-					        i=RandomInt.generateWithinRange(length/2,length);
-					        break;					
-				        default:
-					        i=RandomInt.generateWithinRange(0,length/2);				
-			        }
+                    i = getSolution();
                     Solution selectedSolution = solutions.get(i);
                     solutions.remove(i);
-                    if (firstSolutionSeeked == true){                             
-                            pacedPrint(0, selectedSolution.agentIntro[0]);                            
-                            pacedPrint(1, selectedSolution.customerIntro[0]);   
-                            firstSolutionSeeked = false;
-                        }else{                            
-                            pacedPrint(1, "I just did that but it did not work");                         
-                            pacedPrint(0, "sorry it did not work let me seek an alternative");                           
-                        }
-
-                    for (int j = 0; j<selectedSolution.agentResponses.length;j++){                        
-                        pacedPrint(0, selectedSolution.agentResponses[j]);                        
-                        pacedPrint(1, selectedSolution.customerResponses[j]);
-                    }               
+                    introOrTransition(selectedSolution);
+                    getSteps(selectedSolution);                             
 		        }while(i != 0);	      
             }
+        private void getSteps(Solution selectedSolution) {
+            for (int j = 0; j<selectedSolution.agentResponses.length;j++){ 
+                        sentencesHashMap.put(receiver,selectedSolution.agentResponses[j]);    
+                        sentencesHashMap.put(caller,selectedSolution.customerResponses[j]);
+                    }      
+        }
+        private void introOrTransition(Solution selectedSolution) {
+            if (firstSolutionSeeked == true){  
+                            sentencesHashMap.put(receiver,selectedSolution.getRandomIntro(receiver));    
+                            sentencesHashMap.put(caller, selectedSolution.getRandomIntro(caller));              
+                            firstSolutionSeeked = false;
+                        }else{         
+                            sentencesHashMap.put(caller,"I just did that but it did not work");                     
+                            sentencesHashMap.put(receiver,"sorry it did not work let me seek an alternative");                                               
+                        }
+        }
 }
 
 class DialogeBox extends Thread{
