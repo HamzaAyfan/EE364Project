@@ -11,9 +11,9 @@ public class Department implements HasData {
     private static final String CLSNAME = "Department";
     public static final Department NO_DEPARTMENT = new Department(Vars.NONE);
 
-    static {
-        allDepartments.remove(Vars.NONE);
-    }
+    // static {
+    //     allDepartments.remove(Vars.NONE);
+    // }
 
     // this adds NONE as a possible department from the start
     // static {

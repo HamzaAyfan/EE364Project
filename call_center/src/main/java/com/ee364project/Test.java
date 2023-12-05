@@ -25,6 +25,8 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import com.ee364project.helpers.Utilities;
+import com.ee364project.helpers.Vars;
 import com.ee364project.helpers.Utilities.*;
 
 public class Test extends Application {
@@ -58,6 +60,9 @@ public class Test extends Application {
         primaryStage.setScene(scene);
         primaryStage.setTitle("Mainpage");
         primaryStage.show();
+        Utilities.getFakeData(10, Vars.DataClasses.Department);
+        Utilities.getFakeData(10, Vars.DataClasses.Problem);
+
 
 		for (int i = 0;i<20;i++){
             try {
@@ -68,11 +73,15 @@ public class Test extends Application {
                 Agent agent = new Agent();
                 agent.shuffle();
                 agents.add(agent);
-            } catch (InvalidPhoneNumberException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
-            } catch (InvalidIdException e) {
-                e.printStackTrace();
-            }          
+            }
+            // }
+            // } catch (InvalidPhoneNumberException e) {
+            //     e.printStackTrace();
+            // } catch (InvalidIdException e) {
+            //     e.printStackTrace();
+            // }          
         }
         // for (int i =1;i<=5;i++){
         //     new Thread(()->{while(true){try {

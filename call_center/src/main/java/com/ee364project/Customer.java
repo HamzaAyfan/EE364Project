@@ -35,12 +35,7 @@ public class Customer extends Person implements CanCall {
     }
 
     public Customer() throws InvalidPhoneNumberException {
-        this("05000"+j+"000"+i, CustomerBehaviour.getRandomCustomerBehaviour(), Vars.NONE);
-        i++;
-        if (i==10) {
-            i=0;
-            j++;
-        }
+        this("0500000000", CustomerBehaviour.getRandomCustomerBehaviour(), Vars.NONE);
     }
 
     public Customer clone() {

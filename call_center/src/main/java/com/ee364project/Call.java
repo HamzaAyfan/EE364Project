@@ -1,15 +1,10 @@
 package com.ee364project;
 
-import java.text.BreakIterator;
 import java.util.HashSet;
 import java.util.LinkedList;
-import javafx.scene.input.KeyCode;
 import javafx.animation.KeyFrame;
 import javafx.util.Duration;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.animation.Timeline;
-import javafx.animation.Animation;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -19,12 +14,9 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.CycleMethod;
 import javafx.stage.Stage;
 import javafx.geometry.Pos;
 
-import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Phaser;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -54,6 +46,7 @@ public class Call {
     private Customer caller;
     private Agent receiver;
     private CallState state;
+    private CallCenter call_center;
     Timeline callTime = new Timeline();
 
     public static Call getACall() {
@@ -69,8 +62,9 @@ public class Call {
         call.state = CallState.ENDED;
     }
     
-    public void connectCall(Customer caller, Agent receiver){
-        HashSet<Solution> HSsolutions = caller.problemState.getProblem().solutions;
+    public void connectCall(CallCenter callCenter){
+        this.call_center = callCenter;
+        HashSet<Solution> HSsolutions = this.caller.problemState.getProblem().solutions;
         LinkedList<Solution> LLsolutions = new LinkedList<>();
         for(Solution soultion:HSsolutions){
             try {
@@ -104,6 +98,7 @@ public class Call {
     //     }
 
     public synchronized void terminateCall(){
+        this.call_center.releaseAgent(this.receiver);
         System.out.println(" done");
     }  
 
