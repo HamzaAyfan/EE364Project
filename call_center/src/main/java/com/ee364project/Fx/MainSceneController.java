@@ -3,6 +3,7 @@ package com.ee364project.Fx;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -149,7 +150,12 @@ public class MainSceneController {
         timerTimeline = new Timeline(new KeyFrame(Duration.seconds(1), this::updateTimer));
         timerTimeline.setCycleCount(Timeline.INDEFINITE); 
 
-        loadRecentFiles();
+        try {
+            loadRecentFiles();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     private void updateTimer(ActionEvent event) {
@@ -657,7 +663,7 @@ public class MainSceneController {
         }
     }
 
-    private void loadRecentFiles() {
+    private void loadRecentFiles() throws IOException {
         try (BufferedReader reader = new BufferedReader(new FileReader(RECENT_FILES_FILE))) {
             Set<String> uniquePaths = new HashSet<>();
             recentFiles.clear();
@@ -670,7 +676,13 @@ public class MainSceneController {
                     recentFiles.add(file);
                 }
             }
-        } catch (IOException e) {
+        } catch(FileNotFoundException e){
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(RECENT_FILES_FILE))){
+                
+            }
+        }
+         
+        catch (IOException e) {
             e.printStackTrace();
         }
     }
