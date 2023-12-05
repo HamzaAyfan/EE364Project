@@ -1,14 +1,23 @@
 package com.ee364project.Fx;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.Socket;
 //import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
 //import java.util.ArrayList;
 import java.util.Optional;
+import java.util.Set;
 
 import com.ee364project.Agent;
 import com.ee364project.CallCenter;
@@ -25,6 +34,7 @@ import com.ee364project.helpers.Vars;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.control.Alert;
@@ -62,16 +72,20 @@ import javafx.stage.Modality;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
+import java.util.prefs.Preferences;
+
 public class MainSceneController {
 
 
-    Agent[] agents;
-    Customer[] customers;
+    HasData[] agents;
+    HasData[] customers;
     HasData[] problems;
     HasData[] departments;
 
-    
-     
+    private ArrayList<File> recentFiles = new ArrayList<>();
+    private static final String RECENT_FILES_FILE = "recent_files.txt";
+    private static final int MAX_RECENT_FILES = 5;
+
     @FXML
     private VBox AgentVbox;
 
@@ -97,6 +111,11 @@ public class MainSceneController {
     private MenuItem MenuOld;
 
     @FXML
+    private Menu OpenRecentMenu;
+
+    
+
+    @FXML
     private AnchorPane anchorPane;
 
     @FXML
@@ -119,7 +138,29 @@ public class MainSceneController {
     //************************Mshari Edit****************************** *//
     private CallCenter callCenter;
    
-   
+       //////////////// Timer methods from TimeKeeper Class//////////////
+    private Timeline timerTimeline;
+    //private Timekeeper timekeeper;
+
+    @FXML
+    public void initialize() {
+        
+        //timekeeper = new Timekeeper();
+        timerTimeline = new Timeline(new KeyFrame(Duration.seconds(1), this::updateTimer));
+        timerTimeline.setCycleCount(Timeline.INDEFINITE); 
+
+        loadRecentFiles();
+    }
+
+    private void updateTimer(ActionEvent event) {
+        Timekeeper.step();
+        LocalDateTime properTime = Timekeeper.getProperTime();
+        int minutes = properTime.getMinute();
+        int seconds = properTime.getSecond();
+        // timeer.setText(String.format("%02d:%02d", minutes, seconds));
+        timeer.setText(properTime.toString());
+    }
+    ////////////////////////////////
 
     @FXML
     private void connectCallsBtnClicked(ActionEvent event) {
@@ -165,7 +206,7 @@ public class MainSceneController {
         int numberOfCustomers = customers.length;
         if (numberOfCustomers > 0) {
             int randomIndex = (int) (Math.random() * numberOfCustomers);
-            return customers[randomIndex];
+            return (Customer) customers[randomIndex];
         } else {
             return null;
         }
@@ -175,7 +216,7 @@ public class MainSceneController {
         int numberOfAgents = agents.length;
         if (numberOfAgents > 0) {
             int randomIndex = (int) (Math.random() * numberOfAgents);
-            return agents[randomIndex];
+            return (Agent) agents[randomIndex];
         } else {
             return null;
         }
@@ -184,36 +225,6 @@ public class MainSceneController {
 
     //******************************************************** *//
        
-    @FXML
-    public void initializes() {
-        //Vox.setStyle("-fx-background-color: white;");
-    }
-
-
-
-
-    //////////////// Timer methods from TimeKeeper Class//////////////
-    private Timeline timerTimeline;
-    //private Timekeeper timekeeper;
-
-    @FXML
-    public void initialize() {
-        
-        //timekeeper = new Timekeeper();
-        timerTimeline = new Timeline(new KeyFrame(Duration.seconds(1), this::updateTimer));
-        timerTimeline.setCycleCount(Timeline.INDEFINITE);
-        
-    }
-
-    private void updateTimer(ActionEvent event) {
-        Timekeeper.step();
-        LocalDateTime properTime = Timekeeper.getProperTime();
-        int minutes = properTime.getMinute();
-        int seconds = properTime.getSecond();
-        // timeer.setText(String.format("%02d:%02d", minutes, seconds));
-        timeer.setText(properTime.toString());
-    }
-    ////////////////////////////////
 
 
 
@@ -247,28 +258,74 @@ public class MainSceneController {
 
 
     void oldCosbtnClicked() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Choose zip file");
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Zip Files", "*.zip"));
-        File zipFile = fileChooser.showOpenDialog(new Stage());
-
-        if (zipFile != null) {
-            String outputDirectory = "extracted";
-
-            try {
-                Zip.extractZip(zipFile, outputDirectory);
-                processCsvFiles(outputDirectory);
-                System.out.println("CSV files processed successfully.");
-
-                Zip.deleteExtracted(outputDirectory);
-
-            } catch (IOException e) {
-                e.printStackTrace();
-
-            } 
+        try{
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Choose zip file");
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Zip Files", "*.zip"));
+            File zipFile = fileChooser.showOpenDialog(new Stage());
+            handleOpenFile(zipFile);
         }
+        catch(Exception e){
+
+        }
+
+        
     }
     
+    public void handleOpenFile(File zipFile){
+        System.out.println("Handling now");
+        // Check if the file is already in the recent files list
+        if (!recentFiles.stream().anyMatch(existingFile -> existingFile.getAbsolutePath().equals(zipFile.getAbsolutePath()))) {
+            System.out.println("Checked 1");
+            // Add the opened file to recentFiles
+            recentFiles.add(0, zipFile);
+            System.out.println("Added to recent");
+
+            // Remove duplicates from recentFiles (keeping only the most recent occurrence)
+            Set<File> uniqueRecentFiles = new LinkedHashSet<>(recentFiles);
+            recentFiles.clear();
+            recentFiles.addAll(uniqueRecentFiles);
+
+            // Trim the list to the maximum allowed size
+            if (recentFiles.size() > MAX_RECENT_FILES) {
+                recentFiles.subList(MAX_RECENT_FILES, recentFiles.size()).clear();
+            }
+
+            // Update the recent files menu
+            updateRecentFilesMenu();
+            System.out.println("Updated recent");
+
+            // Save the recent files
+            saveRecentFiles();
+            System.out.println("Saved recent");
+        }
+            // open file process
+            if (zipFile != null) {
+                System.out.println("Opening");
+
+                String outputDirectory = "extracted";
+
+                try {
+                    Zip.extractZip(zipFile, outputDirectory);
+                    processCsvFiles(outputDirectory);
+                    System.out.println("CSV files processed successfully.");
+
+                    Zip.deleteExtracted(outputDirectory);
+
+                    //recentFiles.add(zipFile);
+                    //updateRecentFilesMenu();
+//
+                    //saveRecentFiles();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+
+                } 
+            }
+        
+
+    }
+
     private void processCsvFiles(String extractedDirectory) {
         String[] csvFileNames = { "Problem.csv", "Customer.csv", "Agent.csv",};
 
@@ -300,7 +357,11 @@ public class MainSceneController {
     @FXML
     void oldCosbtnClicked(ActionEvent event) {
         //Stage stage = (Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
-        oldCosbtnClicked();
+        try {
+            oldCosbtnClicked();
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
     }
     
 
@@ -309,7 +370,7 @@ public class MainSceneController {
     private void processCustomerFile(File selectedFile) throws IOException {
         try{
 
-            HasData[] customers = Csv.read(selectedFile.getAbsolutePath()); //Done
+            customers = Csv.read(selectedFile.getAbsolutePath()); //Done
             int number = customers.length;
             //System.out.println(number);
 
@@ -351,7 +412,7 @@ public class MainSceneController {
     private void processAgentFile(File selectedFile) throws IOException {
         try{
 
-            HasData[] agents = Csv.read(selectedFile.getAbsolutePath()); //Done
+            agents = Csv.read(selectedFile.getAbsolutePath()); //Done
             int number = agents.length;
             //System.out.println(number);
 
@@ -498,7 +559,7 @@ public class MainSceneController {
 
             //Customer customer = customers[i];
             
-            addTooltip(rectangle, customers[i].getStringInfo());
+            addTooltip(rectangle, ((Customer) customers[i]).getStringInfo());
 
             flowPane.getChildren().add(stackPane);
 
@@ -532,7 +593,7 @@ public class MainSceneController {
             //rectangle.setStyle("-fx-fill: green;");
 
             //Agent agent = (Agent) agents[i];
-            addTooltip(rectangle, agents[i].getStringInfo());
+            addTooltip(rectangle, ((Agent) agents[i]).getStringInfo());
 
             AgentVbox.getChildren().add(stackPane);
 
@@ -576,6 +637,64 @@ public class MainSceneController {
         }
 
     }
+
+    // Handling Open Recent
+
+    @FXML
+    private void handleOpenRecent(MenuItem menuItem) {
+        File selectedFile = (File) menuItem.getUserData();
+        handleOpenFile(selectedFile);
+    }
+    
+    @FXML
+    private void updateRecentFilesMenu() {
+        OpenRecentMenu.getItems().clear();
+        for (File file : recentFiles) {
+            MenuItem menuItem = new MenuItem(file.getName());
+            menuItem.setOnAction(e -> handleOpenRecent(menuItem));
+            menuItem.setUserData(file);
+            OpenRecentMenu.getItems().add(menuItem);
+        }
+    }
+
+    private void loadRecentFiles() {
+        try (BufferedReader reader = new BufferedReader(new FileReader(RECENT_FILES_FILE))) {
+            Set<String> uniquePaths = new HashSet<>();
+            recentFiles.clear();
+
+            String line;
+            while ((line = reader.readLine()) != null && recentFiles.size() < MAX_RECENT_FILES) {
+                // Ensure uniqueness
+                if (uniquePaths.add(line)) {
+                    File file = new File(line);
+                    recentFiles.add(file);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void saveRecentFiles() {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(RECENT_FILES_FILE))) {
+            Set<String> uniquePaths = new HashSet<>();
+
+            // Save only the last MAX_RECENT_FILES files
+            int startIndex = Math.max(0, recentFiles.size() - MAX_RECENT_FILES);
+            for (int i = startIndex; i < recentFiles.size(); i++) {
+                File file = recentFiles.get(i);
+
+                // Ensure uniqueness
+                if (uniquePaths.add(file.getAbsolutePath())) {
+                    writer.write(file.getAbsolutePath());
+                    writer.newLine();
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     @FXML
     void pausebtnClicked(ActionEvent event) {
