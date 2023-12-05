@@ -33,6 +33,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import com.ee364project.helpers.Utilities;
 
 public class Call {
+    public static final long MAXWAITTIME = 60;
+
     private static ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
     public static enum CallState {
         WAITING,
@@ -40,7 +42,7 @@ public class Call {
         ENDED,
         EXIRED
     }
-    public static final long MAXWAITTIME = 60;
+
     private static LinkedList<Call> callQueue = new LinkedList<>();
     private static LinkedList<Call> calls = new LinkedList<>();
     private static long callCount = 0;
@@ -57,7 +59,9 @@ public class Call {
     public static Call getACall() {
         applyExpiry();
         Call call = callQueue.poll();
-        call.state = CallState.INCALL;
+        if (call != null) {
+            call.state = CallState.INCALL;
+        }
         return call;
     }
 
@@ -93,9 +97,6 @@ public class Call {
         }catch (Exception e){System.out.println("error");}
         
     }
-    public void setReciever(Agent receiver){
-        this.receiver=receiver;
-    }
 
     // public static void closeExecutor(){
     //     executor.shutdown();
@@ -106,10 +107,10 @@ public class Call {
         System.out.println(" done");
     }  
 
-    private static void applyExpiry() {  // run after every step.
+    private static void applyExpiry() { // run after every step.
         Call call;
         while (callQueue.size() > 0 && (Timekeeper.getTime() - callQueue.peek().startTime >= MAXWAITTIME)) {
-            call = callQueue.poll(); 
+            call = callQueue.poll();
             call.state = CallState.EXIRED;
             Utilities.log(call, "expired", "", "");
         }
@@ -122,6 +123,7 @@ public class Call {
         this.answerTime = 0;
         this.callDuration = 0;
         this.waitTime = 0;
+        this.caller = caller;
         this.receiver = null;
         this.state = CallState.WAITING;
         callQueue.add(this);
@@ -131,21 +133,31 @@ public class Call {
     public long getCallDuration() {
         return this.callDuration;
     }
+
     public long getStartTime() {
         return this.startTime;
     }
+
     public long getAnswerTime() {
         return this.answerTime;
     }
+
     public long getWaitTime() {
         return this.waitTime;
     }
+
     public Customer getCaller() {
         return this.caller;
     }
+
     public Agent getReceiver() {
         return this.receiver;
     }
+
+    public void setReciever(Agent agent) {
+        this.receiver = agent;
+    }
+
     public CallState getState() {
         return this.state;
     }

@@ -112,9 +112,53 @@ public class Agent extends Person {
         return this;
     }
 
+    private void idle(String msg) {
+        Utilities.log(this, "idles", "", msg);
+    }
+
     @Override
     public void step() {
+        if (callInfo.isInCall()) {
+            idle("in-call with " + callInfo.getLastCall().getReceiver());
+        } else {
+            idle("no call assigned");
+        }
         // TODO
+        // NOTE: for now, agents don't require active simulation.
+
+        /*
+         * To whoever writing this method:
+         * - this method will be called for each agent on each cycle.
+         * - in this method you should define how the agent will interact with environment.
+         * - the most crucial piece of information is callInfo.
+         * - when the agent gets assigned a call, it will be stored in callInfo.
+         * 
+         * - NOTE that callInfo is not of type Call.
+         * 
+         * - callInfo.getLastCall() will give you the last call the agent had.
+         * 
+         * 
+         * = callInfo.history will give you all the calls assigned to this agent.
+         * 
+         * - callInfo.isInACall() will tell you whether the agent is currently in a call or not.
+         * 
+         * - if you want more informatino about the call, you can do
+         *      callInfo.getLastCall().{any method the object of class Call has.}
+         * 
+         * - for example, if you want the customer which is in the call, you can do that by:
+         *      callInfo.getLastCall().getCaller()
+         * 
+         * - or to get the problem:
+         *      callInfo.getLastCall().getCaller().problemInfo.getProblem()
+         * 
+         * - so, in conclusion, everything you need to manipulate the outcome of the call is in the callInfo object.
+         */
+    }
+
+    public CallInfo callInfo = new CallInfo();
+
+    public void assignCall(Call call) {
+        this.callInfo.called(call);
     }
 }
 

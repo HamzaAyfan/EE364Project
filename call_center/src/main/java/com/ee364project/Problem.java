@@ -13,6 +13,10 @@ public class Problem implements HasData {
     public static final String[] HEADERS = new String[] { "identifier", "department", "customerIntro",
             "customerResponses", "agentIntro", "agentResponses" };
     public static final Problem NO_PROBLEM = new Problem();
+    
+    static {
+        allProblems.remove(NO_PROBLEM.identifier);
+    }
 
     public Department department;
     public String identifier;
@@ -115,6 +119,7 @@ public class Problem implements HasData {
 
     @Override
     public Problem shuffle() {
+        allProblems.remove(this.identifier);
         this.identifier = Utilities.faker.azure().appServiceEnvironment();
         this.department = Department.getRandomDepartment();
         allProblems.put(this.identifier, this);

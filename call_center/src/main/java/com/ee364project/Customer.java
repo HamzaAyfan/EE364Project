@@ -155,21 +155,22 @@ public class Customer extends Person implements CanCall {
                 return;
 
             case INCALL:
-                if (this.problemState.isGotProblem()) {
-                    if (this.behaviour.solveChancePartial.check()) {
-                        this.problemState.solve();
-                        Utilities.log(this, "got his", this.problemState.getProblem(), "solved.");
-                    } else {
-                        Utilities.log(this, "idles", "", "");
-                    }
-                } else {
-                    if (this.behaviour.callEndChancePartial.check()) {
-                        Call.endACall(this.callInfo.getLastCall());
-                        Utilities.log(this, "ended", this.callInfo.getLastCall(), "");
-                    } else {
-                        Utilities.log(this, "idles", "", "");
-                    }
-                }
+                idle("in-call");
+                // if (this.problemState.isGotProblem()) {
+                //     if (this.behaviour.solveChancePartial.check()) {
+                //         this.problemState.solve();
+                //         Utilities.log(this, "got his", this.problemState.getProblem(), "solved.");
+                //     } else {
+                //         Utilities.log(this, "idles", "", "");
+                //     }
+                // } else {
+                //     if (this.behaviour.callEndChancePartial.check()) {
+                //         this.callInfo.getLastCall().endCall();
+                //         Utilities.log(this, "ended", this.callInfo.getLastCall(), "");
+                //     } else {
+                //         Utilities.log(this, "idles", "", "");
+                //     }
+                // }
                 return;
 
             default:
@@ -196,43 +197,30 @@ class CustomerBehaviour {
         public static final CustomerBehaviour DEFAULT = new CustomerBehaviour(
                 "default",
                 new Ratio(0.5),
-                new Ratio(0.5),
-                new Ratio(0.5),
                 new Ratio(0.5));
         public static final CustomerBehaviour SAVVY = new CustomerBehaviour(
                 "savvy",
                 new Ratio(0.1),
-                new Ratio(0.2),
-                new Ratio(0.5),
-                new Ratio(0.7));
+                new Ratio(0.2));
         public static final CustomerBehaviour CHALLENGED = new CustomerBehaviour(
                 "challenged",
                 new Ratio(0.7),
-                new Ratio(0.9),
-                new Ratio(0.2),
-                new Ratio(0.5));
+                new Ratio(0.9));
     }
 
     public String name;
     public Ratio problemAffinity;
     public Ratio callChance;
-    public Ratio solveChancePartial;
-    public Ratio callEndChancePartial;
 
-    public CustomerBehaviour(String name, Ratio problemAffinity, Ratio callChance, Ratio solveChancePartial,
-            Ratio callEndChancePartial) {
+    public CustomerBehaviour(String name, Ratio problemAffinity, Ratio callChance) {
         this.name = name;
         this.problemAffinity = problemAffinity;
         this.callChance = callChance;
-        this.solveChancePartial = solveChancePartial;
-        this.callEndChancePartial = callEndChancePartial;
     }
 
     public CustomerBehaviour() {
         this(
                 Utilities.faker.brand().toString(),
-                Ratio.getRandRatio(),
-                Ratio.getRandRatio(),
                 Ratio.getRandRatio(),
                 Ratio.getRandRatio());
     }
@@ -301,7 +289,7 @@ class ProblemInfo {
 }
 
 class CallInfo {
-    private ArrayList<Call> history = new ArrayList<>();
+    public ArrayList<Call> history = new ArrayList<>();
     private Call call = null;
 
     public void called(Call call) {
@@ -310,6 +298,9 @@ class CallInfo {
     }
 
     public boolean isInCall() {
+        if (call == null) {
+            return false;
+        }
         return (call.getState() == Call.CallState.INCALL)
                 || (call.getState() == Call.CallState.WAITING);
     }

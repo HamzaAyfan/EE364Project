@@ -11,6 +11,10 @@ public class Department implements HasData {
     private static final String CLSNAME = "Department";
     public static final Department NO_DEPARTMENT = new Department(Vars.NONE);
 
+    static {
+        allDepartments.remove(Vars.NONE);
+    }
+
     // this adds NONE as a possible department from the start
     // static {
     // allDepartments.put(Vars.NONE, NO_DEPARTMENT);
@@ -85,6 +89,7 @@ public class Department implements HasData {
 
     @Override
     public Department shuffle() {
+        allDepartments.remove(this.name);
         this.name = Utilities.faker.company().industry();
         allDepartments.put(this.name, this);
         return this;

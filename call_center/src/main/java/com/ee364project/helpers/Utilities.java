@@ -70,7 +70,7 @@ public class Utilities {
     }
 
     public static void log(Object subject, String verb, Object object, String msg) {
-        System.out.println(Timekeeper.getProperTime() + ": " + subject + " " + verb + " " + object + " | " + msg);
+        System.out.println("\n\n" + Timekeeper.getProperTime() + ": " + subject + " " + verb + " " + object + " | " + msg);
     }
 
     public static String[] getRandomStringArray(int len) {
