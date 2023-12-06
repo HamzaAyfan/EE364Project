@@ -142,6 +142,10 @@ public class Customer extends Person implements CanCall {
             }
         }
     }
+    @Override
+    protected String getTag() {
+        return "Customer: ";
+    }
 
     @Override
     public void step() {
@@ -243,6 +247,7 @@ class CustomerBehaviour {
                 "CBehaviour",
                 this.name);
     }
+    
 }
 
 class ProblemInfo {
@@ -298,6 +303,7 @@ class ProblemInfo {
         }
         return false;
     }
+    
 }
 
 class CallInfo {

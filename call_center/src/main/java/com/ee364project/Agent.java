@@ -33,6 +33,8 @@ public class Agent extends Person {
     private Department department;
     private LocalDateTime joinDate;
 
+    
+
 
 
     public Agent(String id, String name, Department department) throws InvalidIdException {
@@ -115,6 +117,11 @@ public class Agent extends Person {
     @Override
     public void step() {
         // TODO
+    }
+
+    @Override
+    protected String getTag() {
+        return "Agent: ";
     }
 }
 
