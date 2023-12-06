@@ -73,10 +73,12 @@ public class Call {
         if (callTimeElapsed++>totalTime){
             for (Entry<CheckBox, Call> entry : Test.linkCBtoCall.entrySet()) {
                 if (this.equals(entry.getValue())) {
-                    Platform.runLater(()-> Test.vbox.getChildren().remove(entry.getKey()));                
+                    Platform.runLater(()-> Test.vbox.getChildren().remove(entry.getKey()));
+                                                  
                 }
-            }           
-            
+            } 
+            callQueue.remove(this); 
+            // receiver.setFree();             
         }
     }
 
@@ -260,6 +262,8 @@ class DialogeBox extends Thread{
         private boolean stop;    
         String startFrom; 
         CheckBox checkBox;
+        String lastLine;
+        
            
 
 
@@ -288,12 +292,13 @@ class DialogeBox extends Thread{
                 startLength += entry.getValue();
                 Person person = currentCall.sentencesHashMap.get(entry.getKey());
                 TextField textField = new TextField(person.getTag()  + entry.getKey());
-                textField.setEditable(false);
-                Platform.runLater(()->root.getChildren().add(textField));
+                textField.setEditable(false);   
+                Platform.runLater(()->root.getChildren().add(textField));             
                 if(startLength>currentCall.getTimeElapsed()){
                     startFrom = entry.getKey();
                     break;
                 }
+                
             }
             return startLength;
         }
@@ -344,12 +349,12 @@ class DialogeBox extends Thread{
             Iterator<String> iterator = currentCall.lengthsSaved.keySet().iterator();
                 
                 while(iterator.hasNext() && !stop){
-                    String key = iterator.next();
-                    if (startFrom.equals(key)){
-                        start = true;
-                    }
+                    String key = iterator.next();                    
                     if (start){
                         pacedPrint(key);
+                    }
+                    if (startFrom.equals(key)){
+                        start = true;
                     }
                 }              
                 Platform.runLater(() -> stage.close());
