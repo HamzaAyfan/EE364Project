@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 
 import javafx.animation.KeyFrame;
 import javafx.util.Duration;
@@ -41,8 +42,8 @@ public class Call {
     public static final long MAXWAITTIME = 60;
     private static LinkedList<Call> callQueue = new LinkedList<>();
     public static LinkedList<Call> Activecalls = new LinkedList<>();
-    HashMap<String,Person> sentencesHashMap = new HashMap<>();
-    HashMap<String,Integer> lengthsSaved = new HashMap<>();
+    LinkedHashMap<String,Person> sentencesHashMap = new LinkedHashMap<>();
+    LinkedHashMap<String,Integer> lengthsSaved = new LinkedHashMap<>();
     private static long callCount = 0;
 
     private long startTime;
@@ -50,7 +51,7 @@ public class Call {
     private long callDuration;
     private long waitTime;
     private int callTimeElapsed;
-    private int totalTime;
+    public int totalTime;
     private Customer caller;
     private Agent receiver;
     private CallState state;
@@ -74,8 +75,7 @@ public class Call {
                 if (this.equals(entry.getValue())) {
                     Platform.runLater(()-> Test.vbox.getChildren().remove(entry.getKey()));                
                 }
-            }
-            
+            }           
             
         }
     }
@@ -188,6 +188,8 @@ class MockDialoge {
                 discussionLength+=length;
                 currentCall.lengthsSaved.put(sentence,length);
             }
+            
+            System.out.println(currentCall.sentencesHashMap.keySet());
             return discussionLength;
         }
 
@@ -220,8 +222,8 @@ class MockDialoge {
         }
         private void introOrTransition(Solution selectedSolution) {
             if (firstSolutionSeeked == true){  
-                            currentCall.sentencesHashMap.put(selectedSolution.getRandomIntro(receiver),receiver);    
-                            currentCall.sentencesHashMap.put( selectedSolution.getRandomIntro(caller),caller);              
+                            currentCall.sentencesHashMap.put(selectedSolution.getRandomIntro(receiver)+"!!!",receiver);    
+                            currentCall.sentencesHashMap.put( selectedSolution.getRandomIntro(caller)+"???",caller);              
                             firstSolutionSeeked = false;
                         }else{         
                             currentCall.sentencesHashMap.put("I just did that but it did not work",caller);                     
@@ -243,9 +245,7 @@ class DialogeBox extends Thread{
         private Customer caller;
         private Agent receiver;
         ProgressBar customerVoice;
-        ProgressBar agentVoice;
-        String customerTag = "Customer: ";
-        String agentTag = "Agent: ";
+        ProgressBar agentVoice;       
         Timeline timeline;
         LinkedList<String> content = new LinkedList<>();
         KeyFrame kfTalking;
@@ -281,22 +281,32 @@ class DialogeBox extends Thread{
             this("empty for now",null, null);
         }
 
-        public void resumeDialogeFrom(){
+        public int resumeDialogeFrom(){
             
             int startLength = 0;
             for ( Map.Entry<String,Integer> entry: currentCall.lengthsSaved.entrySet()){
                 startLength += entry.getValue();
-                Platform.runLater(()->root.getChildren().add(new TextField(entry.getKey())));
+                Person person = currentCall.sentencesHashMap.get(entry.getKey());
+                TextField textField = new TextField(person.getTag()  + entry.getKey());
+                textField.setEditable(false);
+                Platform.runLater(()->root.getChildren().add(textField));
                 if(startLength>currentCall.getTimeElapsed()){
                     startFrom = entry.getKey();
                     break;
                 }
             }
+            return startLength;
         }
         public void exit(){
             stop=true;            
         }
-
+        public void startShowing(int startLength){
+            while (currentCall.totalTime<startLength){
+                phaser.arriveAndAwaitAdvance();
+                
+            }
+            Platform.runLater(()->stage.show());
+        }
         
         private void pacedPrint(String sentence){
         Person speaker = currentCall.sentencesHashMap.get(sentence);
@@ -328,7 +338,8 @@ class DialogeBox extends Thread{
 
         @Override
         public void run(){ 
-            this.resumeDialogeFrom();
+            int resume = this.resumeDialogeFrom();
+            this.startShowing(resume);
             boolean start = false;
             Iterator<String> iterator = currentCall.lengthsSaved.keySet().iterator();
                 
@@ -394,6 +405,7 @@ class DialogeBox extends Thread{
                 }}});
                 
                 System.out.print(scrollDown);
+                stage.setOnCloseRequest(e -> {this.exit();checkBox.setSelected(false);});
             
 
         // Create a Scene and set it on the Stage
@@ -409,9 +421,7 @@ class DialogeBox extends Thread{
         stage.setY(y);
 
         // Show the Stage
-        stage.setResizable(false);
-        stage.show();
-        
+        stage.setResizable(false);            
     }
         
 }

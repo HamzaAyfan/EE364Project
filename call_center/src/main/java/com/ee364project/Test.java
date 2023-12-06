@@ -41,12 +41,14 @@ public class Test extends Application {
     int checkboxCount;
     Phaser phaser = new Phaser(0);
     public static boolean newThreadAdded;
+    private boolean running = true;
     
     public static HashMap<CheckBox,Call> linkCBtoCall = new HashMap<CheckBox,Call>();
     public static HashMap<CheckBox,DialogeBox> linkCBtoDB = new HashMap<>();
 
 
     public void start(Stage primaryStage) {	
+        primaryStage.setOnCloseRequest(e -> {running = false;});
         vbox = new VBox(10);
         ScrollPane scrollPane = new ScrollPane(vbox);
 
@@ -74,7 +76,7 @@ public class Test extends Application {
         }
 
 
-		for (int i = 0;i<20;i++) {
+		for (int i = 0;i<10;i++) {
             
 			customers.get(i).problemState.acquireProblem();
             customers.get(i).problemState.getProblem().shuffle();
@@ -89,7 +91,7 @@ public class Test extends Application {
         
         new Thread(()->{
             phaser.register();
-        while(true){  
+        while(running){  
              System.out.println("no error");          
             try {                
                 Thread.sleep(100);                       
