@@ -20,6 +20,7 @@ import java.util.concurrent.Phaser;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.VBox;
@@ -28,6 +29,8 @@ import javafx.stage.Stage;
 
 public class Test extends Application {
     private static ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(5);
+    Button btPause = new Button("pause");
+    Button btPlay = new Button("Play");
     LinkedList<Customer> customers = new LinkedList<Customer>();
 	LinkedList<Agent> agents = new LinkedList<Agent>();
 	LinkedList<Call> calls = new LinkedList<Call>();  
@@ -42,15 +45,24 @@ public class Test extends Application {
     Phaser phaser = new Phaser(0);
     public static boolean newThreadAdded;
     private boolean running = true;
+    private Thread pausePlay = new Thread();;
     
     public static HashMap<CheckBox,Call> linkCBtoCall = new HashMap<CheckBox,Call>();
     public static HashMap<CheckBox,DialogeBox> linkCBtoDB = new HashMap<>();
+    boolean endThread ;
 
 
     public void start(Stage primaryStage) {	
         primaryStage.setOnCloseRequest(e -> {running = false;});
         vbox = new VBox(10);
         ScrollPane scrollPane = new ScrollPane(vbox);
+
+        vbox.getChildren().add(btPause);
+        vbox.getChildren().add(btPlay);
+        
+        btPause.setOnAction(e -> {this.pause();});
+        btPlay.setDisable(true);
+        
 
         Scene scene = new Scene(scrollPane,200,300);
 
@@ -106,9 +118,19 @@ public class Test extends Application {
                 }
                 call.increaseTime();
             }
-        }    }
-        ).start();
+        }    }).start();
     }
+
+    public void pause() {
+        btPause.setDisable(true);
+        btPlay.setDisable(false);
+        pausePlay = new Thread(()->{
+            phaser.register();
+            btPlay.setOnAction(e -> {phaser.arriveAndDeregister();endThread=true;btPause.setDisable(false);btPlay.setDisable(true);});
+            while(!endThread){}endThread=false;});  
+            pausePlay.start();       
+    }
+    
     public static void main(String[] args) {
         launch(args);
     }  
@@ -126,7 +148,7 @@ public class Test extends Application {
         int checkedCount = 0;
 
         // Count the number of checked checkboxes
-        for (int i = 0; i < vbox.getChildren().size(); i++) {
+        for (int i = 2; i < vbox.getChildren().size(); i++) {
             CheckBox currentCheckBox = (CheckBox) vbox.getChildren().get(i);
             if (currentCheckBox.isSelected()) {
                 checkedCount++;
@@ -138,6 +160,7 @@ public class Test extends Application {
             checkbox.setSelected(false);
         }       
         if (checkbox.isSelected()) { 
+            if(linkCBtoDB.containsKey(checkbox)){if (!endThread){linkCBtoDB.get(checkbox).showWindow();return;}}
             newThreadAdded = true;
             Runnable dialoge = new DialogeBox(callNumber,phaser,checkbox);
             linkCBtoDB.put(checkbox,(DialogeBox)dialoge);
@@ -148,6 +171,7 @@ public class Test extends Application {
             executor.execute(dialoge);
             System.out.println("Selected");
             } else {
+                if (!endThread){linkCBtoDB.get(checkbox).closeWindow();return;}
                 try{linkCBtoDB.get(checkbox).exit();}catch(NullPointerException e){}
                 
             }            

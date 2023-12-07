@@ -73,8 +73,7 @@ public class Call {
         if (callTimeElapsed++>totalTime){
             for (Entry<CheckBox, Call> entry : Test.linkCBtoCall.entrySet()) {
                 if (this.equals(entry.getValue())) {
-                    Platform.runLater(()-> Test.vbox.getChildren().remove(entry.getKey()));
-                                                  
+                    Platform.runLater(()-> Test.vbox.getChildren().remove(entry.getKey()));                                                  
                 }
             } 
             callQueue.remove(this); 
@@ -427,6 +426,13 @@ class DialogeBox extends Thread{
 
         // Show the Stage
         stage.setResizable(false);            
+    }
+
+    public void closeWindow() {
+        stage.hide();
+    }
+    public void showWindow(){
+        stage.show();
     }
         
 }
