@@ -747,22 +747,27 @@ public class MainSceneController {
         System.out.println("casted");
 
         new Thread(() -> {
-        while(true){
-            for(int i = 0; i < customers.length; i++){
-                Customer customer = (Customer) customers[i];
-                customer.step();
-            }
-            callCenter.step();
-            //Platform.runLater(() -> updateUIForCall());
-            //Platform.runLater(()-> CallVbox.getChildren().add(new CheckBox("Hey")));
-            Timekeeper.step();
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }}).start();
+            while (true) {
+                for (Customer customer : customers) {
+                    customer.step();
+                } 
+                
+                for (Call call : Call.activeCalls) {
+                    call.step();
+                }
+    
+                callCenter.step();
+    
+    
+                Timekeeper.step();
+    
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }}).start();
     }
 
 }
