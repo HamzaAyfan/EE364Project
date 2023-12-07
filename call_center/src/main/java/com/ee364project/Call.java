@@ -221,9 +221,9 @@ class MockDialoge {
             case SAVEY:
                 return 0;
             case CHALLENGED:
-                return Utilities.random.nextInt(length / 2, length);
+                return RandomInt.generateWithinRange(length / 2, length);
             default:
-                return Utilities.random.nextInt(0, length / 2);
+                return RandomInt.generateWithinRange(0, length / 2);
         }
     }
 
@@ -484,16 +484,16 @@ class ControlProgressBar {
     }
 }
 
-// class RandomInt {
-// public static int generateRandom(int options) {
-// return generateWithinRange(0, options);
-// }
+class RandomInt {
+public static int generateRandom(int options) {
+return generateWithinRange(0, options);
+}
 
-// public static int generateWithinRange(int start, int end) {
-// int number = start + (int) (Math.random() * (end - start));
-// return number;
-// }
-// }
+public static int generateWithinRange(int start, int end) {
+int number = start + (int) (Math.random() * (end - start));
+return number;
+}
+}
 
 class DummyClass extends Thread {
     private Call call;
