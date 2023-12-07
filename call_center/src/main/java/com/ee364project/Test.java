@@ -126,7 +126,7 @@ public class Test extends Application {
             } catch (InterruptedException e) {  
                 e.printStackTrace();
             }                                 
-            for (Call call:Call.Activecalls){
+            for (Call call:Call.activeCalls){
                 if (call == null){
                     continue;
                 }

@@ -41,10 +41,13 @@ public class Main {
             for (Customer customer : customers) {
                 customer.step();
             } 
+            
+            for (Call call : Call.activeCalls) {
+                call.step();
+            }
 
             callCenter.step();
 
-            Call.step();
 
             Timekeeper.step();
 
