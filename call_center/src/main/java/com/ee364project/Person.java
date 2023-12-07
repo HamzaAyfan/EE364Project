@@ -9,6 +9,7 @@ public abstract class Person implements HasData, Simulated {
     private static ArrayList<Person> allPersons = new ArrayList<>();
     private String name;
     Random random = new Random();
+    protected String tag;
 
     private double defultRateOfSpeech = random.nextDouble();
     private double defultSoundLevel = random.nextDouble();
@@ -49,4 +50,6 @@ public abstract class Person implements HasData, Simulated {
     public int sleeptime(){
         return 0;
     }
+
+    protected abstract String getTag();
 }

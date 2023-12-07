@@ -20,6 +20,7 @@ import java.util.concurrent.Phaser;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.VBox;
@@ -30,30 +31,43 @@ import com.ee364project.helpers.Vars;
 import com.ee364project.helpers.Utilities.*;
 
 public class Test extends Application {
+
+    CallCenter callCenter;
     private static ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(5);
+    Button btPause = new Button("pause");
+    Button btPlay = new Button("Play");
     LinkedList<Customer> customers = new LinkedList<Customer>();
 	LinkedList<Agent> agents = new LinkedList<Agent>();
 	LinkedList<Call> calls = new LinkedList<Call>();  
     AtomicBoolean state = new AtomicBoolean(false);
     CountDownLatch latch = new CountDownLatch(1);
-    Counter sharedCounter = new Counter(executor.getPoolSize());
     static Integer threadsNumber = 1;
     static int numberOfThreads=1;
     public static boolean waiting = false;
-    // CyclicBarrier[] cyclicBarrier= {new CyclicBarrier(1,sharedCounter::reset)};
     CyclicBarrier[] cyclicBarrier= {new CyclicBarrier(threadsNumber),null};  
-    VBox vbox;
+    static VBox vbox;
     int checkboxCount;
     Phaser phaser = new Phaser(0);
     public static boolean newThreadAdded;
+    private boolean running = true;
+    private Thread pausePlay = new Thread();;
     
     public static HashMap<CheckBox,Call> linkCBtoCall = new HashMap<CheckBox,Call>();
     public static HashMap<CheckBox,DialogeBox> linkCBtoDB = new HashMap<>();
+    boolean endThread ;
 
 
     public void start(Stage primaryStage) {	
+        primaryStage.setOnCloseRequest(e -> {running = false;});
         vbox = new VBox(10);
         ScrollPane scrollPane = new ScrollPane(vbox);
+
+        vbox.getChildren().add(btPause);
+        vbox.getChildren().add(btPlay);
+        
+        btPause.setOnAction(e -> {this.pause();});
+        btPlay.setDisable(true);
+        
 
         Scene scene = new Scene(scrollPane,200,300);
 
@@ -62,6 +76,7 @@ public class Test extends Application {
         primaryStage.show();
         Utilities.getFakeData(10, Vars.DataClasses.Department);
         Utilities.getFakeData(10, Vars.DataClasses.Problem);
+
 
 
 		for (int i = 0;i<20;i++){
@@ -76,6 +91,8 @@ public class Test extends Application {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            this.callCenter = new CallCenter(agents.toArray(new Agent[agents.size()]));
+
             // }
             // } catch (InvalidPhoneNumberException e) {
             //     e.printStackTrace();
@@ -83,81 +100,51 @@ public class Test extends Application {
             //     e.printStackTrace();
             // }          
         }
-        // for (int i =1;i<=5;i++){
-        //     new Thread(()->{while(true){try {
-        //         cyclicBarrier.await();
-        //     } catch (InterruptedException e) {
-        //         // TODO Auto-generated catch block
-        //         e.printStackTrace();
-        //     } catch (BrokenBarrierException e) {
-        //         // TODO Auto-generated catch block
-        //         e.printStackTrace();
-        //     }}}
-        // //     );
 
-        // }
-        // for (int i =1;i<=2;i++){
-        //     DialogeBox dialoge = new DialogeBox();
-        //     dialoge.openEmptyWindow("Call "+i,500,200);            
-        // }
-        
-        // new Thread(()->{
-		for (int i = 0;i<20;i++) {
+
+		for (int i = 0;i<10;i++) {
             
 			customers.get(i).problemState.acquireProblem();
             customers.get(i).problemState.getProblem().shuffle();
             Call call = new Call(customers.get(i));
             calls.add(call);
             call.setReciever(agents.get(i));
-            // System.out.println(call.getCaller());
-            // System.out.println(customers.get(i));
-            // calls.get(i).connectCall(customers.get(i), agents.get(i));
-            CheckBox checkBox =this.ui_addCall("Call " + i) ;
+            call.connectCall(callCenter);
+
+            CheckBox checkBox = this.ui_addCall("Call " + i);
             linkCBtoCall.put(checkBox, call);
         }
-        // cyclicBarrier[0]= new CyclicBarrier(1);
+        
         new Thread(()->{
             phaser.register();
-        while(true){  
-            // latch = new CountDownLatch(1);
+        while(running){  
              System.out.println("no error");          
-            try {
-                
-                Thread.sleep(10);
-                
-                // cyclicBarrier.wait();
-                // this.signalToThreads();
-                phaser.arriveAndAwaitAdvance();
-            } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } 
-            
-           
-            // state.set(true);
-            // state.set(false);                         
-        }    }
-        ).start();
-       
-            
-		// }).start();
+            try {                
+                Thread.sleep(100);                       
 
-	}
-    // public void signalToThreads(){        
-    //             try {
-    //                 if (newThreadAdded){
-    //                     // if (!waiting)
-    //                     // {}
-    //                     // else if (cyclicBarrier[1]!=null)
-    //                     {cyclicBarrier[1].await();}
-    //                     newThreadAdded = false;}
-    //                 cyclicBarrier[0].await();
-    //             } catch (InterruptedException | BrokenBarrierException e) {
-    //                 // TODO Auto-generated catch block
-    //                 e.printStackTrace();
-    //             }
-    //             waiting = false;
-    // }
+                phaser.arriveAndAwaitAdvance();
+            } catch (InterruptedException e) {  
+                e.printStackTrace();
+            }                                 
+            for (Call call:Call.Activecalls){
+                if (call == null){
+                    continue;
+                }
+                call.increaseTime();
+            }
+        }    }).start();
+    }
+
+    public void pause() {
+        btPause.setDisable(true);
+        btPlay.setDisable(false);
+        pausePlay = new Thread(()->{
+            phaser.register();
+            btPlay.setOnAction(e -> {phaser.arriveAndDeregister();endThread=true;btPause.setDisable(false);btPlay.setDisable(true);});
+            while(!endThread){}endThread=false;});  
+            pausePlay.start();       
+    }
+    
     public static void main(String[] args) {
         launch(args);
     }  
@@ -175,7 +162,7 @@ public class Test extends Application {
         int checkedCount = 0;
 
         // Count the number of checked checkboxes
-        for (int i = 0; i < vbox.getChildren().size(); i++) {
+        for (int i = 2; i < vbox.getChildren().size(); i++) {
             CheckBox currentCheckBox = (CheckBox) vbox.getChildren().get(i);
             if (currentCheckBox.isSelected()) {
                 checkedCount++;
@@ -187,35 +174,21 @@ public class Test extends Application {
             checkbox.setSelected(false);
         }       
         if (checkbox.isSelected()) { 
+            if(linkCBtoDB.containsKey(checkbox)){if (!endThread){linkCBtoDB.get(checkbox).showWindow();return;}}
             newThreadAdded = true;
-            Runnable dialoge = new DialogeBox(callNumber,phaser);
+            Runnable dialoge = new DialogeBox(callNumber,phaser,checkbox);
             linkCBtoDB.put(checkbox,(DialogeBox)dialoge);
             
             Call call = linkCBtoCall.get(checkbox);
-            ((DialogeBox)dialoge).setupCall(call);
+            // ((DialogeBox)dialoge).setupCall(call);
             System.out.println(call.getCaller());//.problemState.getProblem().solutions
             executor.execute(dialoge);
             System.out.println("Selected");
             } else {
-                linkCBtoDB.get(checkbox).exit();
-            }
-            
+                if (!endThread){linkCBtoDB.get(checkbox).closeWindow();return;}
+                try{linkCBtoDB.get(checkbox).exit();}catch(NullPointerException e){}
+                
+            }            
         } 
-static class Counter {
-        private int count;
-
-        Counter(int initialCount) {
-            this.count = initialCount;
-        }
-
-        synchronized void reset() {
-            count = 1; // Reset the counter to 1
-            System.out.println("Counter reset to 1");
-        }
-
-        synchronized int getCount() {
-            return count;
-        }
-    }
 }
 
