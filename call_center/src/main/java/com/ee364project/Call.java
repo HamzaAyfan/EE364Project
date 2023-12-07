@@ -20,6 +20,7 @@ import javafx.scene.control.ProgressBar;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.geometry.Pos;
@@ -27,10 +28,17 @@ import javafx.geometry.Pos;
 import java.util.concurrent.Phaser;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
+
+import com.ee364project.Fx.MainSceneController;
 import com.ee364project.helpers.Utilities;
 
 public class Call {
-    public static LinkedList<Call> activeCalls = new LinkedList<>();
+    //public static LinkedList<Call> activeCalls = new LinkedList<>();
+    MainSceneController msc = new MainSceneController();
+
+    VBox vBox = msc.CallVbox;
+
+    HBox hbox;
 
     public static final long MAXWAITTIME = 60;
 
@@ -62,7 +70,7 @@ public class Call {
     Timeline callTime = new Timeline();
 
     public static Call getACall() {
-        applyExpiry();
+        //applyExpiry();
         Call call = callQueue.poll();
         if (call != null) {
             call.state = CallState.INCALL;
@@ -110,14 +118,43 @@ public class Call {
         MockDialoge dialoge = new MockDialoge(caller, receiver, this, solutionsCopy);
         totalTime = dialoge.getContentlength();
         Activecalls.add(this);
+        if (vBox != null ){
+            hbox = createHbox();
+            Platform.runLater(() -> {
+            vBox.getChildren().add(hbox);
+
+            });
+        }
     }
 
     public synchronized void terminateCall() {
         this.callCenter.releaseAgent(this.receiver);
-        Call.activeCalls.remove(this);
+        int call_index = indexOf(Activecalls, this);
+        Call.Activecalls.remove(this);
+        try{
+            if (vBox != null && vBox.getChildren().size() > 0){
+            Platform.runLater(() -> {
+            vBox.getChildren().remove(call_index);
+
+            });
+            }
+        }catch(Exception e){
+
+        }
         System.out.println(" done");
         this.caller.problemState.solve();
         this.state = Call.CallState.ENDED;
+    }
+
+    private static <T> int indexOf(LinkedList<T> list, T target) {
+        int index = 0;
+        for (T element : list) {
+            if (element.equals(target)) {
+                return index;
+            }
+            index++;
+        }
+        return -1; // Element not found
     }
 
     private static void applyExpiry() { // run after every step.
@@ -141,6 +178,23 @@ public class Call {
         this.state = CallState.WAITING;
         callQueue.add(this);
 
+    }
+
+    public HBox createHbox(){
+        HBox hBox = new HBox();
+        CheckBox checkBox = new CheckBox();
+        //ImageView callImageView = new ImageView(callImage);
+        //callImageView.setFitWidth(50);
+        // callImageView.setFitHeight(50);
+        
+        //Rectangle rectangle = new Rectangle(50, 50, Color.TRANSPARENT);
+        // hBox.getChildren().add(callImageView);
+        //hBox.getChildren().add(rectangle);
+        hBox.getChildren().add(checkBox);
+        HBox.setHgrow(checkBox, Priority.ALWAYS);
+        checkBox.setAlignment(Pos.BOTTOM_RIGHT);
+        return hBox;
+        
     }
 
     public long getCallDuration() {

@@ -10,7 +10,7 @@
             "request": "launch",
             "mainClass": "com.ee364project.Fx.MainFx",
             "projectName": "call_center",
-            "vmArgs": "--module-path call_center/lib/javafx-sdk-21.0.1/lib --add-modules javafx.controls,javafx.fxml"
+            "vmArgs": "--module-path call_center/lib/javaFX/lib --add-modules javafx.controls,javafx.fxml"
 
         },
         {

@@ -129,7 +129,7 @@ public class MainSceneController {
     private VBox Vox;
 
     @FXML
-    private VBox CallVbox;
+    public VBox CallVbox;
 
     @FXML
     private Button connected;
