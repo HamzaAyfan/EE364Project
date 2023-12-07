@@ -21,6 +21,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import com.ee364project.Agent;
+import com.ee364project.Call;
 import com.ee364project.CallCenter;
 import com.ee364project.Customer;
 import com.ee364project.Department;
@@ -78,8 +79,8 @@ import java.util.prefs.Preferences;
 public class MainSceneController {
 
 
-    HasData[] agents;
-    HasData[] customers;
+    Agent[] agents;
+    Customer[] customers;
     HasData[] problems;
     HasData[] departments;
 
@@ -145,6 +146,7 @@ public class MainSceneController {
 
     @FXML
     public void initialize() {
+        Call.vBox = CallVbox;
         
         //timekeeper = new Timekeeper();
         timerTimeline = new Timeline(new KeyFrame(Duration.seconds(1), this::updateTimer));
@@ -376,9 +378,16 @@ public class MainSceneController {
     private void processCustomerFile(File selectedFile) throws IOException {
         try{
 
-            customers = Csv.read(selectedFile.getAbsolutePath()); //Done
+            HasData[] customersCSV = Csv.read(selectedFile.getAbsolutePath()); //Done
             int number = customers.length;
             //System.out.println(number);
+            customers = new Customer[number];
+
+            int j = 0;
+            for(HasData customer: customersCSV){
+                customers[j] = (Customer) customer;
+                j = j + 1;
+            }
 
             if(flowPane.getChildren().size() != 0){ flowPane.getChildren().clear();}
 
@@ -418,9 +427,14 @@ public class MainSceneController {
     private void processAgentFile(File selectedFile) throws IOException {
         try{
 
-            agents = Csv.read(selectedFile.getAbsolutePath()); //Done
+            HasData[] agentsCSV = Csv.read(selectedFile.getAbsolutePath()); //Done
             int number = agents.length;
             //System.out.println(number);
+            int j = 0;
+            for(HasData agent: agentsCSV){
+                agents[j] = (Agent) agent;
+                j = j + 1;
+            }
 
             if(AgentVbox.getChildren().size() != 0){ AgentVbox.getChildren().clear();}
 
@@ -728,6 +742,27 @@ public class MainSceneController {
             // Disable the "Start" button to prevent further clicks
             ((MenuItem) event.getSource()).setDisable(true);
         }
+
+        callCenter = new CallCenter(agents);
+        System.out.println("casted");
+
+        new Thread(() -> {
+        while(true){
+            for(int i = 0; i < customers.length; i++){
+                Customer customer = (Customer) customers[i];
+                customer.step();
+            }
+            callCenter.step();
+            //Platform.runLater(() -> updateUIForCall());
+            //Platform.runLater(()-> CallVbox.getChildren().add(new CheckBox("Hey")));
+            Timekeeper.step();
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }}).start();
     }
 
 }

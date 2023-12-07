@@ -36,7 +36,7 @@ public class Call {
     //public static LinkedList<Call> activeCalls = new LinkedList<>();
     MainSceneController msc = new MainSceneController();
 
-    VBox vBox = msc.CallVbox;
+    public static VBox vBox;
 
     HBox hbox;
 
