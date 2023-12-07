@@ -456,7 +456,7 @@ public class MainSceneController {
         try{
             // Utilities.getFakeData(5, Vars.DataClasses.Department);
             problems = Csv.read(problemFile.getAbsolutePath(), Vars.DataClasses.Problem);
-            Department.removeEmpty();
+            // Department.removeEmpty();
         }
         catch(Exception e){
             e.printStackTrace();

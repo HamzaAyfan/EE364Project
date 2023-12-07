@@ -25,9 +25,12 @@ import java.util.concurrent.ThreadPoolExecutor;
 import com.ee364project.helpers.Utilities;
 
 public class Call {
+    public static LinkedList<Call> activeCalls = new LinkedList<>();
+
     public static final long MAXWAITTIME = 60;
 
     private static ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
+
     public static enum CallState {
         WAITING,
         INCALL,
@@ -46,7 +49,7 @@ public class Call {
     private Customer caller;
     private Agent receiver;
     private CallState state;
-    private CallCenter call_center;
+    private CallCenter callCenter;
     Timeline callTime = new Timeline();
 
     public static Call getACall() {
@@ -61,46 +64,59 @@ public class Call {
     public static void endACall(Call call) {
         call.state = CallState.ENDED;
     }
-    
-    public void connectCall(CallCenter callCenter){
-        this.call_center = callCenter;
-        HashSet<Solution> HSsolutions = this.caller.problemState.getProblem().solutions;
-        LinkedList<Solution> LLsolutions = new LinkedList<>();
-        for(Solution soultion:HSsolutions){
-            try {
-                LLsolutions.add((Solution)(soultion.clone()));
-            } catch (CloneNotSupportedException e) {
-                // To be handled later
-            }         
-        }        
-        try{
-            // Runnable dialoge = DialogeBox.windows.poll();
-            // ((DialogeBox)dialoge).setupCall(caller, receiver, this, LLsolutions);
-            // // dialoge.start(); 
-            // executor.execute(dialoge);
-        }catch (NullPointerException e ){            
-            MockDialoge dialoge = new MockDialoge(caller, receiver, this, LLsolutions);
-            int numberOfWords = dialoge.getContentlength();
-            int time = numberOfWords*1;
-            KeyFrame keyFrame = new KeyFrame(Duration.millis(time), run -> {terminateCall();} );
-            callTime.getKeyFrames().add(keyFrame);
-            // callTime = new Timeline(new KeyFrame(Duration.millis(time), run -> {terminateCall();} ));
-            callTime.setCycleCount(1);
-            callTime.play();
-            
-        }catch (Exception e){System.out.println("error");}
-        
+
+    public void connectCall(CallCenter callCenter) {
+        this.callCenter = callCenter;
+        DummyClass dumdum = new DummyClass(this);
+        Call.activeCalls.add(this);
+        dumdum.start();
+        return;
+        // this.call_center = callCenter;
+        // HashSet<Solution> HSsolutions = this.caller.problemState.getProblem().solutions;
+        // LinkedList<Solution> LLsolutions = new LinkedList<>();
+        // for (Solution soultion : HSsolutions) {
+        //     try {
+        //         LLsolutions.add((Solution) (soultion.clone()));
+        //     } catch (CloneNotSupportedException e) {
+        //         // To be handled later
+        //     }
+        // }
+        // try {
+        //     // Runnable dialoge = DialogeBox.windows.poll();
+        //     // ((DialogeBox)dialoge).setupCall(caller, receiver, this, LLsolutions);
+        //     // // dialoge.start();
+        //     // executor.execute(dialoge);
+        // } catch (NullPointerException e) {
+        //     MockDialoge dialoge = new MockDialoge(caller, receiver, this, LLsolutions);
+        //     int numberOfWords = dialoge.getContentlength();
+        //     int time = numberOfWords * 1;
+        //     KeyFrame keyFrame = new KeyFrame(Duration.millis(time), run -> {
+        //         terminateCall();
+        //     });
+        //     callTime.getKeyFrames().add(keyFrame);
+        //     // callTime = new Timeline(new KeyFrame(Duration.millis(time), run ->
+        //     // {terminateCall();} ));
+        //     callTime.setCycleCount(1);
+        //     callTime.play();
+
+        // } catch (Exception e) {
+        //     System.out.println("error");
+        // }
+
     }
 
     // public static void closeExecutor(){
-    //     executor.shutdown();
-    //     DialogeBox.closeExecutor();
-    //     }
+    // executor.shutdown();
+    // DialogeBox.closeExecutor();
+    // }
 
-    public synchronized void terminateCall(){
-        this.call_center.releaseAgent(this.receiver);
+    public synchronized void terminateCall() {
+        this.callCenter.releaseAgent(this.receiver);
+        Call.activeCalls.remove(this);
         System.out.println(" done");
-    }  
+        this.caller.problemState.solve();
+        this.state = Call.CallState.ENDED;
+    }
 
     private static void applyExpiry() { // run after every step.
         Call call;
@@ -165,232 +181,241 @@ public class Call {
     static void step() {
         applyExpiry();
     }
-    private static void print(String string){
-    System.out.println(string);
+
+    private static void print(String string) {
+        System.out.println(string);
     }
 }
+
 class MockDialoge {
-        LinkedList<Solution> solutions = new LinkedList<>();
-	    public static int ActiveCallNumber;
-	    private Call currentCall;
-        private Customer caller;
-        private Agent receiver;
-        private boolean firstSolutionSeeked = true; 
-        LinkedList<String> content = new LinkedList<>();
+    LinkedList<Solution> solutions = new LinkedList<>();
+    public static int ActiveCallNumber;
+    private Call currentCall;
+    private Customer caller;
+    private Agent receiver;
+    private boolean firstSolutionSeeked = true;
+    LinkedList<String> content = new LinkedList<>();
 
-        public MockDialoge(Customer caller, Agent receiver, Call currentCall, LinkedList<Solution> solutions) {
-            this.solutions = solutions;
-            this.caller =caller;
-            this.receiver = receiver;
-            this.currentCall = currentCall;
-        }
-        public int getContentlength(){
-            getWords();
-            return content.size();
-        }
-
-        private void pacedPrint(int ID, String sentence){    
-        String[] words = sentence.split("\\s+");    
-        for(String word:words){   
-            content.add(word);
-        }   
+    public MockDialoge(Customer caller, Agent receiver, Call currentCall, LinkedList<Solution> solutions) {
+        this.solutions = solutions;
+        this.caller = caller;
+        this.receiver = receiver;
+        this.currentCall = currentCall;
     }
 
-        private void getWords(){
-            int i = 0;
-                do {
-                    int length = solutions.size();//print(length + " from call " + z + " agent is " + receiver.getlevel());
-                    switch(receiver.getlevel()) {
-				        case SAVEY:
-					        i=0;
-					        break;
-				        case CHALLENGED:
-					        i=RandomInt.generateWithinRange(length/2,length);
-					        break;					
-				        default:
-					        i=RandomInt.generateWithinRange(0,length/2);				
-			        }
-                    Solution selectedSolution = solutions.get(i);
-                    solutions.remove(i);
-                    if (firstSolutionSeeked == true){                             
-                            pacedPrint(0, selectedSolution.agentIntro[0]);                            
-                            pacedPrint(1, selectedSolution.customerIntro[0]);   
-                            firstSolutionSeeked = false;
-                        }else{                            
-                            pacedPrint(1, "I just did that but it did not work");                         
-                            pacedPrint(0, "sorry it did not work let me seek an alternative");                           
-                        }
+    public int getContentlength() {
+        getWords();
+        return content.size();
+    }
 
-                    for (int j = 0; j<selectedSolution.agentResponses.length;j++){                        
-                        pacedPrint(0, selectedSolution.agentResponses[j]);                        
-                        pacedPrint(1, selectedSolution.customerResponses[j]);
-                    }               
-		        }while(i != 0);	      
+    private void pacedPrint(int ID, String sentence) {
+        String[] words = sentence.split("\\s+");
+        for (String word : words) {
+            content.add(word);
+        }
+    }
+
+    private void getWords() {
+        int i = 0;
+        do {
+            int length = solutions.size();// print(length + " from call " + z + " agent is " + receiver.getlevel());
+            switch (receiver.getlevel()) {
+                case SAVEY:
+                    i = 0;
+                    break;
+                case CHALLENGED:
+                    i = Utilities.random.nextInt(length / 2, length);
+                    break;
+                default:
+                    i = Utilities.random.nextInt(0, length / 2);
             }
+            Solution selectedSolution = solutions.get(i);
+            solutions.remove(i);
+            if (firstSolutionSeeked == true) {
+                pacedPrint(0, selectedSolution.agentIntro[0]);
+                pacedPrint(1, selectedSolution.customerIntro[0]);
+                firstSolutionSeeked = false;
+            } else {
+                pacedPrint(1, "I just did that but it did not work");
+                pacedPrint(0, "sorry it did not work let me seek an alternative");
+            }
+
+            for (int j = 0; j < selectedSolution.agentResponses.length; j++) {
+                pacedPrint(0, selectedSolution.agentResponses[j]);
+                pacedPrint(1, selectedSolution.customerResponses[j]);
+            }
+        } while (i != 0);
+    }
 }
 
-class DialogeBox extends Thread{
+class DialogeBox extends Thread {
     private static ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
-        Stage stage = new Stage();
-        VBox root = new VBox(10);
-        
-        public static LinkedList<DialogeBox> windows = new LinkedList<>();
-        public DialogeBox thisWindow;
-        private LinkedList<Solution> solutions;
-	    public static int ActiveCallNumber;
-	    private Call currentCall;
-        private Customer caller;
-        private Agent receiver;
-        private boolean firstSolutionSeeked = true; 
-        ProgressBar customerVoice;
-        ProgressBar agentVoice;
-        String customerTag = "Customer: ";
-        String agentTag = "Agent: ";
-        Timeline timeline;
-        LinkedList<String> content = new LinkedList<>();
-        KeyFrame kfTalking;
-        KeyFrame kfTransitionalPause;
-        KeyFrame kfStopTalking;
-        ScrollPane scrollPane;
-        boolean scrollDown=true;
-        boolean scrollDownCheck=true;
-        int index;
-        AtomicBoolean state;
-        CyclicBarrier[] cyclicBarrier;
-        public static int numberOfThreads = 1;
-        Phaser phaser;
-        private boolean stop;
+    Stage stage = new Stage();
+    VBox root = new VBox(10);
 
-        public DialogeBox(String callNumber, Phaser phaser){
-            if (DialogeBox.windows.size()<=4){
-                // this.state=state;
-                // ++Test.threadsNumber;
-                // this.cyclicBarrier=cyclicBarrier;
-                // cyclicBarrier[1]=cyclicBarrier[0];
-                // cyclicBarrier[0]=new CyclicBarrier(++numberOfThreads);
-                this.phaser=phaser; 
-                phaser.register();
-                
-                windows.add(this);
-                this.openEmptyWindow(callNumber,500,200);
-                index = windows.indexOf(this);                
-            }else{
-                System.out.println("You can view a maximuim of 5 calls at a time");
-            }
-        }
-        public DialogeBox(){
-            this("empty for now",null);
-        }
-        public void exit(){
-            stop=true;
-            
-        }
+    public static LinkedList<DialogeBox> windows = new LinkedList<>();
+    public DialogeBox thisWindow;
+    private LinkedList<Solution> solutions;
+    public static int ActiveCallNumber;
+    private Call currentCall;
+    private Customer caller;
+    private Agent receiver;
+    private boolean firstSolutionSeeked = true;
+    ProgressBar customerVoice;
+    ProgressBar agentVoice;
+    String customerTag = "Customer: ";
+    String agentTag = "Agent: ";
+    Timeline timeline;
+    LinkedList<String> content = new LinkedList<>();
+    KeyFrame kfTalking;
+    KeyFrame kfTransitionalPause;
+    KeyFrame kfStopTalking;
+    ScrollPane scrollPane;
+    boolean scrollDown = true;
+    boolean scrollDownCheck = true;
+    int index;
+    AtomicBoolean state;
+    CyclicBarrier[] cyclicBarrier;
+    public static int numberOfThreads = 1;
+    Phaser phaser;
+    private boolean stop;
 
-        public void setupCall(Call currentCall){
-            this.currentCall = currentCall;
-            this.caller = currentCall.getCaller();
-            this.receiver = currentCall.getReceiver();
-            
-            HashSet<Solution> HSsolutions = caller.problemState.getProblem().solutions;
-            LinkedList<Solution> LLsolutions = new LinkedList<>();
-            for(Solution soultion:HSsolutions){
+    public DialogeBox(String callNumber, Phaser phaser) {
+        if (DialogeBox.windows.size() <= 4) {
+            // this.state=state;
+            // ++Test.threadsNumber;
+            // this.cyclicBarrier=cyclicBarrier;
+            // cyclicBarrier[1]=cyclicBarrier[0];
+            // cyclicBarrier[0]=new CyclicBarrier(++numberOfThreads);
+            this.phaser = phaser;
+            phaser.register();
+
+            windows.add(this);
+            this.openEmptyWindow(callNumber, 500, 200);
+            index = windows.indexOf(this);
+        } else {
+            System.out.println("You can view a maximuim of 5 calls at a time");
+        }
+    }
+
+    public DialogeBox() {
+        this("empty for now", null);
+    }
+
+    public void exit() {
+        stop = true;
+
+    }
+
+    public void setupCall(Call currentCall) {
+        this.currentCall = currentCall;
+        this.caller = currentCall.getCaller();
+        this.receiver = currentCall.getReceiver();
+
+        HashSet<Solution> HSsolutions = caller.problemState.getProblem().solutions;
+        LinkedList<Solution> LLsolutions = new LinkedList<>();
+        for (Solution soultion : HSsolutions) {
             try {
-                LLsolutions.add((Solution)(soultion.clone()));
+                LLsolutions.add((Solution) (soultion.clone()));
             } catch (CloneNotSupportedException e) {
                 // To be handled later
-            }         
-        }   
-            this.solutions = LLsolutions;
-            
-        }
-
-        @Override
-        public void run(){            
-            int i = 0;
-                do {
-                    int length = solutions.size();//print(length + " from call " + z + " agent is " + receiver.getlevel());
-                    switch(receiver.getlevel()) {
-				        case SAVEY:
-					        i=0;
-					        break;
-				        case CHALLENGED:
-					        i=RandomInt.generateWithinRange(length/2,length);
-					        break;					
-				        default:
-					        i=RandomInt.generateWithinRange(0,length/2);				
-			        }
-                    Solution selectedSolution = solutions.get(i);
-                    solutions.remove(i);                    
-                    if (firstSolutionSeeked == true){
-                            this.createTextField(receiver,selectedSolution.getRandomIntro(receiver),agentTag);
-                            this.createTextField(caller,selectedSolution.getRandomIntro(caller),customerTag);           
-                            firstSolutionSeeked = false;
-                        }else{
-                            this.createTextField(caller,"I just did that but it did not work",customerTag); 
-                            this.createTextField(receiver,"sorry it did not work let me seek an alternative",agentTag);                            
-                        }
-
-                    for (int j = 0; j<selectedSolution.agentResponses.length;j++){ 
-                        this.createTextField(receiver,selectedSolution.agentResponses[j],agentTag);
-                        this.createTextField(caller,selectedSolution.customerResponses[j],customerTag);                                    
-                    }  
-                                
-		        }while(i != 0 && !stop);	                
-                ActiveCallNumber--;
-                Platform.runLater(() -> stage.close());
-                Platform.runLater(() -> root.getChildren().clear());
-                phaser.arriveAndDeregister();
-                windows.remove(this);              
             }
+        }
+        this.solutions = LLsolutions;
 
-        private void createTextField(Person person,String sentence, String tag) {
-            TextField textField = new TextField(tag);
-            textField.setEditable(false);
-            int identifier = 0;
-            if (person instanceof Agent){
-                textField.setStyle("-fx-alignment: CENTER-RIGHT;");                            
-            }else{
-                identifier=1;
-            }
-            Platform.runLater(() -> {root.getChildren().add(textField); });
-            
-            pacedPrint(identifier, sentence, textField);        
-        }
-            
-    
-    private void pacedPrint(int ID, String sentence,TextField textField){
-        // ProgressBar selectedVoice = selectVoice(ID);
-        
-        String[] words = sentence.split("\\s+");
-        
-        
-        for(String word:words){ 
-            if (scrollDown){scrollPane.setVvalue(1.0);}          
-                // while(cyclicBarrier[0].await())
-                Test.waiting =true;
-                phaser.arriveAndAwaitAdvance();
-                if(stop){break;} 
-            // executor.submit(()->this.runProgressBar(selectedVoice)); 
-            // this.playFromKeyframe(kfTalking);   
-            // this.playFromKeyframe(kfTransitionalPause);
-                Platform.runLater(() -> textField.appendText(word + " "));            
-        }
-        
-        // this.playFromKeyframe(kfStopTalking);  
     }
-    
+
+    @Override
+    public void run() {
+        int i = 0;
+        do {
+            int length = solutions.size();// print(length + " from call " + z + " agent is " + receiver.getlevel());
+            switch (receiver.getlevel()) {
+                case SAVEY:
+                    i = 0;
+                    break;
+                case CHALLENGED:
+                    i = Utilities.random.nextInt(length / 2, length);
+                    break;
+                default:
+                    i = Utilities.random.nextInt(0, length / 2);
+            }
+            Solution selectedSolution = solutions.get(i);
+            solutions.remove(i);
+            if (firstSolutionSeeked == true) {
+                this.createTextField(receiver, selectedSolution.getRandomIntro(receiver), agentTag);
+                this.createTextField(caller, selectedSolution.getRandomIntro(caller), customerTag);
+                firstSolutionSeeked = false;
+            } else {
+                this.createTextField(caller, "I just did that but it did not work", customerTag);
+                this.createTextField(receiver, "sorry it did not work let me seek an alternative", agentTag);
+            }
+
+            for (int j = 0; j < selectedSolution.agentResponses.length; j++) {
+                this.createTextField(receiver, selectedSolution.agentResponses[j], agentTag);
+                this.createTextField(caller, selectedSolution.customerResponses[j], customerTag);
+            }
+
+        } while (i != 0 && !stop);
+        ActiveCallNumber--;
+        Platform.runLater(() -> stage.close());
+        Platform.runLater(() -> root.getChildren().clear());
+        phaser.arriveAndDeregister();
+        windows.remove(this);
+    }
+
+    private void createTextField(Person person, String sentence, String tag) {
+        TextField textField = new TextField(tag);
+        textField.setEditable(false);
+        int identifier = 0;
+        if (person instanceof Agent) {
+            textField.setStyle("-fx-alignment: CENTER-RIGHT;");
+        } else {
+            identifier = 1;
+        }
+        Platform.runLater(() -> {
+            root.getChildren().add(textField);
+        });
+
+        pacedPrint(identifier, sentence, textField);
+    }
+
+    private void pacedPrint(int ID, String sentence, TextField textField) {
+        // ProgressBar selectedVoice = selectVoice(ID);
+
+        String[] words = sentence.split("\\s+");
+
+        for (String word : words) {
+            if (scrollDown) {
+                scrollPane.setVvalue(1.0);
+            }
+            // while(cyclicBarrier[0].await())
+            Test.waiting = true;
+            phaser.arriveAndAwaitAdvance();
+            if (stop) {
+                break;
+            }
+            // executor.submit(()->this.runProgressBar(selectedVoice));
+            // this.playFromKeyframe(kfTalking);
+            // this.playFromKeyframe(kfTransitionalPause);
+            Platform.runLater(() -> textField.appendText(word + " "));
+        }
+
+        // this.playFromKeyframe(kfStopTalking);
+    }
 
     public void openEmptyWindow(String windowTitle, double x, double y) {
-		scrollPane = new ScrollPane(root);
+        scrollPane = new ScrollPane(root);
         scrollPane.setFitToWidth(true);
         // try {
-        // Image volume = new Image("call_center\\src\\main\\java\\com\\ee364project\\image\\volume.png");
+        // Image volume = new
+        // Image("call_center\\src\\main\\java\\com\\ee364project\\image\\volume.png");
         // ImageView volumeIcon1 = new ImageView(volume);
         // ImageView volumeIcon2 = new ImageView(volume);
         // // Further code using the image
         // } catch (Exception e) {
         // e.getStackTrace();
-        // }       
+        // }
 
         agentVoice = new ProgressBar();
         agentVoice.setRotate(-90);
@@ -401,36 +426,37 @@ class DialogeBox extends Thread{
         customerVoice.setProgress(0);
         VBox customerVolumeBarBox = new VBox(customerVoice);
 
-	    agentVolumeBarBox.setAlignment(Pos.CENTER);
+        agentVolumeBarBox.setAlignment(Pos.CENTER);
         customerVolumeBarBox.setAlignment(Pos.CENTER);
-        HBox mainPane = new HBox(customerVolumeBarBox,scrollPane,agentVolumeBarBox); 
-        agentVolumeBarBox.prefWidthProperty().bind(mainPane.widthProperty().divide(5));  
-        agentVolumeBarBox.prefHeightProperty().bind(mainPane.heightProperty());  
-        customerVolumeBarBox.prefWidthProperty().bind(mainPane.widthProperty().divide(5));  
-        customerVolumeBarBox.prefHeightProperty().bind(mainPane.heightProperty());  
+        HBox mainPane = new HBox(customerVolumeBarBox, scrollPane, agentVolumeBarBox);
+        agentVolumeBarBox.prefWidthProperty().bind(mainPane.widthProperty().divide(5));
+        agentVolumeBarBox.prefHeightProperty().bind(mainPane.heightProperty());
+        customerVolumeBarBox.prefWidthProperty().bind(mainPane.widthProperty().divide(5));
+        customerVolumeBarBox.prefHeightProperty().bind(mainPane.heightProperty());
         scrollPane.prefWidthProperty().bind(mainPane.widthProperty().multiply(0.6));
 
         scrollPane.vvalueProperty().addListener(new ChangeListener<Number>() {
             @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {                
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
                 // Check if the scroll pane is at the bottom
-                if (scrollDownCheck){
+                if (scrollDownCheck) {
                     scrollDown = true;
-                }else{
-                    scrollDown=false;
+                } else {
+                    scrollDown = false;
 
                 }
                 if (newValue.doubleValue() == scrollPane.getVmax()) {
-                    scrollDownCheck=true;
+                    scrollDownCheck = true;
                 } else {
-                    scrollDownCheck=false;               
-                }}});
-                
-                System.out.print(scrollDown);
-            
+                    scrollDownCheck = false;
+                }
+            }
+        });
+
+        System.out.print(scrollDown);
 
         // Create a Scene and set it on the Stage
-        Scene scene = new Scene(mainPane, 700, 200); 
+        Scene scene = new Scene(mainPane, 700, 200);
 
         mainPane.prefWidthProperty().bind(scene.widthProperty());
         mainPane.prefHeightProperty().bind(scene.heightProperty());
@@ -444,62 +470,89 @@ class DialogeBox extends Thread{
         // Show the Stage
         stage.setResizable(false);
         stage.show();
-        
+
     }
-        
+
 }
 
-class ControlProgressBar{
+class ControlProgressBar {
     private ProgressBar progressBar;
-    ControlProgressBar(){
+
+    ControlProgressBar() {
         this.progressBar = new ProgressBar();
     }
-    public ProgressBar getProgressBar(){
+
+    public ProgressBar getProgressBar() {
         return progressBar;
     }
-    
+
     // private void runProgressBar(ProgressBar selectedProgressBar) {
-    //     kfTalking = new KeyFrame(Duration.seconds(0.1), e -> Platform.runLater(()->{selectedProgressBar.setProgress(0);}));
-    //     kfTransitionalPause = new KeyFrame(Duration.seconds(0.1), e -> decreaseProgressBar(selectedProgressBar));
-    //     kfStopTalking = new KeyFrame(Duration.seconds(0.1), e -> Platform.runLater(()->{selectedProgressBar.setProgress(0);}));
+    // kfTalking = new KeyFrame(Duration.seconds(0.1), e ->
+    // Platform.runLater(()->{selectedProgressBar.setProgress(0);}));
+    // kfTransitionalPause = new KeyFrame(Duration.seconds(0.1), e ->
+    // decreaseProgressBar(selectedProgressBar));
+    // kfStopTalking = new KeyFrame(Duration.seconds(0.1), e ->
+    // Platform.runLater(()->{selectedProgressBar.setProgress(0);}));
 
-
-    //     timeline = new Timeline(kfTalking,kfTransitionalPause,kfStopTalking);
-    //     timeline.setCycleCount(Animation.INDEFINITE);
-    //     timeline.play();
+    // timeline = new Timeline(kfTalking,kfTransitionalPause,kfStopTalking);
+    // timeline.setCycleCount(Animation.INDEFINITE);
+    // timeline.play();
     // }
 
     // private void decreaseProgressBar(ProgressBar selectedProgressBar) {
-    //     double currentProgress = selectedProgressBar.getProgress();
+    // double currentProgress = selectedProgressBar.getProgress();
 
-    //     double newProgress = currentProgress - 0.01;
-    //     Platform.runLater(()->selectedProgressBar.setProgress(newProgress));  
-                   
+    // double newProgress = currentProgress - 0.01;
+    // Platform.runLater(()->selectedProgressBar.setProgress(newProgress));
+
     // }
     // private void stabalizeProgressBar(int value){
-    //     Platform.runLater(()->selectedProgressBar.setProgress(newProgress));
+    // Platform.runLater(()->selectedProgressBar.setProgress(newProgress));
     // }
     // private void playFromKeyframe(KeyFrame keyFrame) {
 
-    //     timeline.stop();
-    //     timeline.playFrom(keyFrame.getTime());
+    // timeline.stop();
+    // timeline.playFrom(keyFrame.getTime());
     // }
 
     // private ProgressBar selectVoice(int ID){
-    //     if (ID==0){
-    //         return agentVoice;
-    //     }else{
-    //         return customerVoice;
-    //     }
+    // if (ID==0){
+    // return agentVoice;
+    // }else{
+    // return customerVoice;
+    // }
     // }
 }
 
-class RandomInt {
-	public static int generateRandom(int options) {
-		return generateWithinRange(0, options);
-	}
-	public static int generateWithinRange(int start, int end) {
-		int number = start + (int) (Math.random()*(end-start));
-		return number;
-	}
+// class RandomInt {
+//     public static int generateRandom(int options) {
+//         return generateWithinRange(0, options);
+//     }
+
+//     public static int generateWithinRange(int start, int end) {
+//         int number = start + (int) (Math.random() * (end - start));
+//         return number;
+//     }
+// }
+
+
+class DummyClass extends Thread {
+    private Call call;
+    private long endTime;
+    public DummyClass(Call call) {
+        this.call = call;
+        this.endTime = Utilities.random.nextInt(100, 1000) + Timekeeper.getTime();
+    }
+    public void run() {
+        while (this.endTime >= Timekeeper.getTime()) {
+            Utilities.log(call, "is", "executing", "ends after " + (this.endTime - Timekeeper.getTime()));
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+        this.call.terminateCall();
+    }
 }
