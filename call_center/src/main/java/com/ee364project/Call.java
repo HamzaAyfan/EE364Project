@@ -1,6 +1,5 @@
 package com.ee364project;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
@@ -9,7 +8,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 
 import javafx.animation.KeyFrame;
-import javafx.util.Duration;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -29,7 +27,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import com.ee364project.helpers.Utilities;
 
-public class Call {
+public class Call implements Simulated {
     public static LinkedList<Call> activeCalls = new LinkedList<>();
 
     public static final long MAXWAITTIME = 60;
@@ -44,15 +42,13 @@ public class Call {
     }
 
     private static LinkedList<Call> callQueue = new LinkedList<>();
-    public static LinkedList<Call> Activecalls = new LinkedList<>();
     LinkedHashMap<String, Person> sentencesHashMap = new LinkedHashMap<>();
     LinkedHashMap<String, Integer> lengthsSaved = new LinkedHashMap<>();
     private static long callCount = 0;
 
     private long startTime;
+    private long endTime;
     private long answerTime;
-    private long callDuration;
-    private long waitTime;
     private int callTimeElapsed;
     public int totalTime;
     private Customer caller;
@@ -104,19 +100,25 @@ public class Call {
         return LLsolutions;
     }
 
+    public long getEndTime() {
+        return this.endTime;
+    }
+
     public void connectCall(CallCenter callCenter) {
         this.callCenter = callCenter;
         LinkedList<Solution> solutionsCopy = this.makeLinkedList(caller);
         MockDialoge dialoge = new MockDialoge(caller, receiver, this, solutionsCopy);
-        totalTime = dialoge.getContentlength();
-        Activecalls.add(this);
+        this.answerTime = Timekeeper.getTime();
+        this.endTime = this.answerTime + dialoge.getContentlength();
+        activeCalls.add(this);
     }
 
     public synchronized void terminateCall() {
         this.callCenter.releaseAgent(this.receiver);
         Call.activeCalls.remove(this);
-        System.out.println(" done");
+        Utilities.log(this, "ended", "", "");
         this.caller.problemState.solve();
+        this.endTime = Timekeeper.getTime();
         this.state = Call.CallState.ENDED;
     }
 
@@ -134,8 +136,8 @@ public class Call {
         this.caller = caller;
         this.startTime = Timekeeper.getTime();
         this.answerTime = 0;
-        this.callDuration = 0;
-        this.waitTime = 0;
+        // this.callDuration = 0;
+        this.endTime = 0;
         this.caller = caller;
         this.receiver = null;
         this.state = CallState.WAITING;
@@ -144,7 +146,7 @@ public class Call {
     }
 
     public long getCallDuration() {
-        return this.callDuration;
+        return this.endTime - this.answerTime;
     }
 
     public long getStartTime() {
@@ -156,7 +158,7 @@ public class Call {
     }
 
     public long getWaitTime() {
-        return this.waitTime;
+        return this.answerTime - this.startTime;
     }
 
     public Customer getCaller() {
@@ -177,10 +179,18 @@ public class Call {
 
     @Override
     public String toString() {
-        return Utilities.prettyToString("Call" + callCount, this.caller, this.callDuration);
+        return Utilities.prettyToString("Call" + callCount, this.caller, this.getCallDuration());
     }
 
-    static void step() {
+    @Override
+    public void step() {
+        if (this.state == CallState.INCALL) {
+            if (this.endTime <= Timekeeper.getTime()) {
+                this.terminateCall();
+            } else {
+                Utilities.log(this, "continues", activeCalls, (this.endTime - Timekeeper.getTime()) + " remaining...");
+            }
+        }
         applyExpiry();
     }
 }
@@ -211,12 +221,12 @@ class MockDialoge {
             currentCall.lengthsSaved.put(sentence, length);
         }
 
-        System.out.println(currentCall.sentencesHashMap.keySet());
+        // System.out.println(currentCall.sentencesHashMap.keySet());
         return discussionLength;
     }
 
     private int getSolution() {
-        int length = solutions.size();// print(length + " from call " + z + " agent is " + receiver.getlevel());
+        int length = solutions.size(); // print(length + " from call " + z + " agent is " + receiver.getlevel());
         switch (receiver.getlevel()) {
             case SAVEY:
                 return 0;
@@ -485,14 +495,14 @@ class ControlProgressBar {
 }
 
 class RandomInt {
-public static int generateRandom(int options) {
-return generateWithinRange(0, options);
-}
+    public static int generateRandom(int options) {
+        return generateWithinRange(0, options);
+    }
 
-public static int generateWithinRange(int start, int end) {
-int number = start + (int) (Math.random() * (end - start));
-return number;
-}
+    public static int generateWithinRange(int start, int end) {
+        int number = start + (int) (Math.random() * (end - start));
+        return number;
+    }
 }
 
 class DummyClass extends Thread {
