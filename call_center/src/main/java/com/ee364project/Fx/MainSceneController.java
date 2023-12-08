@@ -433,7 +433,7 @@ public class MainSceneController {
     public void processDepartmentFile(File departmentFile){
         try{
             // Utilities.getFakeData(5, Vars.DataClasses.Department);
-            problems = Csv.read(departmentFile.getAbsolutePath(), Vars.DataClasses.Department);
+            departments = Csv.read(departmentFile.getAbsolutePath(), Vars.DataClasses.Department);
             System.out.println("Problem loaded");
         }
         catch(Exception e){
