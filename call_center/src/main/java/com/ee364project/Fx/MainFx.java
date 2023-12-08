@@ -27,8 +27,8 @@ public class MainFx extends Application {
         primaryStage.show();
 
       
-        MainSceneController controller = loader.getController();
-        controller.showYesNoDialog(primaryStage);
+        // MainSceneController controller = loader.getController();
+        // controller.showYesNoDialog(primaryStage);
 
 
     } catch (Exception e) {

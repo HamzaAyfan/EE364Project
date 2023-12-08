@@ -52,6 +52,7 @@ public class Call implements Simulated {
 
     public static LinkedList<Call> activeCalls = new LinkedList<>();
     private static LinkedList<Call> callQueue = new LinkedList<>();
+    private static LinkedList<Call> callsToRemove = new LinkedList<>();
     LinkedHashMap<String, Person> sentencesHashMap = new LinkedHashMap<>();
     LinkedHashMap<String, Integer> lengthsSaved = new LinkedHashMap<>();
     private static long callCount = 0;
@@ -130,28 +131,30 @@ public class Call implements Simulated {
         }
     }
 
-    public synchronized void terminateCall() {
-        this.callCenter.releaseAgent(this.receiver);
-        //int call_index = indexOf(activeCalls, this);
-        int index = activeCalls.indexOf(this);
-        Call.activeCalls.remove(this);
+    public static void terminateCalls() {
+        for (Call call : Call.callsToRemove) {
+            call.callCenter.releaseAgent(call.receiver);
+            //int call_index = indexOf(activeCalls, this);
+            int index = activeCalls.indexOf(call);
+            Call.activeCalls.remove(call);
         
         try{
             if (index >= 0 && vBox != null && vBox.getChildren().size() > 0){
             Platform.runLater(() -> {
-            vBox.getChildren().remove(index);
-
-            });
+            vBox.getChildren().remove(index);});
             }
         }catch(Exception e){
 
         }
-        Utilities.log(this, "ended", "", "");
-        this.caller.problemState.solve();
-        this.endTime = Timekeeper.getTime();
-        this.state = Call.CallState.ENDED;
-    }
-
+        Utilities.log(call, "ended", "", "");
+        call.caller.problemState.solve();
+        call.endTime = Timekeeper.getTime();
+            }
+            callsToRemove.clear();
+        }
+        
+        // this.state = Call.CallState.ENDED;
+ 
     private static <T> int indexOf(LinkedList<T> list, T target) {
         int index = 0;
         for (T element : list) {
@@ -244,7 +247,8 @@ public class Call implements Simulated {
     public void step() {
         if (this.state == CallState.INCALL) {
             if (this.endTime <= Timekeeper.getTime()) {
-                this.terminateCall();
+                this.state = Call.CallState.ENDED;  
+                callsToRemove.add(this);              
             } else {
                 Utilities.log(this, "continues", activeCalls, (this.endTime - Timekeeper.getTime()) + " remaining...");
             }
@@ -582,6 +586,6 @@ class DummyClass extends Thread {
                 e.printStackTrace();
             }
         }
-        this.call.terminateCall();
+        // this.call.terminateCall();
     }
 }

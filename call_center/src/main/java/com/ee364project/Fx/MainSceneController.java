@@ -756,6 +756,7 @@ public class MainSceneController {
                 for (Call call : Call.activeCalls) {
                     call.step();
                 }
+                Call.terminateCalls();
     
                 callCenter.step();
     
