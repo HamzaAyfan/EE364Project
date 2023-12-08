@@ -135,6 +135,9 @@ public class MainSceneController {
     @FXML
     private Button connected;
 
+    Image customerImage = new Image("com\\ee364project\\Fx\\resources\\user.png");
+    Image agentImage = new Image("com\\ee364project\\Fx\\resources\\agent.png");
+
     
     
     //************************Mshari Edit****************************** *//
@@ -147,6 +150,8 @@ public class MainSceneController {
     @FXML
     public void initialize() {
         Call.vBox = CallVbox;
+        CallVbox.setSpacing(4);
+        AgentVbox.setSpacing(4);
         
         //timekeeper = new Timekeeper();
         timerTimeline = new Timeline(new KeyFrame(Duration.seconds(1), this::updateTimer));
@@ -168,70 +173,15 @@ public class MainSceneController {
         // timeer.setText(String.format("%02d:%02d", minutes, seconds));
         timeer.setText(properTime.toString());
     }
-    ////////////////////////////////
+    ///////////////////////////////
 
-    @FXML
-    private void connectCallsBtnClicked(ActionEvent event) {
-        updateUIForCall();
-    }
-
-    private void updateUIForCall() {
-        
-            Image customerImage = new Image("com\\ee364project\\Fx\\resources\\user.png", true);
-            Image agentImage = new Image("com\\ee364project\\Fx\\resources\\agent.png", true);
     
-            ImageView customerImageView = new ImageView(customerImage);
-            ImageView agentImageView = new ImageView(agentImage);
-    
-            customerImageView.setFitWidth(20);
-            customerImageView.setFitHeight(20);
-            agentImageView.setFitWidth(20);
-            agentImageView.setFitHeight(20);
-    
-            StackPane customerStackPane = new StackPane();
-            StackPane agentStackPane = new StackPane();
-    
-            Rectangle customerRectangle = new Rectangle(20, 20, Color.TRANSPARENT);
-            Rectangle agentRectangle = new Rectangle(20, 20, Color.TRANSPARENT);
-    
-            
-            Customer customer = getRandomCustomer();
-            Agent agent = getRandomAgent();
-    
-            if (customer != null && agent != null) {
-                
-                addTooltip(customerRectangle, customer.getStringInfo());
-                addTooltip(agentRectangle, agent.getStringInfo());
-    
-                customerStackPane.getChildren().addAll(customerImageView, customerRectangle);
-                agentStackPane.getChildren().addAll(agentImageView, agentRectangle);
-                CallVbox.getChildren().addAll(customerStackPane, agentStackPane);
-            }
-    }
-    
-   
-    private Customer getRandomCustomer() {
-        int numberOfCustomers = customers.length;
-        if (numberOfCustomers > 0) {
-            int randomIndex = (int) (Math.random() * numberOfCustomers);
-            return (Customer) customers[randomIndex];
-        } else {
-            return null;
-        }
-    }
-    
-    private Agent getRandomAgent() {
-        int numberOfAgents = agents.length;
-        if (numberOfAgents > 0) {
-            int randomIndex = (int) (Math.random() * numberOfAgents);
-            return (Agent) agents[randomIndex];
-        } else {
-            return null;
-        }
-    }
 
 
-    //******************************************************** *//
+    
+
+
+    
        
 
 
@@ -391,8 +341,8 @@ public class MainSceneController {
             if(flowPane.getChildren().size() != 0){ flowPane.getChildren().clear();}
 
             for (int i = 0; i < customers.length; i++) {
-                Image image = new Image("com\\ee364project\\Fx\\resources\\user.png", true);
-                ImageView imageView = new ImageView(image);
+                
+                ImageView imageView = new ImageView(customerImage);
                 imageView.setFitWidth(20);
                 imageView.setFitHeight(20);
 
@@ -439,10 +389,10 @@ public class MainSceneController {
             if(AgentVbox.getChildren().size() != 0){ AgentVbox.getChildren().clear();}
 
             for (int i = 0; i < agents.length; i++) {
-                Image image = new Image("com\\ee364project\\Fx\\resources\\agent.png", true);
-                ImageView imageView = new ImageView(image);
-                imageView.setFitWidth(20);
-                imageView.setFitHeight(20);
+            
+                ImageView imageView = new ImageView(agentImage);
+                imageView.setFitWidth(40);
+                imageView.setFitHeight(40);
 
                 StackPane stackPane = new StackPane();
 
@@ -565,8 +515,8 @@ public class MainSceneController {
         for (HasData datum : Utilities.getFakeData(number, Vars.DataClasses.Customer)) {
             customers[i] = (Customer) datum;
 
-            Image image = new Image("com\\ee364project\\Fx\\resources\\user.png", true);
-            ImageView imageView = new ImageView(image);
+            
+            ImageView imageView = new ImageView(customerImage);
             imageView.setFitWidth(20);
             imageView.setFitHeight(20);
 
@@ -600,10 +550,10 @@ public class MainSceneController {
         for (HasData datum : Utilities.getFakeData(number, Vars.DataClasses.Agent)) {
             agents[i] = (Agent) datum;
 
-            Image image = new Image("com\\ee364project\\Fx\\resources\\agent.png", true);
-            ImageView imageView = new ImageView(image);
-            imageView.setFitWidth(20);
-            imageView.setFitHeight(20);
+            
+            ImageView imageView = new ImageView(agentImage);
+            imageView.setFitWidth(40);
+            imageView.setFitHeight(40);
 
             StackPane stackPane = new StackPane();
 

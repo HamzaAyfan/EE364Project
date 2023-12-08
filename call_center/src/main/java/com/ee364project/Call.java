@@ -18,6 +18,8 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -38,6 +40,8 @@ public class Call implements Simulated {
     public static VBox vBox;
 
     HBox hbox;
+    
+    Image callimage=new Image("com\\ee364project\\Fx\\resources\\green.jpg");
 
     public static final long MAXWAITTIME = 60;
 
@@ -192,12 +196,12 @@ public class Call implements Simulated {
     public HBox createHbox(){
         HBox hBox = new HBox();
         CheckBox checkBox = new CheckBox();
-        //ImageView callImageView = new ImageView(callImage);
-        //callImageView.setFitWidth(50);
-        // callImageView.setFitHeight(50);
+        ImageView callImageView = new ImageView(callimage);
+        callImageView.setFitWidth(50);
+         callImageView.setFitHeight(50);
         
         //Rectangle rectangle = new Rectangle(50, 50, Color.TRANSPARENT);
-        // hBox.getChildren().add(callImageView);
+         hBox.getChildren().add(callImageView);
         //hBox.getChildren().add(rectangle);
         hBox.getChildren().add(checkBox);
         HBox.setHgrow(checkBox, Priority.ALWAYS);
