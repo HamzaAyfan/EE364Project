@@ -1,5 +1,6 @@
 package com.ee364project;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
@@ -131,12 +132,14 @@ public class Call implements Simulated {
 
     public synchronized void terminateCall() {
         this.callCenter.releaseAgent(this.receiver);
-        int call_index = indexOf(activeCalls, this);
+        //int call_index = indexOf(activeCalls, this);
+        int index = activeCalls.indexOf(this);
         Call.activeCalls.remove(this);
+        
         try{
-            if (vBox != null && vBox.getChildren().size() > 0){
+            if (index >= 0 && vBox != null && vBox.getChildren().size() > 0){
             Platform.runLater(() -> {
-            vBox.getChildren().remove(call_index);
+            vBox.getChildren().remove(index);
 
             });
             }

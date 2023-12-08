@@ -379,19 +379,18 @@ public class MainSceneController {
         try{
 
             HasData[] customersCSV = Csv.read(selectedFile.getAbsolutePath()); //Done
-            int number = customers.length;
-            //System.out.println(number);
-            customers = new Customer[number];
+            customers = new Customer[customersCSV.length];
 
             int j = 0;
             for(HasData customer: customersCSV){
                 customers[j] = (Customer) customer;
                 j = j + 1;
             }
+            System.out.println("Customers creeated");
 
             if(flowPane.getChildren().size() != 0){ flowPane.getChildren().clear();}
 
-            for (int i = 0; i < number; i++) {
+            for (int i = 0; i < customers.length; i++) {
                 Image image = new Image("com\\ee364project\\Fx\\resources\\user.png", true);
                 ImageView imageView = new ImageView(image);
                 imageView.setFitWidth(20);
@@ -405,8 +404,7 @@ public class MainSceneController {
                 stackPane.getChildren().addAll(imageView, rectangle);    
                 //rectangle.setStyle("-fx-fill: green;");
 
-                Customer customer = (Customer) customers[i];
-                addTooltip(rectangle, customer.getStringInfo());
+                addTooltip(rectangle, customers[i].getStringInfo());
 
                 flowPane.getChildren().add(stackPane);
             }
@@ -428,17 +426,19 @@ public class MainSceneController {
         try{
 
             HasData[] agentsCSV = Csv.read(selectedFile.getAbsolutePath()); //Done
-            int number = agents.length;
-            //System.out.println(number);
+            agents = new Agent[agentsCSV.length];
+            
             int j = 0;
             for(HasData agent: agentsCSV){
                 agents[j] = (Agent) agent;
                 j = j + 1;
             }
 
+            System.out.println("Agents creeated");
+
             if(AgentVbox.getChildren().size() != 0){ AgentVbox.getChildren().clear();}
 
-            for (int i = 0; i < number; i++) {
+            for (int i = 0; i < agents.length; i++) {
                 Image image = new Image("com\\ee364project\\Fx\\resources\\agent.png", true);
                 ImageView imageView = new ImageView(image);
                 imageView.setFitWidth(20);
@@ -470,7 +470,8 @@ public class MainSceneController {
         try{
             // Utilities.getFakeData(5, Vars.DataClasses.Department);
             problems = Csv.read(problemFile.getAbsolutePath(), Vars.DataClasses.Problem);
-            // Department.removeEmpty();
+            Department.removeEmpty();
+            System.out.println("Problem loaded");
         }
         catch(Exception e){
             e.printStackTrace();
@@ -762,7 +763,7 @@ public class MainSceneController {
                 Timekeeper.step();
     
                 try {
-                    Thread.sleep(100);
+                    Thread.sleep(200);
                 } catch (InterruptedException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
