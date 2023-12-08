@@ -135,20 +135,23 @@ public class MainSceneController {
     @FXML
     private Button connected;
 
+
+    // initializing the images that is going to be used for loading the main stage panes
     Image customerImage = new Image("com\\ee364project\\Fx\\resources\\user.png");
     Image agentImage = new Image("com\\ee364project\\Fx\\resources\\agent.png");
 
     
     
-    //************************Mshari Edit****************************** *//
+   
     private CallCenter callCenter;
    
-       //////////////// Timer methods from TimeKeeper Class//////////////
+    
     private Timeline timerTimeline;
-    //private Timekeeper timekeeper;
+    
 
     @FXML
     public void initialize() {
+        // setting all the important references and spaces for panes internal look
         Call.vBox = CallVbox;
         CallVbox.setSpacing(4);
         AgentVbox.setSpacing(4);
@@ -158,6 +161,7 @@ public class MainSceneController {
         timerTimeline.setCycleCount(Timeline.INDEFINITE); 
 
         try {
+            // calling the methods below would load the recent files once the program runs
             loadRecentFiles();
         } catch (IOException e) {
             // TODO Auto-generated catch block
@@ -165,6 +169,7 @@ public class MainSceneController {
         }
     }
 
+    //////////////// Timer methods from TimeKeeper Class//////////////
     private void updateTimer(ActionEvent event) {
         Timekeeper.step();
         LocalDateTime properTime = Timekeeper.getProperTime();
@@ -176,18 +181,7 @@ public class MainSceneController {
     ///////////////////////////////
 
     
-
-
-    
-
-
-    
-       
-
-
-
-
-
+    // this method is being called instantly to show the dialog that asks the user for his choose of environment (Old - New)
     public void showYesNoDialog(Stage primaryStage) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Simulation Type");
@@ -214,7 +208,8 @@ public class MainSceneController {
     }
 
 
-
+    // if the "OLD Environment" button was clicked, the file explorer will open and asks the user for a file to load in the panes
+    // and prepare them for the simulation process
     void oldCosbtnClicked() {
         try{
             FileChooser fileChooser = new FileChooser();
@@ -230,6 +225,7 @@ public class MainSceneController {
         
     }
     
+    // after the user chooses a file (Zip File) from the file explorer it is the time to process it in this method
     public void handleOpenFile(File zipFile){
         System.out.println("Handling now");
         // Check if the file is already in the recent files list
@@ -256,7 +252,8 @@ public class MainSceneController {
             // Save the recent files
             saveRecentFiles();
             System.out.println("Saved recent");
-        }
+        }   
+            // after all the previous checkpoints, we are now ready to deal with the zip file
             // open file process
             if (zipFile != null) {
                 System.out.println("Opening");
@@ -264,11 +261,11 @@ public class MainSceneController {
                 String outputDirectory = "extracted";
 
                 try {
-                    Zip.extractZip(zipFile, outputDirectory);
-                    processCsvFiles(outputDirectory);
+                    Zip.extractZip(zipFile, outputDirectory); // this method takes a zip file and extracts its components in a directory named "extracted"
+                    processCsvFiles(outputDirectory); // this method will process the CSV files extraced from the zip file chosen
                     System.out.println("CSV files processed successfully.");
 
-                    Zip.deleteExtracted(outputDirectory);
+                    Zip.deleteExtracted(outputDirectory); // after processing the CSV files, the files and the extracted directory will be deleted 
 
                     //recentFiles.add(zipFile);
                     //updateRecentFilesMenu();
@@ -283,7 +280,7 @@ public class MainSceneController {
         
 
     }
-
+    // this method takes in the directory that contains the CSV files, and process each one of them individually
     private void processCsvFiles(String extractedDirectory) {
         String[] csvFileNames = { "Problem.csv", "Customer.csv", "Agent.csv", "Department.csv"};
 
@@ -317,9 +314,8 @@ public class MainSceneController {
 
     @FXML
     void oldCosbtnClicked(ActionEvent event) {
-        //Stage stage = (Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
         try {
-            oldCosbtnClicked();
+            oldCosbtnClicked(); // if the menubar item "Old" was clicked, call the method
         } catch (Exception e) {
             // TODO: handle exception
         }
@@ -330,10 +326,13 @@ public class MainSceneController {
     @FXML
     private void processCustomerFile(File selectedFile) throws IOException {
         try{
-
+            // depending on the static Csv.read method, we will be reading the customersCSV file here and store its content in an array of HasData objects
             HasData[] customersCSV = Csv.read(selectedFile.getAbsolutePath()); //Done
+
+            // initialzing the array of Customer type that will be iterated over
             customers = new Customer[customersCSV.length];
 
+            // this for loop loads the array of Customer type with the customersCSV content with the help of casting
             int j = 0;
             for(HasData customer: customersCSV){
                 customers[j] = (Customer) customer;
@@ -341,8 +340,9 @@ public class MainSceneController {
             }
             System.out.println("Customers creeated");
 
-            if(flowPane.getChildren().size() != 0){ flowPane.getChildren().clear();}
+            if(flowPane.getChildren().size() != 0){ flowPane.getChildren().clear();} // clear the customersPane if it has previous content
 
+            // this for loop loads the GUI with the customers in thier places
             for (int i = 0; i < customers.length; i++) {
                 
                 ImageView imageView = new ImageView(customerImage);
@@ -377,10 +377,13 @@ public class MainSceneController {
     @FXML
     private void processAgentFile(File selectedFile) throws IOException {
         try{
-
+            // depending on the static Csv.read method, we will be reading the agentsCSV file here and store its content in an array of HasData objects
             HasData[] agentsCSV = Csv.read(selectedFile.getAbsolutePath()); //Done
+
+            // initialzing the array of Agent type that will be iterated over
             agents = new Agent[agentsCSV.length];
             
+            // this for loop loads the array of Agent type with the agentsCSV content with the help of casting
             int j = 0;
             for(HasData agent: agentsCSV){
                 agents[j] = (Agent) agent;
@@ -389,8 +392,9 @@ public class MainSceneController {
 
             System.out.println("Agents creeated");
 
-            if(AgentVbox.getChildren().size() != 0){ AgentVbox.getChildren().clear();}
+            if(AgentVbox.getChildren().size() != 0){ AgentVbox.getChildren().clear();} // clear the agentsPane if it has previous content
 
+            // this for loop loads the GUI with the agents in thier places
             for (int i = 0; i < agents.length; i++) {
             
                 ImageView imageView = new ImageView(agentImage);
@@ -421,7 +425,6 @@ public class MainSceneController {
 
     public void processProblemFile(File problemFile){
         try{
-            // Utilities.getFakeData(5, Vars.DataClasses.Department);
             problems = Csv.read(problemFile.getAbsolutePath(), Vars.DataClasses.Problem);
             System.out.println("Problem loaded");
         }
@@ -432,7 +435,6 @@ public class MainSceneController {
 
     public void processDepartmentFile(File departmentFile){
         try{
-            // Utilities.getFakeData(5, Vars.DataClasses.Department);
             departments = Csv.read(departmentFile.getAbsolutePath(), Vars.DataClasses.Department);
             System.out.println("Problem loaded");
         }
@@ -442,21 +444,26 @@ public class MainSceneController {
         
     }
 
+    // this method helps us to add toolTips for both customers and agents by taking thier representing rectangle and the text we want to display
     @FXML
     private void addTooltip(Rectangle rectangle, String tooltipText) {
         Tooltip tooltip = new Tooltip(tooltipText);
         Tooltip.install(rectangle, tooltip);
 
-        rectangle.setOnMouseEntered((MouseEvent event) -> {
+        tooltip.setMaxWidth(300);
+
+        rectangle.setOnMouseEntered((MouseEvent event) -> { // show the toolTip when the mouse hovers above a Person
             tooltip.show(rectangle, event.getScreenX(), event.getScreenY() + 15);
         });
 
-        rectangle.setOnMouseExited((MouseEvent event) -> {
+        rectangle.setOnMouseExited((MouseEvent event) -> { // hide the toolTip when the mouse dehovers from a Person
             tooltip.hide();
         });
     }
     
     
+    // this method allows the user to create his own call center environment by asking him to enter the main 
+    // parameters that synethize a call center, which are the number of customer, agents, departments, and problems
     void newCosbtnClicked() {
         TextInputDialog inputDialog = new TextInputDialog();
         inputDialog.setTitle("Input Dialog");
@@ -500,11 +507,11 @@ public class MainSceneController {
                 int numberOfDepartments = Integer.parseInt(textField3.getText());
                 int numberOfProblems = Integer.parseInt(textField4.getText());
 
-                // generate fake problems and departments
+                // generate fake problems and departments depending on the user's input
                 departments = Utilities.getFakeData(numberOfDepartments, Vars.DataClasses.Department);
                 problems = Utilities.getFakeData(numberOfProblems, Vars.DataClasses.Problem);
 
-                // generate fake customers and agents
+                // generate fake customers and agents depending on the user's input
                 generateNewCustomers(numberOfCustomers);
                 generateNewAgents(numberOfAgents);
                 
@@ -516,9 +523,10 @@ public class MainSceneController {
 
     @FXML
     void newCosbtnClicked(ActionEvent event) {
-        newCosbtnClicked();
+        newCosbtnClicked(); // the menubar item "New" will call this method whenever it was clicked
     }
 
+    // this method generates fake customers depending on the user's input
     private void generateNewCustomers(int number) {
         if(flowPane.getChildren().size() != 0){ flowPane.getChildren().clear();}
         
@@ -553,6 +561,7 @@ public class MainSceneController {
         }
     }
 
+    // this method generates fake agents depending on the user's input
     private void generateNewAgents(int number) {
         if(AgentVbox.getChildren().size() != 0){ AgentVbox.getChildren().clear();}
               
@@ -588,6 +597,7 @@ public class MainSceneController {
         System.out.println("Finished agents");
     }
     
+    // this method is being used to show an error alert whenever is needed to pop
     private void showErrorAlert(String title, String content) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
@@ -596,19 +606,21 @@ public class MainSceneController {
         alert.showAndWait();
     }
 
+    // this method is called when the menubar item "Save as" is clicked
     @FXML
     void saveAsbtnClicked(ActionEvent event) throws IOException {
         FileChooser fileChooser = new FileChooser();
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("ZIP Files", "*.zip"));
 
         // Show Save As dialog
-        File saveFile = fileChooser.showSaveDialog(new Stage());
+        File saveFile = fileChooser.showSaveDialog(new Stage()); // asks the user to enter the file name he wants to save
 
         if (saveFile != null) {
             // Get the chosen file path from the user
             String zipFilePath = saveFile.getAbsolutePath();
 
             // write the csvfiles in the output directory
+            // the static method Csv.write takes the HasData[] array and the path to where to save the array.
             Csv.write((HasData[]) customers, "call_center/output/Customer.csv");
             Csv.write((HasData[]) agents, "call_center/output/Agent.csv");
             Csv.write((HasData[]) Problem.getAllProblems(), "call_center/output/Problem.csv");
@@ -616,8 +628,8 @@ public class MainSceneController {
             Csv.write(departments, "call_center/output/Department.csv");
 
 
-            // Perform the saving logic
-            Zip.compressToZip(zipFilePath, "call_center/output"); // generate the zip file
+            // after writing and generating the 4 main CSV files, it is now time to compress them and generate one zip file for the user 
+            Zip.compressToZip(zipFilePath, "call_center/output"); // generate the zip file 
             Zip.deleteExtracted("call_center/output"); // delete the extraction directory
             
             System.out.println("ZIP file saved to: " + zipFilePath);
@@ -625,14 +637,14 @@ public class MainSceneController {
 
     }
 
-    // Handling Open Recent
-
+    // when a file is clicked from the menubar item "recents" the file is handled similarly to choosing an old environment
     @FXML
     private void handleOpenRecent(MenuItem menuItem) {
         File selectedFile = (File) menuItem.getUserData();
         handleOpenFile(selectedFile);
     }
     
+    // this method is responsible for updating the recentFiles whenever a file was opened
     @FXML
     private void updateRecentFilesMenu() {
         OpenRecentMenu.getItems().clear();
@@ -644,7 +656,9 @@ public class MainSceneController {
         }
     }
 
+    // this method is being called once the program runs to load the recentFiles list with the recently opened files
     private void loadRecentFiles() throws IOException {
+        // the loading method depends on reading the recent file paths from a text file named recent_files.txt
         try (BufferedReader reader = new BufferedReader(new FileReader(RECENT_FILES_FILE))) {
             Set<String> uniquePaths = new HashSet<>();
             recentFiles.clear();
@@ -668,6 +682,7 @@ public class MainSceneController {
         }
     }
 
+    // this method is called during the file handling process and it insures to save the opened file in the recent_files.txt
     private void saveRecentFiles() {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(RECENT_FILES_FILE))) {
             Set<String> uniquePaths = new HashSet<>();
