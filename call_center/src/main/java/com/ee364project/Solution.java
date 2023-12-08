@@ -31,7 +31,7 @@ public class Solution implements Cloneable{
             intro = customerIntro;
         }
         int selectedIndex = (int)(Math.random()*intro.length);
-        return agentIntro[selectedIndex];
+        return intro[selectedIndex];
     }
 
     public boolean equals(Solution other) {
@@ -52,10 +52,32 @@ public class Solution implements Cloneable{
 
     public Solution(Problem problem, String[] customerIntro, String[] customerResponses, String[] agentIntro,
             String[] agentResponses) {
-        this.customerIntro = customerIntro;
-        this.customerResponses = customerResponses;
-        this.agentIntro = agentIntro;
-        this.agentResponses = agentResponses;
+
+                // TODO: 
+                // FIXME: apparently some part of the program is calling this method with an empty arguemnt like customerResponses = [],
+                // for now this checks if that happens and replaces it with a random 1 String[]/.
+                if (customerIntro.length == 0) {
+                    this.customerIntro = Utilities.getRandomStringArray(1);
+                } else {
+                    this.customerIntro = customerIntro;
+                }
+
+                if (customerResponses.length == 0) {
+                    this.customerResponses = Utilities.getRandomStringArray(1);
+                } else {
+                    this.customerResponses = customerResponses;
+                }
+
+                if (agentIntro.length == 0) {
+                    this.agentIntro = Utilities.getRandomStringArray(1);
+                } else {
+                    this.agentIntro = agentIntro;
+                }
+                if (agentResponses.length == 0) {
+                    this.agentResponses = Utilities.getRandomStringArray(1);
+                } else {
+                    this.agentResponses = agentResponses;
+                }
         if (allSolutions.get(problem) == null) {
             HashSet<Solution> arr = new HashSet<>();
             arr.add(this);
