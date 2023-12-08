@@ -285,7 +285,7 @@ public class MainSceneController {
     }
 
     private void processCsvFiles(String extractedDirectory) {
-        String[] csvFileNames = { "Problem.csv", "Customer.csv", "Agent.csv",};
+        String[] csvFileNames = { "Problem.csv", "Customer.csv", "Agent.csv", "Department.csv"};
 
 
         for (String fileName : csvFileNames) {
@@ -304,6 +304,9 @@ public class MainSceneController {
                 else if(fileName.contains(csvFileNames[2])){
                     File agentFile = csvFilePath.toFile();
                     processAgentFile(agentFile);
+                } else if(fileName.contains(csvFileNames[3])) {
+                    File departmentFile = csvFilePath.toFile();
+                    processDepartmentFile(departmentFile);
                 }
 
             } catch (IOException e) {
@@ -420,7 +423,17 @@ public class MainSceneController {
         try{
             // Utilities.getFakeData(5, Vars.DataClasses.Department);
             problems = Csv.read(problemFile.getAbsolutePath(), Vars.DataClasses.Problem);
-            Department.removeEmpty();
+            System.out.println("Problem loaded");
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    public void processDepartmentFile(File departmentFile){
+        try{
+            // Utilities.getFakeData(5, Vars.DataClasses.Department);
+            problems = Csv.read(departmentFile.getAbsolutePath(), Vars.DataClasses.Department);
             System.out.println("Problem loaded");
         }
         catch(Exception e){
@@ -599,6 +612,9 @@ public class MainSceneController {
             Csv.write((HasData[]) customers, "call_center/output/Customer.csv");
             Csv.write((HasData[]) agents, "call_center/output/Agent.csv");
             Csv.write((HasData[]) Problem.getAllProblems(), "call_center/output/Problem.csv");
+            Department[] departments = Department.getAllDepartments().values().toArray(new Department[Department.getAllDepartments().size()]);
+            Csv.write(departments, "call_center/output/Department.csv");
+
 
             // Perform the saving logic
             Zip.compressToZip(zipFilePath, "call_center/output"); // generate the zip file

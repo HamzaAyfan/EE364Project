@@ -14,7 +14,7 @@ import java.util.zip.ZipOutputStream;
 
 public class Zip {
 
-    private static String[] csvFileNames = {"Customer.csv", "Agent.csv", "Problem.csv"};
+    private static String[] csvFileNames = {"Customer.csv", "Agent.csv", "Problem.csv", "Department.csv"};
 
     public static void extractZip(File zipFile, String outputDirectory) throws IOException {
         try (ZipInputStream zipInputStream = new ZipInputStream(Files.newInputStream(zipFile.toPath()))) {
