@@ -151,6 +151,7 @@ public class MainSceneController {
     // panes
     Image customerImage = new Image("com\\ee364project\\Fx\\resources\\user.png");
     Image agentImage = new Image("com\\ee364project\\Fx\\resources\\agent.png");
+    Image callImage = new Image("com\\ee364project\\Fx\\resources\\green.jpg");
 
     // ************************Mshari Edit****************************** *//
     private CallCenter callCenter;
@@ -171,6 +172,8 @@ public class MainSceneController {
         Call.phaser = phaser;
         CallVbox.setSpacing(4);
         AgentVbox.setSpacing(4);
+
+        
 
         // timekeeper = new Timekeeper();
         timerTimeline = new Timeline(new KeyFrame(Duration.seconds(1), this::updateTimer));
@@ -216,63 +219,7 @@ public class MainSceneController {
     }
     ////////////////////////////////
 
-    @FXML
-    private void connectCallsBtnClicked(ActionEvent event) {
-        updateUIForCall();
-    }
-
-    private void updateUIForCall() {
-
-        Image customerImage = new Image("com\\ee364project\\Fx\\resources\\user.png", true);
-        Image agentImage = new Image("com\\ee364project\\Fx\\resources\\agent.png", true);
-
-        ImageView customerImageView = new ImageView(customerImage);
-        ImageView agentImageView = new ImageView(agentImage);
-
-        customerImageView.setFitWidth(20);
-        customerImageView.setFitHeight(20);
-        agentImageView.setFitWidth(20);
-        agentImageView.setFitHeight(20);
-
-        StackPane customerStackPane = new StackPane();
-        StackPane agentStackPane = new StackPane();
-
-        Rectangle customerRectangle = new Rectangle(20, 20, Color.TRANSPARENT);
-        Rectangle agentRectangle = new Rectangle(20, 20, Color.TRANSPARENT);
-
-        Customer customer = getRandomCustomer();
-        Agent agent = getRandomAgent();
-
-        if (customer != null && agent != null) {
-
-            addTooltip(customerRectangle, customer.getStringInfo());
-            addTooltip(agentRectangle, agent.getStringInfo());
-
-            customerStackPane.getChildren().addAll(customerImageView, customerRectangle);
-            agentStackPane.getChildren().addAll(agentImageView, agentRectangle);
-            CallVbox.getChildren().addAll(customerStackPane, agentStackPane);
-        }
-    }
-
-    private Customer getRandomCustomer() {
-        int numberOfCustomers = customers.length;
-        if (numberOfCustomers > 0) {
-            int randomIndex = (int) (Math.random() * numberOfCustomers);
-            return (Customer) customers[randomIndex];
-        } else {
-            return null;
-        }
-    }
-
-    private Agent getRandomAgent() {
-        int numberOfAgents = agents.length;
-        if (numberOfAgents > 0) {
-            int randomIndex = (int) (Math.random() * numberOfAgents);
-            return (Agent) agents[randomIndex];
-        } else {
-            return null;
-        }
-    }
+    
 
     // ******************************************************** *//
 
@@ -826,12 +773,13 @@ public class MainSceneController {
     public Node[] createHbox() {
         HBox hBox = new HBox();
         CheckBox checkBox = new CheckBox();
-        // ImageView callImageView = new ImageView(callImage);
-        // callImageView.setFitWidth(50);
-        // callImageView.setFitHeight(50);
+        
+         ImageView callImageView = new ImageView(callImage);
+         callImageView.setFitWidth(50);
+         callImageView.setFitHeight(50);
 
         // Rectangle rectangle = new Rectangle(50, 50, Color.TRANSPARENT);
-        // hBox.getChildren().add(callImageView);
+         hBox.getChildren().add(callImageView);
         // hBox.getChildren().add(rectangle);
         hBox.getChildren().add(checkBox);
         HBox.setHgrow(checkBox, Priority.ALWAYS);
@@ -842,32 +790,7 @@ public class MainSceneController {
         return pointers;
     }
 
-    private ChangeListener<? super Boolean> createChangeListener(CheckBox checkbox) {
-        return (observable, oldValue, newValue) -> {
-            if (newValue) {
-                if (checkedCount >= 3) {
-                    checkbox.setSelected(false); // Prevent checking more checkboxes than allowed
-                } else {
-                    checkedCount++;
-                    // if(Call.linkCBtoDB.containsKey(checkbox)){if
-                    // (!endThread){Call.linkCBtoDB.get(checkbox).showWindow();return;}}
-                    // newThreadAdded = true;
-                    // Call call = Call.CheckBoxAndCall.get(checkbox);
-                    // Runnable dialoge = new DialogeBox("Call",phaser,call);
-                    // Call.linkCBtoDB.put(checkbox,(DialogeBox)dialoge);
-
-                    // // ((DialogeBox)dialoge).setupCall(call);
-
-                    // executor.execute(dialoge);
-                }
-            } else {
-                checkedCount--;
-                // if (!endThread){Call.linkCBtoDB.get(checkbox).closeWindow();return;}
-                // try{Call.linkCBtoDB.get(checkbox).exit();}catch(NullPointerException e){}
-            }
-        };
-    }
-
+    
     public void handleCheckboxAction(String callNumber, CheckBox checkbox) {
 
         // Count the number of checked checkboxes
@@ -919,6 +842,7 @@ public class MainSceneController {
     // *****************************************************************************************
     // */
     // End of DialogueBox code
+    public static boolean running = true;
 
     @FXML
     void startbtnClicked(ActionEvent event) {
@@ -936,7 +860,7 @@ public class MainSceneController {
 
         new Thread(() -> {
             phaser.register();
-            while (true) {
+            while (running) {
                 for (Customer customer : customers) {
                     customer.step();
                 }

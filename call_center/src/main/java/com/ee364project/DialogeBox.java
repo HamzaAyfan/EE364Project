@@ -162,25 +162,6 @@ public class DialogeBox extends Thread {
     public void openEmptyWindow(String windowTitle, double x, double y) {
         scrollPane = new ScrollPane(root);
         scrollPane.setFitToWidth(true);
-
-        agentVoice = new ProgressBar();
-        agentVoice.setRotate(-90);
-        VBox agentVolumeBarBox = new VBox(agentVoice);
-        agentVoice.setProgress(0);
-        customerVoice = new ProgressBar();
-        customerVoice.setRotate(-90);
-        customerVoice.setProgress(0);
-        VBox customerVolumeBarBox = new VBox(customerVoice);
-
-        agentVolumeBarBox.setAlignment(Pos.CENTER);
-        customerVolumeBarBox.setAlignment(Pos.CENTER);
-        HBox mainPane = new HBox(customerVolumeBarBox, scrollPane, agentVolumeBarBox);
-        agentVolumeBarBox.prefWidthProperty().bind(mainPane.widthProperty().divide(5));
-        agentVolumeBarBox.prefHeightProperty().bind(mainPane.heightProperty());
-        customerVolumeBarBox.prefWidthProperty().bind(mainPane.widthProperty().divide(5));
-        customerVolumeBarBox.prefHeightProperty().bind(mainPane.heightProperty());
-        scrollPane.prefWidthProperty().bind(mainPane.widthProperty().multiply(0.6));
-
         scrollPane.vvalueProperty().addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
@@ -199,16 +180,13 @@ public class DialogeBox extends Thread {
             }
         });
 
-        System.out.print(scrollDown);
         stage.setOnCloseRequest(e -> {
             this.exit();
             currentCall.getCheckBox().setSelected(false);
-
         });
-        Scene scene = new Scene(mainPane, 700, 200);
-
-        mainPane.prefWidthProperty().bind(scene.widthProperty());
-        mainPane.prefHeightProperty().bind(scene.heightProperty());
+        Scene scene = new Scene(scrollPane, 700, 200);
+        scrollPane.prefWidthProperty().bind(scene.widthProperty());
+        scrollPane.prefHeightProperty().bind(scene.heightProperty());
         stage.setScene(scene);
         stage.setTitle(windowTitle);
         stage.setX(x);
