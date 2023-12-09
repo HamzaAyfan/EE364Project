@@ -1,6 +1,7 @@
 package com.ee364project;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
@@ -13,6 +14,7 @@ import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ProgressBar;
@@ -32,14 +34,15 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import com.ee364project.Fx.MainSceneController;
 import com.ee364project.helpers.Utilities;
+import java.util.concurrent.Phaser;
 
 public class Call implements Simulated {
     //public static LinkedList<Call> activeCalls = new LinkedList<>();
-    MainSceneController msc = new MainSceneController();
-
+    private CheckBox checkBox;
     public static VBox vBox;
+    public static HashMap<CheckBox,Call> CheckBoxAndCall =new HashMap<CheckBox,Call>();
 
-    HBox hbox;
+    public HBox hbox;
     
     Image callimage=new Image("com\\ee364project\\Fx\\resources\\green.jpg");
 
@@ -60,16 +63,18 @@ public class Call implements Simulated {
     LinkedHashMap<String, Person> sentencesHashMap = new LinkedHashMap<>();
     LinkedHashMap<String, Integer> lengthsSaved = new LinkedHashMap<>();
     private static long callCount = 0;
+    public static Phaser phaser;
+    public static HashMap<CheckBox,DialogeBox> linkCBtoDB = new HashMap<>();
 
-    private long startTime;
-    private long endTime;
-    private long answerTime;
-    private int callTimeElapsed;
+    private int startTime;//
+    private int endTime;//
+    private int answerTime;//
     public int totalTime;
     private Customer caller;
     private Agent receiver;
     private CallState state;
     private CallCenter callCenter;
+    public static boolean newThreadAdded;
     Timeline callTime = new Timeline();
 
     public static Call getACall() {
@@ -85,21 +90,12 @@ public class Call implements Simulated {
         call.state = CallState.ENDED;
     }
 
-    public void increaseTime() {
-
-        if (callTimeElapsed++ > totalTime) {
-            for (Entry<CheckBox, Call> entry : Test.linkCBtoCall.entrySet()) {
-                if (this.equals(entry.getValue())) {
-                    Platform.runLater(() -> Test.vbox.getChildren().remove(entry.getKey()));
-                }
-            }
-            callQueue.remove(this);
-            // receiver.setFree();
-        }
-    }
+    // public void increaseTime() {
+    //     timeela
+    // }
 
     public int getTimeElapsed() {
-        return callTimeElapsed;
+        return (Timekeeper.getTime()-startTime);
     }
 
     public LinkedList<Solution> makeLinkedList(Customer caller) {
@@ -123,16 +119,19 @@ public class Call implements Simulated {
         this.callCenter = callCenter;
         LinkedList<Solution> solutionsCopy = this.makeLinkedList(caller);
         MockDialoge dialoge = new MockDialoge(caller, receiver, this, solutionsCopy);
+        totalTime = dialoge.getContentlength();
         this.answerTime = Timekeeper.getTime();
-        this.endTime = this.answerTime + dialoge.getContentlength();
+        this.endTime = this.answerTime + totalTime;
         activeCalls.add(this);
-        if (vBox != null ){
-            hbox = createHbox();
-            Platform.runLater(() -> {
+        MainSceneController msc = new MainSceneController();
+            Node[] nodes = msc.createHbox();
+            hbox = (HBox)nodes[0];
+            checkBox = (CheckBox)nodes[1];
+        Platform.runLater(()->{ 
             vBox.getChildren().add(hbox);
-
             });
-        }
+            CheckBoxAndCall.put(checkBox, this);
+
     }
 
     public static void terminateCalls() {
@@ -259,6 +258,10 @@ public class Call implements Simulated {
         }
         applyExpiry();
     }
+
+    public CheckBox getCheckBox() {
+        return checkBox;
+    }
 }
 
 class MockDialoge {
@@ -330,233 +333,6 @@ class MockDialoge {
             currentCall.sentencesHashMap.put("I just did that but it did not work", caller);
             currentCall.sentencesHashMap.put("sorry it did not work let me seek an alternative", receiver);
         }
-    }
-}
-
-class DialogeBox extends Thread {
-    private static ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
-    Stage stage = new Stage();
-    VBox root = new VBox(10);
-
-    public static LinkedList<DialogeBox> windows = new LinkedList<>();
-    public DialogeBox thisWindow;
-    private LinkedList<Solution> solutions;
-    public static int ActiveCallNumber;
-    private Call currentCall;
-    private Customer caller;
-    private Agent receiver;
-    ProgressBar customerVoice;
-    ProgressBar agentVoice;
-    Timeline timeline;
-    LinkedList<String> content = new LinkedList<>();
-    KeyFrame kfTalking;
-    KeyFrame kfTransitionalPause;
-    KeyFrame kfStopTalking;
-    ScrollPane scrollPane;
-    boolean scrollDown = true;
-    boolean scrollDownCheck = true;
-    int index;
-    public static int numberOfThreads = 1;
-    Phaser phaser;
-    private boolean stop;
-    String startFrom;
-    CheckBox checkBox;
-    String lastLine;
-
-    public DialogeBox(String callNumber, Phaser phaser, CheckBox checkBox) {
-
-        this.checkBox = checkBox;
-        currentCall = Test.linkCBtoCall.get(checkBox);
-        this.phaser = phaser;
-        phaser.register();
-
-        windows.add(this);
-
-        this.openEmptyWindow(callNumber, 500, 200);
-        System.out.println("works");
-        // this.run();
-    }
-
-    public DialogeBox() {
-        this("empty for now", null, null);
-    }
-
-    public int resumeDialogeFrom() {
-
-        int startLength = 0;
-        for (Map.Entry<String, Integer> entry : currentCall.lengthsSaved.entrySet()) {
-            startLength += entry.getValue();
-            Person person = currentCall.sentencesHashMap.get(entry.getKey());
-            TextField textField = new TextField(person.getTag() + entry.getKey());
-            textField.setEditable(false);
-            Platform.runLater(() -> root.getChildren().add(textField));
-            if (startLength > currentCall.getTimeElapsed()) {
-                startFrom = entry.getKey();
-                break;
-            }
-
-        }
-        return startLength;
-    }
-
-    public void exit() {
-        stop = true;
-    }
-
-    public void startShowing(int startLength) {
-        while (currentCall.totalTime < startLength) {
-            phaser.arriveAndAwaitAdvance();
-
-        }
-        Platform.runLater(() -> stage.show());
-    }
-
-    private void pacedPrint(String sentence) {
-        Person speaker = currentCall.sentencesHashMap.get(sentence);
-        TextField textField = this.createTextField(speaker);
-        String[] words = sentence.split("\\s+");
-
-        for (String word : words) {
-            if (scrollDown) {
-                scrollPane.setVvalue(1.0);
-            }
-            Test.waiting = true;
-            phaser.arriveAndAwaitAdvance();
-            if (stop) {
-                break;
-            }
-
-            Platform.runLater(() -> textField.appendText(word + " "));
-        }
-    }
-
-    private TextField createTextField(Person person) {
-        TextField textField = new TextField(person.getTag());
-        textField.setEditable(false);
-        int identifier = 0;
-        if (person instanceof Agent) {
-            textField.setStyle("-fx-alignment: CENTER-RIGHT;");
-        } else {
-            identifier = 1;
-        }
-        Platform.runLater(() -> {
-            root.getChildren().add(textField);
-        });
-        return textField;
-    }
-
-    @Override
-    public void run() {
-        int resume = this.resumeDialogeFrom();
-        this.startShowing(resume);
-        boolean start = false;
-        Iterator<String> iterator = currentCall.lengthsSaved.keySet().iterator();
-
-        while (iterator.hasNext() && !stop) {
-            String key = iterator.next();
-            if (start) {
-                pacedPrint(key);
-            }
-            if (startFrom.equals(key)) {
-                start = true;
-            }
-        }
-        Platform.runLater(() -> stage.close());
-
-        phaser.arriveAndDeregister();
-        windows.remove(this);
-    }
-
-    public void openEmptyWindow(String windowTitle, double x, double y) {
-        scrollPane = new ScrollPane(root);
-        scrollPane.setFitToWidth(true);
-        // try {
-        // Image volume = new
-        // Image("call_center\\src\\main\\java\\com\\ee364project\\image\\volume.png");
-        // ImageView volumeIcon1 = new ImageView(volume);
-        // ImageView volumeIcon2 = new ImageView(volume);
-        // // Further code using the image
-        // } catch (Exception e) {
-        // e.getStackTrace();
-        // }
-
-        agentVoice = new ProgressBar();
-        agentVoice.setRotate(-90);
-        VBox agentVolumeBarBox = new VBox(agentVoice);
-        agentVoice.setProgress(0);
-        customerVoice = new ProgressBar();
-        customerVoice.setRotate(-90);
-        customerVoice.setProgress(0);
-        VBox customerVolumeBarBox = new VBox(customerVoice);
-
-        agentVolumeBarBox.setAlignment(Pos.CENTER);
-        customerVolumeBarBox.setAlignment(Pos.CENTER);
-        HBox mainPane = new HBox(customerVolumeBarBox, scrollPane, agentVolumeBarBox);
-        agentVolumeBarBox.prefWidthProperty().bind(mainPane.widthProperty().divide(5));
-        agentVolumeBarBox.prefHeightProperty().bind(mainPane.heightProperty());
-        customerVolumeBarBox.prefWidthProperty().bind(mainPane.widthProperty().divide(5));
-        customerVolumeBarBox.prefHeightProperty().bind(mainPane.heightProperty());
-        scrollPane.prefWidthProperty().bind(mainPane.widthProperty().multiply(0.6));
-
-        scrollPane.vvalueProperty().addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                // Check if the scroll pane is at the bottom
-                if (scrollDownCheck) {
-                    scrollDown = true;
-                } else {
-                    scrollDown = false;
-
-                }
-                if (newValue.doubleValue() == scrollPane.getVmax()) {
-                    scrollDownCheck = true;
-                } else {
-                    scrollDownCheck = false;
-                }
-            }
-        });
-
-        System.out.print(scrollDown);
-        stage.setOnCloseRequest(e -> {
-            this.exit();
-            checkBox.setSelected(false);
-        });
-
-        // Create a Scene and set it on the Stage
-        Scene scene = new Scene(mainPane, 700, 200);
-
-        mainPane.prefWidthProperty().bind(scene.widthProperty());
-        mainPane.prefHeightProperty().bind(scene.heightProperty());
-        stage.setScene(scene);
-
-        // Set the title and position of the Stage
-        stage.setTitle(windowTitle);
-        stage.setX(x);
-        stage.setY(y);
-
-        // Show the Stage
-        stage.setResizable(false);
-    }
-
-    public void closeWindow() {
-        stage.hide();
-    }
-
-    public void showWindow() {
-        stage.show();
-    }
-
-}
-
-class ControlProgressBar {
-    private ProgressBar progressBar;
-
-    ControlProgressBar() {
-        this.progressBar = new ProgressBar();
-    }
-
-    public ProgressBar getProgressBar() {
-        return progressBar;
     }
 }
 
