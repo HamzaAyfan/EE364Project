@@ -31,7 +31,7 @@ public class Solution implements Cloneable{
             intro = customerIntro;
         }
         int selectedIndex = (int)(Math.random()*intro.length);
-        return agentIntro[selectedIndex];
+        return intro[selectedIndex];
     }
 
     public boolean equals(Solution other) {

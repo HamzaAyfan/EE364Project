@@ -13,17 +13,22 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 //import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Phaser;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import com.ee364project.Agent;
 import com.ee364project.Call;
 import com.ee364project.CallCenter;
 import com.ee364project.Customer;
+import com.ee364project.DialogeBox;
 import com.ee364project.Department;
 import com.ee364project.HasData;
 import com.ee364project.Problem;
@@ -35,10 +40,14 @@ import com.ee364project.helpers.Vars;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextInputDialog;
@@ -57,6 +66,7 @@ import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -66,6 +76,7 @@ import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
@@ -77,8 +88,6 @@ import javafx.util.Duration;
 import java.util.prefs.Preferences;
 
 public class MainSceneController {
-
-
     Agent[] agents;
     Customer[] customers;
     HasData[] problems;
@@ -87,6 +96,12 @@ public class MainSceneController {
     private ArrayList<File> recentFiles = new ArrayList<>();
     private static final String RECENT_FILES_FILE = "recent_files.txt";
     private static final int MAX_RECENT_FILES = 5;
+    private static Phaser phaser = new Phaser(0);
+    private Thread pausePlay = new Thread();
+    public static boolean endThread ;
+    private static ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
+    private int checkedCount = 0;
+    
 
     @FXML
     private VBox AgentVbox;
@@ -143,10 +158,15 @@ public class MainSceneController {
        //////////////// Timer methods from TimeKeeper Class//////////////
     private Timeline timerTimeline;
     //private Timekeeper timekeeper;
+    private boolean newThreadAdded;
+    private VBox Vbox = CallVbox;  
 
     @FXML
     public void initialize() {
+        MenPasue.setOnAction(e -> {this.pause();});
+        MenPlay.setDisable(true);
         Call.vBox = CallVbox;
+        Call.phaser = phaser;
         
         //timekeeper = new Timekeeper();
         timerTimeline = new Timeline(new KeyFrame(Duration.seconds(1), this::updateTimer));
@@ -158,6 +178,17 @@ public class MainSceneController {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+    }
+    public void pause() {
+        MenPasue.setDisable(true);
+        MenPlay.setDisable(false);
+        timerTimeline.pause();
+        pausePlay = new Thread(()->{
+            phaser.register();
+            MenPlay.setOnAction(e -> {phaser.arriveAndDeregister();endThread=true;
+                MenPasue.setDisable(false);MenPlay.setDisable(true);timerTimeline.play();});
+            while(!endThread){}endThread=false;});  
+            pausePlay.start();       
     }
 
     private void updateTimer(ActionEvent event) {
@@ -207,7 +238,7 @@ public class MainSceneController {
                 agentStackPane.getChildren().addAll(agentImageView, agentRectangle);
                 CallVbox.getChildren().addAll(customerStackPane, agentStackPane);
             }
-    }
+    } 
     
    
     private Customer getRandomCustomer() {
@@ -447,10 +478,7 @@ public class MainSceneController {
                 StackPane stackPane = new StackPane();
 
                 Rectangle rectangle = new Rectangle(20, 20, Color.TRANSPARENT);         
-                //rectangle.setStyle("-fx-fill: green;");
-                //rectangle.setFill(new ImagePattern(image));
                 stackPane.getChildren().addAll(imageView, rectangle);    
-                //rectangle.setStyle("-fx-fill: green;");
 
                 Agent agent = (Agent) agents[i];
                 addTooltip(rectangle, agent.getStringInfo());
@@ -732,6 +760,93 @@ public class MainSceneController {
     void playbtnClicked(ActionEvent event) {
         timerTimeline.play();
     }
+    //Code For DialogueBox
+    //***************************************************************************************** */
+   public Node[] createHbox(){
+        HBox hBox = new HBox();
+        CheckBox checkBox = new CheckBox();
+        //ImageView callImageView = new ImageView(callImage);
+        //callImageView.setFitWidth(50);
+        // callImageView.setFitHeight(50);
+        
+        //Rectangle rectangle = new Rectangle(50, 50, Color.TRANSPARENT);
+        // hBox.getChildren().add(callImageView);
+        //hBox.getChildren().add(rectangle);
+        hBox.getChildren().add(checkBox);
+        HBox.setHgrow(checkBox, Priority.ALWAYS);
+        checkBox.setAlignment(Pos.BOTTOM_RIGHT);
+        checkBox.setOnAction(e -> handleCheckboxAction("Call", checkBox)); 
+        // checkBox.selectedProperty().addListener(createChangeListener(checkBox));       
+        Node[] pointers = {hBox,checkBox};
+        return pointers;        
+    }
+    private ChangeListener<? super Boolean> createChangeListener(CheckBox checkbox) {
+        return (observable, oldValue, newValue) -> {
+            if (newValue) {
+                if (checkedCount >= 3) {
+                    checkbox.setSelected(false); // Prevent checking more checkboxes than allowed
+                } else {
+                    checkedCount++;
+                    // if(Call.linkCBtoDB.containsKey(checkbox)){if (!endThread){Call.linkCBtoDB.get(checkbox).showWindow();return;}}
+                    // newThreadAdded = true;
+                    // Call call = Call.CheckBoxAndCall.get(checkbox);
+                    // Runnable dialoge = new DialogeBox("Call",phaser,call);
+                    // Call.linkCBtoDB.put(checkbox,(DialogeBox)dialoge);
+            
+            
+            // // ((DialogeBox)dialoge).setupCall(call);
+            
+            // executor.execute(dialoge);
+                }
+            } else {
+                checkedCount--;
+                // if (!endThread){Call.linkCBtoDB.get(checkbox).closeWindow();return;}
+                // try{Call.linkCBtoDB.get(checkbox).exit();}catch(NullPointerException e){}
+            }
+        };
+}
+
+    public void handleCheckboxAction(String callNumber,CheckBox checkbox) { 
+        
+
+        // Count the number of checked checkboxes
+
+        // for (int i = 0; i < CallVbox.getChildren().size(); i++) {
+        //     HBox currentHBox = (HBox) CallVbox.getChildren().get(i);
+        //     CheckBox currentCheckBox = (CheckBox)currentHBox.getChildren().get(0);
+        //     if (currentCheckBox.isSelected()) {
+        //         checkedCount++;
+        //     }
+        // }
+
+        // If more than the allowed checkboxes are checked, uncheck the current checkbox
+        
+        if (checkedCount >= 3) {
+            checkbox.setSelected(false);
+            return;
+        }       
+        if (checkbox.isSelected()) { 
+            checkedCount++;
+            if(Call.linkCBtoDB.containsKey(checkbox)){if (!endThread){Call.linkCBtoDB.get(checkbox).showWindow();return;}}
+            newThreadAdded = true;
+            Call call = Call.CheckBoxAndCall.get(checkbox);
+            Runnable dialoge = new DialogeBox(callNumber,phaser,call);
+            Call.linkCBtoDB.put(checkbox,(DialogeBox)dialoge);
+            
+            
+            // ((DialogeBox)dialoge).setupCall(call);
+            
+            executor.execute(dialoge);
+            
+            } else {
+                checkedCount--;
+                if (!endThread){Call.linkCBtoDB.get(checkbox).closeWindow();return;}
+                try{Call.linkCBtoDB.get(checkbox).exit();}catch(NullPointerException e){}
+                
+            }            
+        } 
+    //***************************************************************************************** */
+    //End of DialogueBox code
 
     @FXML
     void startbtnClicked(ActionEvent event) {
@@ -748,6 +863,7 @@ public class MainSceneController {
         System.out.println("casted");
 
         new Thread(() -> {
+            phaser.register();
             while (true) {
                 for (Customer customer : customers) {
                     customer.step();
@@ -756,11 +872,8 @@ public class MainSceneController {
                 for (Call call : Call.activeCalls) {
                     call.step();
                 }
-                Call.terminateCalls();
-    
-                callCenter.step();
-    
-    
+                Call.terminateCalls();    
+                callCenter.step();    
                 Timekeeper.step();
     
                 try {
@@ -768,10 +881,11 @@ public class MainSceneController {
                 } catch (InterruptedException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
+                }finally{
+                    phaser.arriveAndAwaitAdvance();
                 }
             }}).start();
     }
-
 }
 
 

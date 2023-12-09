@@ -5,10 +5,10 @@ import java.time.temporal.ChronoUnit;
 
 public class Timekeeper {
     private static LocalDateTime startPoint = LocalDateTime.of(2001, 1, 1, 0, 0, 0);
-    private static long step = 1;
-    private static long time = 0;
+    private static int step = 1;//
+    private static int time = 0;//
 
-    public static long getTime() {
+    public static int getTime() {
         return time;
     }
 
@@ -17,11 +17,11 @@ public class Timekeeper {
         // System.out.println("Time now: " + getProperTime());
     }
 
-    public static long getStep() {
+    public static int getStep() {
         return step;
     }
 
-    public static void setStep(long newStep) {
+    public static void setStep(int newStep) {
         if (newStep < 1) {
             System.out.println("Step can't be less than 1. Ignored command.");
         } else {
