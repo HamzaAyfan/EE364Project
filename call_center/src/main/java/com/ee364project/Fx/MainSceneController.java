@@ -98,10 +98,9 @@ public class MainSceneController {
     private static final int MAX_RECENT_FILES = 5;
     private static Phaser phaser = new Phaser(0);
     private Thread pausePlay = new Thread();
-    public static boolean endThread ;
+    public static boolean endThread;
     private static ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
     private int checkedCount = 0;
-    
 
     @FXML
     private VBox AgentVbox;
@@ -130,8 +129,6 @@ public class MainSceneController {
     @FXML
     private Menu OpenRecentMenu;
 
-    
-
     @FXML
     private AnchorPane anchorPane;
 
@@ -150,35 +147,34 @@ public class MainSceneController {
     @FXML
     private Button connected;
 
-    
-    // initializing the images that is going to be used for loading the main stage panes
+    // initializing the images that is going to be used for loading the main stage
+    // panes
     Image customerImage = new Image("com\\ee364project\\Fx\\resources\\user.png");
     Image agentImage = new Image("com\\ee364project\\Fx\\resources\\agent.png");
 
-    
-    
-    //************************Mshari Edit****************************** *//
+    // ************************Mshari Edit****************************** *//
     private CallCenter callCenter;
-   
-    
+
     private Timeline timerTimeline;
-    //private Timekeeper timekeeper;
+    // private Timekeeper timekeeper;
     private boolean newThreadAdded;
-    private VBox Vbox = CallVbox;  
+    private VBox Vbox = CallVbox;
 
     @FXML
     public void initialize() {
         // setting all the important references and spaces for panes internal look
-        MenPasue.setOnAction(e -> {this.pause();});
+        MenPasue.setOnAction(e -> {
+            this.pause();
+        });
         MenPlay.setDisable(true);
         Call.vBox = CallVbox;
         Call.phaser = phaser;
         CallVbox.setSpacing(4);
         AgentVbox.setSpacing(4);
-        
-        //timekeeper = new Timekeeper();
+
+        // timekeeper = new Timekeeper();
         timerTimeline = new Timeline(new KeyFrame(Duration.seconds(1), this::updateTimer));
-        timerTimeline.setCycleCount(Timeline.INDEFINITE); 
+        timerTimeline.setCycleCount(Timeline.INDEFINITE);
 
         try {
             // calling the methods below would load the recent files once the program runs
@@ -188,16 +184,25 @@ public class MainSceneController {
             e.printStackTrace();
         }
     }
+
     public void pause() {
         MenPasue.setDisable(true);
         MenPlay.setDisable(false);
         timerTimeline.pause();
-        pausePlay = new Thread(()->{
+        pausePlay = new Thread(() -> {
             phaser.register();
-            MenPlay.setOnAction(e -> {phaser.arriveAndDeregister();endThread=true;
-                MenPasue.setDisable(false);MenPlay.setDisable(true);timerTimeline.play();});
-            while(!endThread){}endThread=false;});  
-            pausePlay.start();       
+            MenPlay.setOnAction(e -> {
+                phaser.arriveAndDeregister();
+                endThread = true;
+                MenPasue.setDisable(false);
+                MenPlay.setDisable(true);
+                timerTimeline.play();
+            });
+            while (!endThread) {
+            }
+            endThread = false;
+        });
+        pausePlay.start();
     }
 
     //////////////// Timer methods from TimeKeeper Class//////////////
@@ -217,40 +222,38 @@ public class MainSceneController {
     }
 
     private void updateUIForCall() {
-        
-            Image customerImage = new Image("com\\ee364project\\Fx\\resources\\user.png", true);
-            Image agentImage = new Image("com\\ee364project\\Fx\\resources\\agent.png", true);
-    
-            ImageView customerImageView = new ImageView(customerImage);
-            ImageView agentImageView = new ImageView(agentImage);
-    
-            customerImageView.setFitWidth(20);
-            customerImageView.setFitHeight(20);
-            agentImageView.setFitWidth(20);
-            agentImageView.setFitHeight(20);
-    
-            StackPane customerStackPane = new StackPane();
-            StackPane agentStackPane = new StackPane();
-    
-            Rectangle customerRectangle = new Rectangle(20, 20, Color.TRANSPARENT);
-            Rectangle agentRectangle = new Rectangle(20, 20, Color.TRANSPARENT);
-    
-            
-            Customer customer = getRandomCustomer();
-            Agent agent = getRandomAgent();
-    
-            if (customer != null && agent != null) {
-                
-                addTooltip(customerRectangle, customer.getStringInfo());
-                addTooltip(agentRectangle, agent.getStringInfo());
-    
-                customerStackPane.getChildren().addAll(customerImageView, customerRectangle);
-                agentStackPane.getChildren().addAll(agentImageView, agentRectangle);
-                CallVbox.getChildren().addAll(customerStackPane, agentStackPane);
-            }
-    } 
-    
-   
+
+        Image customerImage = new Image("com\\ee364project\\Fx\\resources\\user.png", true);
+        Image agentImage = new Image("com\\ee364project\\Fx\\resources\\agent.png", true);
+
+        ImageView customerImageView = new ImageView(customerImage);
+        ImageView agentImageView = new ImageView(agentImage);
+
+        customerImageView.setFitWidth(20);
+        customerImageView.setFitHeight(20);
+        agentImageView.setFitWidth(20);
+        agentImageView.setFitHeight(20);
+
+        StackPane customerStackPane = new StackPane();
+        StackPane agentStackPane = new StackPane();
+
+        Rectangle customerRectangle = new Rectangle(20, 20, Color.TRANSPARENT);
+        Rectangle agentRectangle = new Rectangle(20, 20, Color.TRANSPARENT);
+
+        Customer customer = getRandomCustomer();
+        Agent agent = getRandomAgent();
+
+        if (customer != null && agent != null) {
+
+            addTooltip(customerRectangle, customer.getStringInfo());
+            addTooltip(agentRectangle, agent.getStringInfo());
+
+            customerStackPane.getChildren().addAll(customerImageView, customerRectangle);
+            agentStackPane.getChildren().addAll(agentImageView, agentRectangle);
+            CallVbox.getChildren().addAll(customerStackPane, agentStackPane);
+        }
+    }
+
     private Customer getRandomCustomer() {
         int numberOfCustomers = customers.length;
         if (numberOfCustomers > 0) {
@@ -260,7 +263,7 @@ public class MainSceneController {
             return null;
         }
     }
-    
+
     private Agent getRandomAgent() {
         int numberOfAgents = agents.length;
         if (numberOfAgents > 0) {
@@ -271,13 +274,7 @@ public class MainSceneController {
         }
     }
 
-
-    //******************************************************** *//
-       
-
-
-
-
+    // ******************************************************** *//
 
     public void showYesNoDialog(Stage primaryStage) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -287,10 +284,10 @@ public class MainSceneController {
         alert.initModality(Modality.WINDOW_MODAL);
         alert.initOwner(primaryStage);
 
-        //Create Costume buttons
+        // Create Costume buttons
         ButtonType costumeYesButtonType = new ButtonType("Old Costumers");
         ButtonType costumeNoButtonType = new ButtonType("New Costumers");
-        
+
         // Add buttons
         alert.getButtonTypes().setAll(costumeYesButtonType, costumeNoButtonType);
 
@@ -304,29 +301,29 @@ public class MainSceneController {
         });
     }
 
-
-    // if the "OLD Environment" button was clicked, the file explorer will open and asks the user for a file to load in the panes
+    // if the "OLD Environment" button was clicked, the file explorer will open and
+    // asks the user for a file to load in the panes
     // and prepare them for the simulation process
     void oldCosbtnClicked() {
-        try{
+        try {
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Choose zip file");
             fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Zip Files", "*.zip"));
             File zipFile = fileChooser.showOpenDialog(new Stage());
             handleOpenFile(zipFile);
-        }
-        catch(Exception e){
+        } catch (Exception e) {
 
         }
 
-        
     }
-    
-    // after the user chooses a file (Zip File) from the file explorer it is the time to process it in this method
-    public void handleOpenFile(File zipFile){
+
+    // after the user chooses a file (Zip File) from the file explorer it is the
+    // time to process it in this method
+    public void handleOpenFile(File zipFile) {
         System.out.println("Handling now");
         // Check if the file is already in the recent files list
-        if (!recentFiles.stream().anyMatch(existingFile -> existingFile.getAbsolutePath().equals(zipFile.getAbsolutePath()))) {
+        if (!recentFiles.stream()
+                .anyMatch(existingFile -> existingFile.getAbsolutePath().equals(zipFile.getAbsolutePath()))) {
             System.out.println("Checked 1");
             // Add the opened file to recentFiles
             recentFiles.add(0, zipFile);
@@ -349,56 +346,58 @@ public class MainSceneController {
             // Save the recent files
             saveRecentFiles();
             System.out.println("Saved recent");
-        }   
-            // after all the previous checkpoints, we are now ready to deal with the zip file
-            // open file process
-            if (zipFile != null) {
-                System.out.println("Opening");
+        }
+        // after all the previous checkpoints, we are now ready to deal with the zip
+        // file
+        // open file process
+        if (zipFile != null) {
+            System.out.println("Opening");
 
-                String outputDirectory = "extracted";
+            String outputDirectory = "extracted";
 
-                try {
-                    Zip.extractZip(zipFile, outputDirectory); // this method takes a zip file and extracts its components in a directory named "extracted"
-                    processCsvFiles(outputDirectory); // this method will process the CSV files extraced from the zip file chosen
-                    System.out.println("CSV files processed successfully.");
+            try {
+                Zip.extractZip(zipFile, outputDirectory); // this method takes a zip file and extracts its components in
+                                                          // a directory named "extracted"
+                processCsvFiles(outputDirectory); // this method will process the CSV files extraced from the zip file
+                                                  // chosen
+                System.out.println("CSV files processed successfully.");
 
-                    Zip.deleteExtracted(outputDirectory); // after processing the CSV files, the files and the extracted directory will be deleted 
+                Zip.deleteExtracted(outputDirectory); // after processing the CSV files, the files and the extracted
+                                                      // directory will be deleted
 
-                    //recentFiles.add(zipFile);
-                    //updateRecentFilesMenu();
-//
-                    //saveRecentFiles();
+                // recentFiles.add(zipFile);
+                // updateRecentFilesMenu();
+                //
+                // saveRecentFiles();
 
-                } catch (IOException e) {
-                    e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
 
-                } 
             }
-        
+        }
 
     }
-    // this method takes in the directory that contains the CSV files, and process each one of them individually
-    private void processCsvFiles(String extractedDirectory) {
-        String[] csvFileNames = { "Problem.csv", "Customer.csv", "Agent.csv", "Department.csv"};
 
+    // this method takes in the directory that contains the CSV files, and process
+    // each one of them individually
+    private void processCsvFiles(String extractedDirectory) {
+        String[] csvFileNames = { "Problem.csv", "Customer.csv", "Agent.csv", "Department.csv" };
 
         for (String fileName : csvFileNames) {
             Path csvFilePath = Paths.get(extractedDirectory, fileName);
 
             try {
-                
-                if(fileName.contains(csvFileNames[0])){
+
+                if (fileName.contains(csvFileNames[0])) {
                     File problemFile = csvFilePath.toFile();
                     processProblemFile(problemFile);
-                }
-                else if(fileName.contains(csvFileNames[1])){
+                } else if (fileName.contains(csvFileNames[1])) {
                     File customerFile = csvFilePath.toFile();
                     processCustomerFile(customerFile);
-                }
-                else if(fileName.contains(csvFileNames[2])){
+                } else if (fileName.contains(csvFileNames[2])) {
                     File agentFile = csvFilePath.toFile();
                     processAgentFile(agentFile);
-                } else if(fileName.contains(csvFileNames[3])) {
+                } else if (fileName.contains(csvFileNames[3])) {
                     File departmentFile = csvFilePath.toFile();
                     processDepartmentFile(departmentFile);
                 }
@@ -417,42 +416,44 @@ public class MainSceneController {
             // TODO: handle exception
         }
     }
-    
-
 
     @FXML
     private void processCustomerFile(File selectedFile) throws IOException {
-        try{
-            // depending on the static Csv.read method, we will be reading the customersCSV file here and store its content in an array of HasData objects
-            HasData[] customersCSV = Csv.read(selectedFile.getAbsolutePath()); //Done
+        try {
+            // depending on the static Csv.read method, we will be reading the customersCSV
+            // file here and store its content in an array of HasData objects
+            HasData[] customersCSV = Csv.read(selectedFile.getAbsolutePath()); // Done
 
             // initialzing the array of Customer type that will be iterated over
             customers = new Customer[customersCSV.length];
 
-            // this for loop loads the array of Customer type with the customersCSV content with the help of casting
+            // this for loop loads the array of Customer type with the customersCSV content
+            // with the help of casting
             int j = 0;
-            for(HasData customer: customersCSV){
+            for (HasData customer : customersCSV) {
                 customers[j] = (Customer) customer;
                 j = j + 1;
             }
             System.out.println("Customers creeated");
 
-            if(flowPane.getChildren().size() != 0){ flowPane.getChildren().clear();} // clear the customersPane if it has previous content
+            if (flowPane.getChildren().size() != 0) {
+                flowPane.getChildren().clear();
+            } // clear the customersPane if it has previous content
 
             // this for loop loads the GUI with the customers in thier places
             for (int i = 0; i < customers.length; i++) {
-                
+
                 ImageView imageView = new ImageView(customerImage);
                 imageView.setFitWidth(20);
                 imageView.setFitHeight(20);
 
                 StackPane stackPane = new StackPane();
 
-                Rectangle rectangle = new Rectangle(20, 20, Color.TRANSPARENT);         
-                //rectangle.setStyle("-fx-fill: green;");
-                //rectangle.setFill(new ImagePattern(image));
-                stackPane.getChildren().addAll(imageView, rectangle);    
-                //rectangle.setStyle("-fx-fill: green;");
+                Rectangle rectangle = new Rectangle(20, 20, Color.TRANSPARENT);
+                // rectangle.setStyle("-fx-fill: green;");
+                // rectangle.setFill(new ImagePattern(image));
+                stackPane.getChildren().addAll(imageView, rectangle);
+                // rectangle.setStyle("-fx-fill: green;");
 
                 addTooltip(rectangle, customers[i].getStringInfo());
 
@@ -460,48 +461,49 @@ public class MainSceneController {
             }
             System.out.println("Finished loading FP");
 
-
         } catch (NumberFormatException e) {
             System.out.println("Please enter a a valid CSV file.");
-        }
-        finally{
-            
-        }
+        } finally {
 
+        }
 
     }
-    
+
     @FXML
     private void processAgentFile(File selectedFile) throws IOException {
-        try{
-            // depending on the static Csv.read method, we will be reading the agentsCSV file here and store its content in an array of HasData objects
-            HasData[] agentsCSV = Csv.read(selectedFile.getAbsolutePath()); //Done
+        try {
+            // depending on the static Csv.read method, we will be reading the agentsCSV
+            // file here and store its content in an array of HasData objects
+            HasData[] agentsCSV = Csv.read(selectedFile.getAbsolutePath()); // Done
 
             // initialzing the array of Agent type that will be iterated over
             agents = new Agent[agentsCSV.length];
-            
-            // this for loop loads the array of Agent type with the agentsCSV content with the help of casting
+
+            // this for loop loads the array of Agent type with the agentsCSV content with
+            // the help of casting
             int j = 0;
-            for(HasData agent: agentsCSV){
+            for (HasData agent : agentsCSV) {
                 agents[j] = (Agent) agent;
                 j = j + 1;
             }
 
             System.out.println("Agents creeated");
 
-            if(AgentVbox.getChildren().size() != 0){ AgentVbox.getChildren().clear();} // clear the agentsPane if it has previous content
+            if (AgentVbox.getChildren().size() != 0) {
+                AgentVbox.getChildren().clear();
+            } // clear the agentsPane if it has previous content
 
             // this for loop loads the GUI with the agents in thier places
             for (int i = 0; i < agents.length; i++) {
-            
+
                 ImageView imageView = new ImageView(agentImage);
                 imageView.setFitWidth(40);
                 imageView.setFitHeight(40);
 
                 StackPane stackPane = new StackPane();
 
-                Rectangle rectangle = new Rectangle(20, 20, Color.TRANSPARENT);         
-                stackPane.getChildren().addAll(imageView, rectangle);    
+                Rectangle rectangle = new Rectangle(20, 20, Color.TRANSPARENT);
+                stackPane.getChildren().addAll(imageView, rectangle);
 
                 Agent agent = (Agent) agents[i];
                 addTooltip(rectangle, agent.getStringInfo());
@@ -510,39 +512,35 @@ public class MainSceneController {
             }
             System.out.println("Finished loading FP");
 
-
         } catch (Exception e) {
             System.out.println("Please enter a a valid CSV file.");
         }
 
     }
 
-    public void processProblemFile(File problemFile){
-        try{
+    public void processProblemFile(File problemFile) {
+        try {
             problems = Csv.read(problemFile.getAbsolutePath(), Vars.DataClasses.Problem);
-            
+
             System.out.println("Problem loaded");
-        }
-        catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
-    
-    
-    
+
     }
 
-    public void processDepartmentFile(File departmentFile){
-        try{
+    public void processDepartmentFile(File departmentFile) {
+        try {
             departments = Csv.read(departmentFile.getAbsolutePath(), Vars.DataClasses.Department);
             System.out.println("Problem loaded");
-        }
-        catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        
+
     }
 
-    // this method helps us to add toolTips for both customers and agents by taking thier representing rectangle and the text we want to display
+    // this method helps us to add toolTips for both customers and agents by taking
+    // thier representing rectangle and the text we want to display
     @FXML
     private void addTooltip(Rectangle rectangle, String tooltipText) {
         Tooltip tooltip = new Tooltip(tooltipText);
@@ -558,17 +556,17 @@ public class MainSceneController {
             tooltip.hide();
         });
     }
-    
-    
-    // this method allows the user to create his own call center environment by asking him to enter the main 
-    // parameters that synethize a call center, which are the number of customer, agents, departments, and problems
+
+    // this method allows the user to create his own call center environment by
+    // asking him to enter the main
+    // parameters that synethize a call center, which are the number of customer,
+    // agents, departments, and problems
     void newCosbtnClicked() {
         TextInputDialog inputDialog = new TextInputDialog();
         inputDialog.setTitle("Input Dialog");
         inputDialog.setHeaderText("Enter new environment parameters");
         inputDialog.initStyle(StageStyle.UNDECORATED);
         inputDialog.initModality(Modality.APPLICATION_MODAL);
-        
 
         // Create a GridPane to organize the layout
         GridPane gridPane = new GridPane();
@@ -612,7 +610,7 @@ public class MainSceneController {
                 // generate fake customers and agents depending on the user's input
                 generateNewCustomers(numberOfCustomers);
                 generateNewAgents(numberOfAgents);
-                
+
             } catch (NumberFormatException e) {
                 showErrorAlert("Invalid Input", "Please enter a valid integer.");
             }
@@ -626,75 +624,77 @@ public class MainSceneController {
 
     // this method generates fake customers depending on the user's input
     private void generateNewCustomers(int number) {
-        if(flowPane.getChildren().size() != 0){ flowPane.getChildren().clear();}
-        
+        if (flowPane.getChildren().size() != 0) {
+            flowPane.getChildren().clear();
+        }
+
         customers = new Customer[number];
-        
+
         int i = 0;
         for (HasData datum : Utilities.getFakeData(number, Vars.DataClasses.Customer)) {
             customers[i] = (Customer) datum;
 
-            
             ImageView imageView = new ImageView(customerImage);
             imageView.setFitWidth(20);
             imageView.setFitHeight(20);
 
             StackPane stackPane = new StackPane();
 
-            Rectangle rectangle = new Rectangle(20, 20, Color.TRANSPARENT);         
-            //rectangle.setStyle("-fx-fill: green;");
-            //rectangle.setFill(new ImagePattern(image));
-            stackPane.getChildren().addAll(imageView, rectangle);    
-            //rectangle.setStyle("-fx-fill: green;");
+            Rectangle rectangle = new Rectangle(20, 20, Color.TRANSPARENT);
+            // rectangle.setStyle("-fx-fill: green;");
+            // rectangle.setFill(new ImagePattern(image));
+            stackPane.getChildren().addAll(imageView, rectangle);
+            // rectangle.setStyle("-fx-fill: green;");
 
-            //Customer customer = customers[i];
-            
+            // Customer customer = customers[i];
+
             addTooltip(rectangle, ((Customer) customers[i]).getStringInfo());
 
             flowPane.getChildren().add(stackPane);
 
             i = i + 1;
-            
-            //System.out.println(((Customer) customers[i]).getStringInfo()); Done
+
+            // System.out.println(((Customer) customers[i]).getStringInfo()); Done
         }
     }
 
     // this method generates fake agents depending on the user's input
     private void generateNewAgents(int number) {
-        if(AgentVbox.getChildren().size() != 0){ AgentVbox.getChildren().clear();}
-              
-        //HasData[] agents = Utilities.getFakeData(number, Vars.DataClasses.Agent);
+        if (AgentVbox.getChildren().size() != 0) {
+            AgentVbox.getChildren().clear();
+        }
+
+        // HasData[] agents = Utilities.getFakeData(number, Vars.DataClasses.Agent);
         agents = new Agent[number];
 
         int i = 0;
         for (HasData datum : Utilities.getFakeData(number, Vars.DataClasses.Agent)) {
             agents[i] = (Agent) datum;
 
-            
             ImageView imageView = new ImageView(agentImage);
             imageView.setFitWidth(40);
             imageView.setFitHeight(40);
 
             StackPane stackPane = new StackPane();
 
-            Rectangle rectangle = new Rectangle(20, 20, Color.TRANSPARENT);         
-            //rectangle.setStyle("-fx-fill: green;");
-            //rectangle.setFill(new ImagePattern(image));
-            stackPane.getChildren().addAll(imageView, rectangle);    
-            //rectangle.setStyle("-fx-fill: green;");
+            Rectangle rectangle = new Rectangle(20, 20, Color.TRANSPARENT);
+            // rectangle.setStyle("-fx-fill: green;");
+            // rectangle.setFill(new ImagePattern(image));
+            stackPane.getChildren().addAll(imageView, rectangle);
+            // rectangle.setStyle("-fx-fill: green;");
 
-            //Agent agent = (Agent) agents[i];
+            // Agent agent = (Agent) agents[i];
             addTooltip(rectangle, ((Agent) agents[i]).getStringInfo());
 
             AgentVbox.getChildren().add(stackPane);
 
             i = i + 1;
-            //System.out.println(((Customer) customers[i]).getStringInfo()); Done
+            // System.out.println(((Customer) customers[i]).getStringInfo()); Done
         }
-        //CallCenter callCenter = new CallCenter(agents);
+        // CallCenter callCenter = new CallCenter(agents);
         System.out.println("Finished agents");
     }
-    
+
     // this method is being used to show an error alert whenever is needed to pop
     private void showErrorAlert(String title, String content) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -711,41 +711,44 @@ public class MainSceneController {
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("ZIP Files", "*.zip"));
 
         // Show Save As dialog
-        File saveFile = fileChooser.showSaveDialog(new Stage()); // asks the user to enter the file name he wants to save
+        File saveFile = fileChooser.showSaveDialog(new Stage()); // asks the user to enter the file name he wants to
+                                                                 // save
 
         if (saveFile != null) {
             // Get the chosen file path from the user
             String zipFilePath = saveFile.getAbsolutePath();
 
             // write the csvfiles in the output directory
-            // the static method Csv.write takes the HasData[] array and the path to where to save the array.
+            // the static method Csv.write takes the HasData[] array and the path to where
+            // to save the array.
             Csv.write((HasData[]) customers, "call_center/output/Customer.csv");
             Csv.write((HasData[]) agents, "call_center/output/Agent.csv");
             Csv.write((HasData[]) Problem.getAllProblems(), "call_center/output/Problem.csv");
 
-            
-
-            Department[] departments = Department.getAllDepartments().values().toArray(new Department[Department.getAllDepartments().size()]);
+            Department[] departments = Department.getAllDepartments().values()
+                    .toArray(new Department[Department.getAllDepartments().size()]);
             Csv.write(departments, "call_center/output/Department.csv");
 
-
-            // after writing and generating the 4 main CSV files, it is now time to compress them and generate one zip file for the user 
-            Zip.compressToZip(zipFilePath, "call_center/output"); // generate the zip file 
+            // after writing and generating the 4 main CSV files, it is now time to compress
+            // them and generate one zip file for the user
+            Zip.compressToZip(zipFilePath, "call_center/output"); // generate the zip file
             Zip.deleteExtracted("call_center/output"); // delete the extraction directory
-            
+
             System.out.println("ZIP file saved to: " + zipFilePath);
         }
 
     }
 
-    // when a file is clicked from the menubar item "recents" the file is handled similarly to choosing an old environment
+    // when a file is clicked from the menubar item "recents" the file is handled
+    // similarly to choosing an old environment
     @FXML
     private void handleOpenRecent(MenuItem menuItem) {
         File selectedFile = (File) menuItem.getUserData();
         handleOpenFile(selectedFile);
     }
-    
-    // this method is responsible for updating the recentFiles whenever a file was opened
+
+    // this method is responsible for updating the recentFiles whenever a file was
+    // opened
     @FXML
     private void updateRecentFilesMenu() {
         OpenRecentMenu.getItems().clear();
@@ -757,9 +760,11 @@ public class MainSceneController {
         }
     }
 
-    // this method is being called once the program runs to load the recentFiles list with the recently opened files
+    // this method is being called once the program runs to load the recentFiles
+    // list with the recently opened files
     private void loadRecentFiles() throws IOException {
-        // the loading method depends on reading the recent file paths from a text file named recent_files.txt
+        // the loading method depends on reading the recent file paths from a text file
+        // named recent_files.txt
         try (BufferedReader reader = new BufferedReader(new FileReader(RECENT_FILES_FILE))) {
             Set<String> uniquePaths = new HashSet<>();
             recentFiles.clear();
@@ -772,18 +777,19 @@ public class MainSceneController {
                     recentFiles.add(file);
                 }
             }
-        } catch(FileNotFoundException e){
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(RECENT_FILES_FILE))){
-                
+        } catch (FileNotFoundException e) {
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(RECENT_FILES_FILE))) {
+
             }
         }
-         
+
         catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    // this method is called during the file handling process and it insures to save the opened file in the recent_files.txt
+    // this method is called during the file handling process and it insures to save
+    // the opened file in the recent_files.txt
     private void saveRecentFiles() {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(RECENT_FILES_FILE))) {
             Set<String> uniquePaths = new HashSet<>();
@@ -804,7 +810,6 @@ public class MainSceneController {
         }
     }
 
-
     @FXML
     void pausebtnClicked(ActionEvent event) {
         timerTimeline.pause();
@@ -814,26 +819,29 @@ public class MainSceneController {
     void playbtnClicked(ActionEvent event) {
         timerTimeline.play();
     }
-    //Code For DialogueBox
-    //***************************************************************************************** */
-   public Node[] createHbox(){
+
+    // Code For DialogueBox
+    // *****************************************************************************************
+    // */
+    public Node[] createHbox() {
         HBox hBox = new HBox();
         CheckBox checkBox = new CheckBox();
-        //ImageView callImageView = new ImageView(callImage);
-        //callImageView.setFitWidth(50);
+        // ImageView callImageView = new ImageView(callImage);
+        // callImageView.setFitWidth(50);
         // callImageView.setFitHeight(50);
-        
-        //Rectangle rectangle = new Rectangle(50, 50, Color.TRANSPARENT);
+
+        // Rectangle rectangle = new Rectangle(50, 50, Color.TRANSPARENT);
         // hBox.getChildren().add(callImageView);
-        //hBox.getChildren().add(rectangle);
+        // hBox.getChildren().add(rectangle);
         hBox.getChildren().add(checkBox);
         HBox.setHgrow(checkBox, Priority.ALWAYS);
         checkBox.setAlignment(Pos.BOTTOM_RIGHT);
-        checkBox.setOnAction(e -> handleCheckboxAction("Call", checkBox)); 
-        // checkBox.selectedProperty().addListener(createChangeListener(checkBox));       
-        Node[] pointers = {hBox,checkBox};
-        return pointers;        
+        checkBox.setOnAction(e -> handleCheckboxAction("Call", checkBox));
+        // checkBox.selectedProperty().addListener(createChangeListener(checkBox));
+        Node[] pointers = { hBox, checkBox };
+        return pointers;
     }
+
     private ChangeListener<? super Boolean> createChangeListener(CheckBox checkbox) {
         return (observable, oldValue, newValue) -> {
             if (newValue) {
@@ -841,16 +849,16 @@ public class MainSceneController {
                     checkbox.setSelected(false); // Prevent checking more checkboxes than allowed
                 } else {
                     checkedCount++;
-                    // if(Call.linkCBtoDB.containsKey(checkbox)){if (!endThread){Call.linkCBtoDB.get(checkbox).showWindow();return;}}
+                    // if(Call.linkCBtoDB.containsKey(checkbox)){if
+                    // (!endThread){Call.linkCBtoDB.get(checkbox).showWindow();return;}}
                     // newThreadAdded = true;
                     // Call call = Call.CheckBoxAndCall.get(checkbox);
                     // Runnable dialoge = new DialogeBox("Call",phaser,call);
                     // Call.linkCBtoDB.put(checkbox,(DialogeBox)dialoge);
-            
-            
-            // // ((DialogeBox)dialoge).setupCall(call);
-            
-            // executor.execute(dialoge);
+
+                    // // ((DialogeBox)dialoge).setupCall(call);
+
+                    // executor.execute(dialoge);
                 }
             } else {
                 checkedCount--;
@@ -858,49 +866,59 @@ public class MainSceneController {
                 // try{Call.linkCBtoDB.get(checkbox).exit();}catch(NullPointerException e){}
             }
         };
-}
+    }
 
-    public void handleCheckboxAction(String callNumber,CheckBox checkbox) { 
-        
+    public void handleCheckboxAction(String callNumber, CheckBox checkbox) {
 
         // Count the number of checked checkboxes
 
         // for (int i = 0; i < CallVbox.getChildren().size(); i++) {
-        //     HBox currentHBox = (HBox) CallVbox.getChildren().get(i);
-        //     CheckBox currentCheckBox = (CheckBox)currentHBox.getChildren().get(0);
-        //     if (currentCheckBox.isSelected()) {
-        //         checkedCount++;
-        //     }
+        // HBox currentHBox = (HBox) CallVbox.getChildren().get(i);
+        // CheckBox currentCheckBox = (CheckBox)currentHBox.getChildren().get(0);
+        // if (currentCheckBox.isSelected()) {
+        // checkedCount++;
+        // }
         // }
 
         // If more than the allowed checkboxes are checked, uncheck the current checkbox
-        
+
         if (checkedCount >= 3) {
             checkbox.setSelected(false);
             return;
-        }       
-        if (checkbox.isSelected()) { 
+        }
+        if (checkbox.isSelected()) {
             checkedCount++;
-            if(Call.linkCBtoDB.containsKey(checkbox)){if (!endThread){Call.linkCBtoDB.get(checkbox).showWindow();return;}}
+            if (Call.linkCBtoDB.containsKey(checkbox)) {
+                if (!endThread) {
+                    Call.linkCBtoDB.get(checkbox).showWindow();
+                    return;
+                }
+            }
             newThreadAdded = true;
             Call call = Call.CheckBoxAndCall.get(checkbox);
-            Runnable dialoge = new DialogeBox(callNumber,phaser,call);
-            Call.linkCBtoDB.put(checkbox,(DialogeBox)dialoge);
-            
-            
+            Runnable dialoge = new DialogeBox(callNumber, phaser, call);
+            Call.linkCBtoDB.put(checkbox, (DialogeBox) dialoge);
+
             // ((DialogeBox)dialoge).setupCall(call);
-            
+
             executor.execute(dialoge);
-            
-            } else {
-                checkedCount--;
-                if (!endThread){Call.linkCBtoDB.get(checkbox).closeWindow();return;}
-                try{Call.linkCBtoDB.get(checkbox).exit();}catch(NullPointerException e){}
-                
-            }            
-        } 
-    //***************************************************************************************** */
-    //End of DialogueBox code
+
+        } else {
+            checkedCount--;
+            if (!endThread) {
+                Call.linkCBtoDB.get(checkbox).closeWindow();
+                return;
+            }
+            try {
+                Call.linkCBtoDB.get(checkbox).exit();
+            } catch (NullPointerException e) {
+            }
+
+        }
+    }
+    // *****************************************************************************************
+    // */
+    // End of DialogueBox code
 
     @FXML
     void startbtnClicked(ActionEvent event) {
@@ -921,26 +939,24 @@ public class MainSceneController {
             while (true) {
                 for (Customer customer : customers) {
                     customer.step();
-                } 
-                
+                }
+
                 for (Call call : Call.activeCalls) {
                     call.step();
                 }
-                Call.terminateCalls();    
-                callCenter.step();    
+                Call.terminateCalls();
+                callCenter.step();
                 Timekeeper.step();
-    
+
                 try {
                     Thread.sleep(200);
                 } catch (InterruptedException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
-                }finally{
+                } finally {
                     phaser.arriveAndAwaitAdvance();
                 }
-            }}).start();
+            }
+        }).start();
     }
 }
-
-
-

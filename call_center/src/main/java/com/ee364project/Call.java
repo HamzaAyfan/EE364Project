@@ -37,14 +37,14 @@ import com.ee364project.helpers.Utilities;
 import java.util.concurrent.Phaser;
 
 public class Call implements Simulated {
-    //public static LinkedList<Call> activeCalls = new LinkedList<>();
+    // public static LinkedList<Call> activeCalls = new LinkedList<>();
     private CheckBox checkBox;
     public static VBox vBox;
-    public static HashMap<CheckBox,Call> CheckBoxAndCall =new HashMap<CheckBox,Call>();
+    public static HashMap<CheckBox, Call> CheckBoxAndCall = new HashMap<CheckBox, Call>();
 
     public HBox hbox;
-    
-    Image callimage=new Image("com\\ee364project\\Fx\\resources\\green.jpg");
+
+    Image callimage = new Image("com\\ee364project\\Fx\\resources\\green.jpg");
 
     public static final long MAXWAITTIME = 60;
 
@@ -64,7 +64,7 @@ public class Call implements Simulated {
     LinkedHashMap<String, Integer> lengthsSaved = new LinkedHashMap<>();
     private static long callCount = 0;
     public static Phaser phaser;
-    public static HashMap<CheckBox,DialogeBox> linkCBtoDB = new HashMap<>();
+    public static HashMap<CheckBox, DialogeBox> linkCBtoDB = new HashMap<>();
 
     private int startTime;//
     private int endTime;//
@@ -78,7 +78,7 @@ public class Call implements Simulated {
     Timeline callTime = new Timeline();
 
     public static Call getACall() {
-        //applyExpiry();
+        // applyExpiry();
         Call call = callQueue.poll();
         if (call != null) {
             call.state = CallState.INCALL;
@@ -91,11 +91,11 @@ public class Call implements Simulated {
     }
 
     // public void increaseTime() {
-    //     timeela
+    // timeela
     // }
 
     public int getTimeElapsed() {
-        return (Timekeeper.getTime()-startTime);
+        return (Timekeeper.getTime() - startTime);
     }
 
     public LinkedList<Solution> makeLinkedList(Customer caller) {
@@ -124,40 +124,41 @@ public class Call implements Simulated {
         this.endTime = this.answerTime + totalTime;
         activeCalls.add(this);
         MainSceneController msc = new MainSceneController();
-            Node[] nodes = msc.createHbox();
-            hbox = (HBox)nodes[0];
-            checkBox = (CheckBox)nodes[1];
-        Platform.runLater(()->{ 
+        Node[] nodes = msc.createHbox();
+        hbox = (HBox) nodes[0];
+        checkBox = (CheckBox) nodes[1];
+        Platform.runLater(() -> {
             vBox.getChildren().add(hbox);
-            });
-            CheckBoxAndCall.put(checkBox, this);
+        });
+        CheckBoxAndCall.put(checkBox, this);
 
     }
 
     public static void terminateCalls() {
         for (Call call : Call.callsToRemove) {
             call.callCenter.releaseAgent(call.receiver);
-            //int call_index = indexOf(activeCalls, this);
+            // int call_index = indexOf(activeCalls, this);
             int index = activeCalls.indexOf(call);
             Call.activeCalls.remove(call);
-        
-        try{
-            if (index >= 0 && vBox != null && vBox.getChildren().size() > 0){
-            Platform.runLater(() -> {
-            vBox.getChildren().remove(index);});
-            }
-        }catch(Exception e){
 
-        }
-        Utilities.log(call, "ended", "", "");
-        call.caller.problemState.solve();
-        call.endTime = Timekeeper.getTime();
+            try {
+                if (index >= 0 && vBox != null && vBox.getChildren().size() > 0) {
+                    Platform.runLater(() -> {
+                        vBox.getChildren().remove(index);
+                    });
+                }
+            } catch (Exception e) {
+
             }
-            callsToRemove.clear();
+            Utilities.log(call, "ended", "", "");
+            call.caller.problemState.solve();
+            call.endTime = Timekeeper.getTime();
         }
-        
-        // this.state = Call.CallState.ENDED;
- 
+        callsToRemove.clear();
+    }
+
+    // this.state = Call.CallState.ENDED;
+
     private static <T> int indexOf(LinkedList<T> list, T target) {
         int index = 0;
         for (T element : list) {
@@ -192,21 +193,21 @@ public class Call implements Simulated {
 
     }
 
-    public HBox createHbox(){
+    public HBox createHbox() {
         HBox hBox = new HBox();
         CheckBox checkBox = new CheckBox();
         ImageView callImageView = new ImageView(callimage);
         callImageView.setFitWidth(50);
-         callImageView.setFitHeight(50);
-        
-        //Rectangle rectangle = new Rectangle(50, 50, Color.TRANSPARENT);
-         hBox.getChildren().add(callImageView);
-        //hBox.getChildren().add(rectangle);
+        callImageView.setFitHeight(50);
+
+        // Rectangle rectangle = new Rectangle(50, 50, Color.TRANSPARENT);
+        hBox.getChildren().add(callImageView);
+        // hBox.getChildren().add(rectangle);
         hBox.getChildren().add(checkBox);
         HBox.setHgrow(checkBox, Priority.ALWAYS);
         checkBox.setAlignment(Pos.BOTTOM_RIGHT);
         return hBox;
-        
+
     }
 
     public long getCallDuration() {
@@ -250,8 +251,8 @@ public class Call implements Simulated {
     public void step() {
         if (this.state == CallState.INCALL) {
             if (this.endTime <= Timekeeper.getTime()) {
-                this.state = Call.CallState.ENDED;  
-                callsToRemove.add(this);              
+                this.state = Call.CallState.ENDED;
+                callsToRemove.add(this);
             } else {
                 Utilities.log(this, "continues", activeCalls, (this.endTime - Timekeeper.getTime()) + " remaining...");
             }
