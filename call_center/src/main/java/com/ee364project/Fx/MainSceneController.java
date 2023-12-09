@@ -151,7 +151,7 @@ public class MainSceneController {
     // panes
     Image customerImage = new Image("com\\ee364project\\Fx\\resources\\user.png");
     Image agentImage = new Image("com\\ee364project\\Fx\\resources\\agent.png");
-    //Image callImage = new Image("com\\ee364project\\Fx\\resources\\green.jpg");
+    Image callImage = new Image("com\\ee364project\\Fx\\resources\\green.jpg");
 
     // ************************Mshari Edit****************************** *//
     private CallCenter callCenter;
@@ -775,16 +775,20 @@ public class MainSceneController {
         CheckBox checkBox = new CheckBox();
         
          ImageView callImageView = new ImageView(customerImage);
+         ImageView callIcon = new ImageView(callImage);
          ImageView callImageViews = new ImageView(agentImage);
          
          callImageView.setFitWidth(20);
          callImageView.setFitHeight(20);
+         callIcon.setFitWidth(10);
+         callIcon.setFitHeight(10);
          callImageViews.setFitWidth(20);
          callImageViews.setFitHeight(20);
 
 
         // Rectangle rectangle = new Rectangle(50, 50, Color.TRANSPARENT);
          hBox.getChildren().add(callImageView);
+         hBox.getChildren().add(callIcon);
          hBox.getChildren().add(callImageViews);
         // hBox.getChildren().add(rectangle);
         hBox.getChildren().add(checkBox);
