@@ -91,6 +91,23 @@ public class Customer extends Person implements CanCall {
         return arr;
     }
 
+
+    public static long getAllAverageWaitTime() {
+        long sum = 0;
+        long n = 0;
+        for (Customer customer : allCustomers) {
+            if (customer.callInfo.averageWaitTime() >= 0) {
+                sum += customer.callInfo.averageWaitTime();
+                n++;
+            }
+        }
+        if (n != 0) {
+            return sum / n;
+        } else {
+            return 0;
+        }
+    }
+
     public Customer parseData(String[] dataFields) {
         this.phoneNumber = dataFields[0];
         this.behaviour = CustomerBehaviour.customerBehaviourByName.get(dataFields[1]);
@@ -293,8 +310,12 @@ class ProblemInfo {
         }
         return false;
     }
+
+    
     
 }
+
+
 
 class CallInfo {
     public ArrayList<Call> history = new ArrayList<>();
@@ -315,5 +336,19 @@ class CallInfo {
 
     public Call getLastCall() {
         return this.call;
+    }
+
+    public long averageWaitTime() {
+        long sum = 0;
+        long n = 0;
+        for (Call call : this.history) {
+            sum += call.getWaitTime();
+            n++;
+        }
+        if (n != 0) {
+            return sum / n;
+        } else {
+            return -1;
+        }
     }
 }

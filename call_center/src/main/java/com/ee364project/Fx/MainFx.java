@@ -46,3 +46,4 @@ public class MainFx extends Application {
 // --add-modules javafx.controls,javafx.fxml"
 // "vmArgs": "--module-path call_center\\lib\\javafx-sdk-21.0.1\\lib
 // --add-modules javafx.controls,javafx.fxml"
+//"vmArgs": "--module-path call_center\\lib\\javafx-sdk-21.0.1\\lib --add-modules javafx.controls,javafx.fxml"

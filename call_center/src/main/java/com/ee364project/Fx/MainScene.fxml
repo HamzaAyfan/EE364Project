@@ -66,6 +66,5 @@
       <Label layoutX="83.0" layoutY="46.0" text="Customers" />
       <Label layoutX="405.0" layoutY="46.0" text="Calls" />
       <Label layoutX="500.0" layoutY="46.0" prefHeight="17.0" prefWidth="43.0" text="Agents" />
-      <Text layoutX="254.0" layoutY="59.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Average wait time" />
    </children>
 </AnchorPane>
