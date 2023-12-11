@@ -152,6 +152,8 @@ public class MainSceneController {
     Image customerImage = new Image("com\\ee364project\\Fx\\resources\\user.png");
     Image agentImage = new Image("com\\ee364project\\Fx\\resources\\agent.png");
     Image callImage = new Image("com\\ee364project\\Fx\\resources\\green.jpg");
+    Image showCallImage = new Image("com\\ee364project\\Fx\\resources\\show.png");
+    Image hideCallImage = new Image("com\\ee364project\\Fx\\resources\\hide.png");
 
     // ************************Mshari Edit****************************** *//
     private CallCenter callCenter;
@@ -777,6 +779,7 @@ public class MainSceneController {
          ImageView callImageView = new ImageView(customerImage);
          ImageView callIcon = new ImageView(callImage);
          ImageView callImageViews = new ImageView(agentImage);
+         ImageView showhideImageView = new ImageView(showCallImage);
          
          callImageView.setFitWidth(20);
          callImageView.setFitHeight(20);
@@ -784,6 +787,10 @@ public class MainSceneController {
          callIcon.setFitHeight(10);
          callImageViews.setFitWidth(20);
          callImageViews.setFitHeight(20);
+         showhideImageView.setFitWidth(10);
+         showhideImageView.setFitHeight(10);
+
+         //Label label = new Label("", showhideImageView);
 
 
         // Rectangle rectangle = new Rectangle(50, 50, Color.TRANSPARENT);
@@ -794,6 +801,7 @@ public class MainSceneController {
         hBox.getChildren().add(checkBox);
         HBox.setHgrow(checkBox, Priority.ALWAYS);
         checkBox.setAlignment(Pos.BOTTOM_RIGHT);
+        //checkBox.setGraphic(showhideImageView);
         checkBox.setOnAction(e -> handleCheckboxAction("Call", checkBox));
         // checkBox.selectedProperty().addListener(createChangeListener(checkBox));
         Node[] pointers = { hBox, checkBox };
@@ -856,14 +864,9 @@ public class MainSceneController {
 
     @FXML
     void startbtnClicked(ActionEvent event) {
+        try{
         // Check if the timer is not already running
-        if (!timerTimeline.getStatus().equals(Timeline.Status.RUNNING)) {
-            // Start the timer when the "Start" button is clicked
-            timerTimeline.play();
-
-            // Disable the "Start" button to prevent further clicks
-            ((MenuItem) event.getSource()).setDisable(true);
-        }
+        
 
         callCenter = new CallCenter(agents);
         System.out.println("casted");
@@ -892,5 +895,17 @@ public class MainSceneController {
                 }
             }
         }).start();
+
+        if (!timerTimeline.getStatus().equals(Timeline.Status.RUNNING)) {
+            // Start the timer when the "Start" button is clicked
+            timerTimeline.play();
+
+            // Disable the "Start" button to prevent further clicks
+            ((MenuItem) event.getSource()).setDisable(true);
+        }
+        }
+        catch(Exception e){
+            showErrorAlert("Starting Simulation", "Environment is not Loaded");
+        }
     }
 }

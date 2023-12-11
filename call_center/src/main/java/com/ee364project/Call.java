@@ -159,17 +159,6 @@ public class Call implements Simulated {
 
     // this.state = Call.CallState.ENDED;
 
-    private static <T> int indexOf(LinkedList<T> list, T target) {
-        int index = 0;
-        for (T element : list) {
-            if (element.equals(target)) {
-                return index;
-            }
-            index++;
-        }
-        return -1; // Element not found
-    }
-
     private static void applyExpiry() { // run after every step.
         Call call;
         while (callQueue.size() > 0 && (Timekeeper.getTime() - callQueue.peek().startTime >= MAXWAITTIME)) {
@@ -193,22 +182,6 @@ public class Call implements Simulated {
 
     }
 
-    public HBox createHbox() {
-        HBox hBox = new HBox();
-        CheckBox checkBox = new CheckBox();
-        ImageView callImageView = new ImageView(callimage);
-        callImageView.setFitWidth(50);
-        callImageView.setFitHeight(50);
-
-        // Rectangle rectangle = new Rectangle(50, 50, Color.TRANSPARENT);
-        hBox.getChildren().add(callImageView);
-        // hBox.getChildren().add(rectangle);
-        hBox.getChildren().add(checkBox);
-        HBox.setHgrow(checkBox, Priority.ALWAYS);
-        checkBox.setAlignment(Pos.BOTTOM_RIGHT);
-        return hBox;
-
-    }
 
     public long getCallDuration() {
         return this.endTime - this.answerTime;
