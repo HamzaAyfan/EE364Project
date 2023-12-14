@@ -62,7 +62,7 @@ public class Call implements Simulated {
     private static LinkedList<Call> callsToRemove = new LinkedList<>();
     LinkedHashMap<String, Person> sentencesHashMap = new LinkedHashMap<>();
     LinkedHashMap<String, Integer> lengthsSaved = new LinkedHashMap<>();
-    public static long callCount = 0;
+    public static long callCount;
     public static Phaser phaser;
     public static HashMap<CheckBox, DialogeBox> linkCBtoDB = new HashMap<>();
 

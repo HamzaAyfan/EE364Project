@@ -778,11 +778,13 @@ public class MainSceneController {
     // Code For DialogueBox
     // *****************************************************************************************
     // */
+    static long callCount;
     public Node[] createHbox() {
+        long thisCallCount = ++callCount;
         HBox hBox = new HBox();
         CheckBox checkBox = new CheckBox();
         Text callnumberr=new Text();
-        callnumberr.setText(String.valueOf(Call.callCount));
+        callnumberr.setText(String.valueOf(thisCallCount));
         hBox.setSpacing(4);
         
         
@@ -814,7 +816,7 @@ public class MainSceneController {
         HBox.setHgrow(checkBox, Priority.ALWAYS);
         checkBox.setAlignment(Pos.BOTTOM_RIGHT);
         //checkBox.setGraphic(showhideImageView);
-        checkBox.setOnAction(e -> handleCheckboxAction("Call", checkBox));
+        checkBox.setOnAction(e -> handleCheckboxAction("Call" + thisCallCount, checkBox));
         // checkBox.selectedProperty().addListener(createChangeListener(checkBox));
         Node[] pointers = { hBox, checkBox };
         return pointers;
