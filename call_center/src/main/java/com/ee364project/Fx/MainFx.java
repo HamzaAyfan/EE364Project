@@ -25,9 +25,9 @@ public class MainFx extends Application {
             primaryStage.show();
 
             MainSceneController controller = loader.getController();
-            // controller.showYesNoDialog(primaryStage);
+            controller.showYesNoDialog(primaryStage);
 
-            // primaryStage.setOnCloseRequest(e -> {MainSceneController.running=false;});
+            primaryStage.setOnCloseRequest(e -> {MainSceneController.running=false;});
 
         } catch (Exception e) {
             e.printStackTrace(); // Print the stack trace to the console
