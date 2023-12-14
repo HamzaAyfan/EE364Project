@@ -170,6 +170,7 @@ public class MainSceneController {
             this.pause();
         });
         MenPlay.setDisable(true);
+        MenPasue.setDisable(true);
         Call.vBox = CallVbox;
         Call.phaser = phaser;
         CallVbox.setSpacing(4);
@@ -902,6 +903,7 @@ public class MainSceneController {
 
             // Disable the "Start" button to prevent further clicks
             ((MenuItem) event.getSource()).setDisable(true);
+            MenPasue.setDisable(false);
         }
         }
         catch(Exception e){
