@@ -69,8 +69,12 @@ public class Utilities {
         return objects[random.nextInt(objects.length)];
     }
 
+    public static Object getRandomFromArray(ArrayList<?> objects) {
+        return objects.get(random.nextInt(objects.size()));
+    }
+
     public static void log(Object subject, String verb, Object object, String msg) {
-        System.out.println("\n\n" + Timekeeper.getProperTime() + ": " + subject + " " + verb + " " + object + " | " + msg);
+        // System.out.println("\n\n" + Timekeeper.getProperTime() + ": " + subject + " " + verb + " " + object + " | " + msg);
     }
 
     public static String[] getRandomStringArray(int len) {

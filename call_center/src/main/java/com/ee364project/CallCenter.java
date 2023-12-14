@@ -77,6 +77,7 @@ public class CallCenter implements Simulated {
                 call.setReciever(assignAgent());
                 call.getReceiver().callInfo.called(call);
                 call.connectCall(this);
+                
                 Utilities.log(call.getReceiver(), "joined", call, null);
             }
         } else {

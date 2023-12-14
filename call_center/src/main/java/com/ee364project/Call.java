@@ -2,39 +2,20 @@ package com.ee364project;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-
-import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
+
 import javafx.scene.Node;
-import javafx.scene.Scene;
 import javafx.scene.control.CheckBox;
-import javafx.scene.control.ProgressBar;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
-import javafx.geometry.Pos;
 
 import java.util.concurrent.Phaser;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 
 import com.ee364project.Fx.MainSceneController;
 import com.ee364project.helpers.Utilities;
-import java.util.concurrent.Phaser;
 
 public class Call implements Simulated {
     // public static LinkedList<Call> activeCalls = new LinkedList<>();
@@ -48,8 +29,6 @@ public class Call implements Simulated {
 
     public static final long MAXWAITTIME = 60;
 
-    private static ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
-
     public static enum CallState {
         WAITING,
         INCALL,
@@ -60,15 +39,18 @@ public class Call implements Simulated {
     public static LinkedList<Call> activeCalls = new LinkedList<>();
     private static LinkedList<Call> callQueue = new LinkedList<>();
     private static LinkedList<Call> callsToRemove = new LinkedList<>();
-    LinkedHashMap<String, Person> sentencesHashMap = new LinkedHashMap<>();
-    LinkedHashMap<String, Integer> lengthsSaved = new LinkedHashMap<>();
+
+    private ArrayList<String> sentences = new ArrayList<>();
+    private ArrayList<Integer> lengthsSaved = new ArrayList<>();
+    private ArrayList<Person> speaker = new ArrayList<>();
+    
     private static long callCount = 0;
     public static Phaser phaser;
     public static HashMap<CheckBox, DialogeBox> linkCBtoDB = new HashMap<>();
 
-    private int startTime;//
-    private int endTime;//
-    private int answerTime;//
+    private int startTime;
+    private int endTime;
+    private int answerTime;
     public int totalTime;
     private Customer caller;
     private Agent receiver;
@@ -90,16 +72,13 @@ public class Call implements Simulated {
         call.state = CallState.ENDED;
     }
 
-    // public void increaseTime() {
-    // timeela
-    // }
 
     public int getTimeElapsed() {
         return (Timekeeper.getTime() - startTime);
     }
 
     public LinkedList<Solution> makeLinkedList(Customer caller) {
-        HashSet<Solution> HSsolutions = caller.problemState.getProblem().solutions;
+        ArrayList<Solution> HSsolutions = caller.problemState.getProblem().solutions;
         LinkedList<Solution> LLsolutions = new LinkedList<>();
         for (Solution soultion : HSsolutions) {
             try {
@@ -116,6 +95,9 @@ public class Call implements Simulated {
     }
 
     public void connectCall(CallCenter callCenter) {
+        System.out.println("Call CONNECTED: ");
+        Call.callQueue.remove(this);
+        receiver.assignLevel(caller.problemState.getProblem());
         this.callCenter = callCenter;
         LinkedList<Solution> solutionsCopy = this.makeLinkedList(caller);
         MockDialoge dialoge = new MockDialoge(caller, receiver, this, solutionsCopy);
@@ -131,33 +113,39 @@ public class Call implements Simulated {
             vBox.getChildren().add(hbox);
         });
         CheckBoxAndCall.put(checkBox, this);
+    }
 
+    public void addLine(String sentenceString, Person person, int length){
+        sentences.add(sentenceString);
+        speaker.add(person);
+        lengthsSaved.add(length);
     }
 
     public static void terminateCalls() {
         for (Call call : Call.callsToRemove) {
             call.callCenter.releaseAgent(call.receiver);
-            // int call_index = indexOf(activeCalls, this);
-            int index = activeCalls.indexOf(call);
             Call.activeCalls.remove(call);
-
-            try {
-                if (index >= 0 && vBox != null && vBox.getChildren().size() > 0) {
-                    Platform.runLater(() -> {
-                        vBox.getChildren().remove(index);
+            Platform.runLater(() -> {        
+                        vBox.getChildren().remove(call.hbox);
                     });
-                }
-            } catch (Exception e) {
-
-            }
             Utilities.log(call, "ended", "", "");
+            // call.nullify();
+            CheckBoxAndCall.remove(call.checkBox);            
             call.caller.problemState.solve();
             call.endTime = Timekeeper.getTime();
         }
+        System.gc();
         callsToRemove.clear();
     }
 
+
     // this.state = Call.CallState.ENDED;
+
+    private void nullify() {
+        sentences = null;
+        lengthsSaved = null;
+        speaker = null;
+    }
 
     private static void applyExpiry() { // run after every step.
         Call call;
@@ -173,13 +161,12 @@ public class Call implements Simulated {
         this.caller = caller;
         this.startTime = Timekeeper.getTime();
         this.answerTime = 0;
-        // this.callDuration = 0;
         this.endTime = 0;
         this.caller = caller;
         this.receiver = null;
         this.state = CallState.WAITING;
         callQueue.add(this);
-
+        
     }
 
 
@@ -226,6 +213,7 @@ public class Call implements Simulated {
             if (this.endTime <= Timekeeper.getTime()) {
                 this.state = Call.CallState.ENDED;
                 callsToRemove.add(this);
+                System.out.println("Adding to removed list: ");
             } else {
                 Utilities.log(this, "continues", activeCalls, (this.endTime - Timekeeper.getTime()) + " remaining...");
             }
@@ -236,6 +224,25 @@ public class Call implements Simulated {
     public CheckBox getCheckBox() {
         return checkBox;
     }
+
+    public ArrayList<Integer> getLengths() {
+        return lengthsSaved;
+    }
+
+    public ArrayList<String> getSentences() {
+        return sentences;
+    }
+    public String getSentences(int i) {
+        return sentences.get(i);
+    }
+
+    public int getlengths(int i) {
+        return lengthsSaved.get(i);
+    }
+
+    public Person getPerson(int i) {
+        return speaker.get(i);
+    }
 }
 
 class MockDialoge {
@@ -245,9 +252,8 @@ class MockDialoge {
     private Customer caller;
     private Agent receiver;
     private boolean firstSolutionSeeked = true;
-    LinkedList<String> content = new LinkedList<>();
 
-    int discussionLength;
+    private int discussionLength;
 
     public MockDialoge(Customer caller, Agent receiver, Call currentCall, LinkedList<Solution> solutions) {
         this.solutions = solutions;
@@ -256,15 +262,11 @@ class MockDialoge {
         this.currentCall = currentCall;
     }
 
-    public int getContentlength() {
+    public int getContentlength() {        
         this.getWords();
-        for (String sentence : currentCall.sentencesHashMap.keySet()) {
-            int length = sentence.split("\\s+").length;
+        for (Integer length : currentCall.getLengths()) {
             discussionLength += length;
-            currentCall.lengthsSaved.put(sentence, length);
         }
-
-        // System.out.println(currentCall.sentencesHashMap.keySet());
         return discussionLength;
     }
 
@@ -289,23 +291,28 @@ class MockDialoge {
             introOrTransition(selectedSolution);
             getSteps(selectedSolution);
         } while (i != 0);
+        
     }
 
     private void getSteps(Solution selectedSolution) {
         for (int j = 0; j < selectedSolution.agentResponses.length; j++) {
-            currentCall.sentencesHashMap.put(selectedSolution.agentResponses[j], receiver);
-            currentCall.sentencesHashMap.put(selectedSolution.customerResponses[j], caller);
+            currentCall.addLine(selectedSolution.agentResponses[j], receiver, MockDialoge.getlength(selectedSolution.agentResponses[j]));
+            currentCall.addLine(selectedSolution.customerResponses[j], caller, MockDialoge.getlength(selectedSolution.agentResponses[j]));
         }
+    }
+
+    private static int getlength(String string) {
+        return string.split("\\s+").length;
     }
 
     private void introOrTransition(Solution selectedSolution) {
         if (firstSolutionSeeked == true) {
-            currentCall.sentencesHashMap.put(selectedSolution.getRandomIntro(receiver) + "!!!", receiver);
-            currentCall.sentencesHashMap.put(selectedSolution.getRandomIntro(caller) + "???", caller);
+            currentCall.addLine(selectedSolution.getRandomIntro(receiver), receiver, MockDialoge.getlength(selectedSolution.getRandomIntro(receiver)));
+            currentCall.addLine(selectedSolution.getRandomIntro(caller), caller, MockDialoge.getlength(selectedSolution.getRandomIntro(caller)));
             firstSolutionSeeked = false;
         } else {
-            currentCall.sentencesHashMap.put("I just did that but it did not work", caller);
-            currentCall.sentencesHashMap.put("sorry it did not work let me seek an alternative", receiver);
+            currentCall.addLine("I just did that but it did not work", caller, 9);
+            currentCall.addLine("sorry it did not work let me seek an alternative", receiver, 10);
         }
     }
 }
@@ -321,25 +328,25 @@ class RandomInt {
     }
 }
 
-class DummyClass extends Thread {
-    private Call call;
-    private long endTime;
+// class DummyClass extends Thread {
+//     private Call call;
+//     private long endTime;
 
-    public DummyClass(Call call) {
-        this.call = call;
-        this.endTime = Utilities.random.nextInt(100, 1000) + Timekeeper.getTime();
-    }
+//     public DummyClass(Call call) {
+//         this.call = call;
+//         this.endTime = Utilities.random.nextInt(100, 1000) + Timekeeper.getTime();
+//     }
 
-    public void run() {
-        while (this.endTime >= Timekeeper.getTime()) {
-            Utilities.log(call, "is", "executing", "ends after " + (this.endTime - Timekeeper.getTime()));
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-        // this.call.terminateCall();
-    }
-}
+//     public void run() {
+//         while (this.endTime >= Timekeeper.getTime()) {
+//             Utilities.log(call, "is", "executing", "ends after " + (this.endTime - Timekeeper.getTime()));
+//             try {
+//                 Thread.sleep(1000);
+//             } catch (InterruptedException e) {
+//                 // TODO Auto-generated catch block
+//                 e.printStackTrace();
+//             }
+//         }
+//         // this.call.terminateCall();
+//     }
+// }

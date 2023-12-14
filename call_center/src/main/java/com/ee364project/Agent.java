@@ -32,10 +32,7 @@ public class Agent extends Person {
     private String id;
     private Department department;
     private LocalDateTime joinDate;
-
-    
-
-
+    private ArrayList<Problem> problemsSeen = new ArrayList<>();
 
     public Agent(String id, String name, Department department) throws InvalidIdException {
         super(name);
@@ -46,7 +43,21 @@ public class Agent extends Person {
         this.department = department;
         this.joinDate = LocalDateTime.now();
         allAgents.add(this);
-        level = RandomSelect.getRandomEnumValue(Level.class);
+        
+    }
+
+    public void assignLevel(Problem problem){  
+        for (Problem problemSeen: problemsSeen){
+            if (problemSeen==problem){
+                level = Level.SAVEY;
+                return;
+            }
+        }      
+        if (this.getDepartment() == problem.getDepartment()){
+            level = RandomSelect.getRandomEnumValue(Level.class,1);
+        }else{
+            level = RandomSelect.getRandomEnumValue(Level.class,0);
+        }
     }
 
     public Level getlevel() {
@@ -178,13 +189,24 @@ public class Agent extends Person {
 }
 
 class RandomSelect {
-	public static <T extends Enum<?>> T getRandomEnumValue(Class<T> enumClass) {
+	// public static <T extends Enum<?>> T getRandomEnumValue(Class<T> enumClass) {
+    //     // Use values() method to get an array of enum constants
+    //     T[] values = enumClass.getEnumConstants();
+
+    //     // Generate a random index
+    //     Random random = new Random();
+    //     int randomIndex = random.nextInt(values.length);
+
+    //     // Return the enum constant at the random index
+    // //     return values[randomIndex];
+    // }
+    public static <T extends Enum<?>> T getRandomEnumValue(Class<T> enumClass,int removeFromEnd) {
         // Use values() method to get an array of enum constants
         T[] values = enumClass.getEnumConstants();
 
         // Generate a random index
         Random random = new Random();
-        int randomIndex = random.nextInt(values.length);
+        int randomIndex = random.nextInt(values.length-removeFromEnd);
 
         // Return the enum constant at the random index
         return values[randomIndex];

@@ -3,12 +3,13 @@ package com.ee364project;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 
 import com.ee364project.helpers.Utilities;
 import com.ee364project.helpers.Vars;
 
 public class Problem implements HasData {
-    public static HashMap<String, Problem> allProblems = new HashMap<>();
+    public static ArrayList<Problem> allProblems = new ArrayList<>();
     public static final String CLSNAME = "Problem";
     public static final String[] HEADERS = new String[] { "identifier", "department", "customerIntro",
             "customerResponses", "agentIntro", "agentResponses" };
@@ -20,10 +21,10 @@ public class Problem implements HasData {
 
     public Department department;
     public String identifier;
-    public HashSet<Solution> solutions;
+    public ArrayList<Solution> solutions = new ArrayList<>();
 
     static public Problem getProblem(String identifier) {
-        Problem problem = allProblems.get(identifier);
+        Problem problem = allProblems.get(allProblems.indexOf(identifier));
         if (identifier == null) {
             problem = new Problem();
             problem.identifier = identifier;
@@ -40,8 +41,8 @@ public class Problem implements HasData {
         this.identifier = identifier;
         this.department = department;
         new Solution(this, customerIntro, customerResponses, agentIntro, agentResponses);
-        this.solutions = Solution.allSolutions.get(this);
-        allProblems.put(this.identifier, this);
+        // this.solutions = Solution.allSolutions.get(this);
+        allProblems.add(this);
     }
 
     public Problem() {
@@ -92,29 +93,29 @@ public class Problem implements HasData {
             arr[i++] = inArr;
         }
         return arr;
+    }   
+
+    public static Problem checkRepeatedProblem(String identifier) {
+        for (Problem PreExistingProblems:allProblems){
+            String PreExistingIdentifier = PreExistingProblems.identifier;
+            if (PreExistingIdentifier.equals(identifier)){
+                return PreExistingProblems;
+            }
+        }
+        return new Problem();
     }
 
     @Override
     public Problem parseData(String[] dataFields) {
         this.identifier = dataFields[0];
         this.department = Department.getDepartment(dataFields[1]);
-        ArrayList<String> d1 = new ArrayList<>();
-        ArrayList<String> d2 = new ArrayList<>();
-        String[] ds = dataFields[2].split(";");
-        for (int i = 0; i < ds.length; i++) {
-            if (i % 2 == 0) {
-                d2.add(ds[i]);
-            } else {
-                d1.add(ds[i]);
-            }
-        }
-        String[] customerResponses = d1.toArray(new String[d1.size()]);
-        String[] agentResponses = d2.toArray(new String[d2.size()]);
-        String[] customerIntro = dataFields[3].split(";");
+        String[] customerResponses = dataFields[3].split(";");
+        String[] agentResponses = dataFields[5].split(";");
+        String[] customerIntro = dataFields[2].split(";");
         String[] agentIntro = dataFields[4].split(";");
-        this.solutions = Solution.removeEmptySolutions(this.solutions);
-        new Solution(this, customerIntro, customerResponses, agentIntro, agentResponses);
-        return this;
+        Solution solution = new Solution(this, customerIntro, customerResponses, agentIntro, agentResponses);
+        this.solutions.add(solution);
+        return this; 
     }
 
     @Override
@@ -122,14 +123,10 @@ public class Problem implements HasData {
         allProblems.remove(this.identifier);
         this.identifier = Utilities.faker.azure().appServiceEnvironment();
         this.department = Department.getRandomDepartment();
-        allProblems.put(this.identifier, this);
+        allProblems.add(this);
         this.solutions = Solution.removeEmptySolutions(this.solutions);
-        Solution.addRandomSolution(this);
+        solutions.add(Solution.addRandomSolution(this));
         return this;
-    }
-
-    public static Problem[] getAllProblems() {
-        return allProblems.values().toArray(new Problem[allProblems.size()]);
     }
 
     public Solution getRandomSolution() {
@@ -141,6 +138,7 @@ public class Problem implements HasData {
         return this.identifier == other.identifier;
     }
 
-    
-    // Customer.ProblemState.
+    public static HasData[] getAllProblems() {
+        return allProblems.toArray(new Problem[allProblems.size()]);
+    }
 }

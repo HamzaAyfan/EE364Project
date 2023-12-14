@@ -163,6 +163,7 @@ public class Customer extends Person implements CanCall {
     public void step() {
         if (this.callInfo.getLastCall() == null) {
             defaultRoutine();
+            
             return;
         }
         switch (this.callInfo.getLastCall().getState()) {
@@ -279,7 +280,7 @@ class ProblemInfo {
 
     public void acquireProblem() {
         finalizeLastProblem();
-        this.problem = (Problem) Utilities.getRandomFromArray(Problem.getAllProblems());
+        this.problem = (Problem) Utilities.getRandomFromArray(Problem.allProblems);
         Long problemDuration = history.get(this.problem);
         if (problemDuration == null) {
             currentActiveProblemDuration = 0;

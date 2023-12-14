@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.util.ArrayList;
 
 import com.ee364project.HasData;
+import com.ee364project.Problem;
 import com.ee364project.helpers.Vars;
 
 import org.apache.commons.csv.CSVFormat;
@@ -45,7 +46,7 @@ public final class Csv {
             try (CSVParser reader = new CSVParser(fileReader, CSVFormat.DEFAULT)) {
                 Class<?> DataClass = Class.forName(Vars.projectPrefix + clsName);
                 ArrayList<ArrayList<String>> mat = new ArrayList<>();
-                ArrayList<String> row = new ArrayList<>();
+                ArrayList<String> row = new ArrayList<>(); 
                 for (CSVRecord record : reader.getRecords()) {
                     row = new ArrayList<>();
                     for (String word : record.toList()) {
@@ -53,11 +54,14 @@ public final class Csv {
                     }
                     mat.add(row);
                 }
-                String[] arg;
+                String[] arg;                
                 for (ArrayList<String> rowInMat : mat.subList(1, mat.size())) {
                     arg = rowInMat.toArray(new String[rowInMat.size()]);
-                    object = (HasData) DataClass.getDeclaredConstructor().newInstance();
-                    //System.out.println(arg);
+                    if (clsName.equals("Problem")){
+                        object = Problem.checkRepeatedProblem(arg[0]);
+                    }else{
+                        object = (HasData) DataClass.getDeclaredConstructor().newInstance();
+                    }                                        
                     object.parseData(arg);
                     objects.add(object);
                 }

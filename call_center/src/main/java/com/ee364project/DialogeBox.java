@@ -1,37 +1,25 @@
 package com.ee364project;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Scene;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ProgressBar;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontPosture;
+import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
-import javafx.geometry.Pos;
 
+import java.util.LinkedList;
 import java.util.concurrent.Phaser;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import com.ee364project.Fx.MainSceneController;
-import com.ee364project.helpers.Utilities;
-import java.util.concurrent.Phaser;
 public class DialogeBox extends Thread {
     private static ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
     Stage stage = new Stage();
@@ -40,27 +28,20 @@ public class DialogeBox extends Thread {
     public static LinkedList<DialogeBox> windows = new LinkedList<>();
     public DialogeBox thisWindow;
     private LinkedList<Solution> solutions;
-    public static int ActiveCallNumber;
     private Call currentCall;
     private Customer caller;
     private Agent receiver;
-    ProgressBar customerVoice;
-    ProgressBar agentVoice;
-    Timeline timeline;
     LinkedList<String> content = new LinkedList<>();
-    KeyFrame kfTalking;
-    KeyFrame kfTransitionalPause;
-    KeyFrame kfStopTalking;
     ScrollPane scrollPane;
     boolean scrollDown = true;
     boolean scrollDownCheck = true;
-    int index;
-    public static int numberOfThreads = 1;
     Phaser phaser;
     private boolean stop;
     String startFrom;
     HBox hBox;
     String lastLine;
+    int len;
+    int lastVisted;
 
     public DialogeBox(String callNumber, Phaser phaser, Call currentCall) {
         this.currentCall = currentCall;
@@ -73,19 +54,19 @@ public class DialogeBox extends Thread {
     }
 
     public int resumeDialogeFrom() {
-
         int startLength = 0;
-        for (Map.Entry<String, Integer> entry : currentCall.lengthsSaved.entrySet()) {
-            startLength += entry.getValue();
-            Person person = currentCall.sentencesHashMap.get(entry.getKey());
-            TextField textField = new TextField(person.getTag() + entry.getKey());
-            textField.setEditable(false);
-            Platform.runLater(() -> root.getChildren().add(textField));
-            startFrom = entry.getKey();
-            if (startLength >= currentCall.getTimeElapsed()) {                
+        len = currentCall.getSentences().size();
+        lastVisted = len;
+        for (int i = 0; i<len ;i++ ){
+            startLength += currentCall.getlengths(0);
+            Person person = currentCall.getPerson(i);
+            TextArea textField = createArea(person);
+            String startFrom = currentCall.getSentences(i);
+            Platform.runLater(() -> textField.appendText(startFrom));
+            if (startLength >= currentCall.getTimeElapsed()) {  
+                lastVisted = i;              
                 break;
             }
-
         }
         return startLength;
     }
@@ -101,62 +82,70 @@ public class DialogeBox extends Thread {
         
     }
 
-    private void pacedPrint(String sentence) {
-        Person speaker = currentCall.sentencesHashMap.get(sentence);
-        TextField textField = this.createTextField(speaker);
+    private void pacedPrint(String sentence , Person speaker) {
+        TextArea textField = this.createArea(speaker);
         String[] words = sentence.split("\\s+");
-
         for (String word : words) {
             if (scrollDown) {
                 scrollPane.setVvalue(1.0);
             }
-            // Test.waiting = true;
             phaser.arriveAndAwaitAdvance();
             if (stop) {
                 break;
             }
-
             Platform.runLater(() -> textField.appendText(word + " "));
         }
     }
 
-    private TextField createTextField(Person person) {
-        TextField textField = new TextField(person.getTag());
-        textField.setEditable(false);
-        int identifier = 0;
-        if (person instanceof Agent) {
-            textField.setStyle("-fx-alignment: CENTER-RIGHT;");
-        } else {
-            identifier = 1;
-        }
+    // private TextField createTextField(Person person) {
+    //     TextField textField = new TextField(person.getTag());
+    //     textField.setEditable(false);
+    //     int identifier = 0;
+    //     if (person instanceof Agent) {
+    //         textField.setStyle("-fx-alignment: CENTER-RIGHT;");
+    //     } 
+    //     Platform.runLater(() -> {
+    //         root.getChildren().add(textField);
+    //     });
+    //     return textField;
+    // }
+    private TextArea createArea(Person person) {
+        TextArea textArea = new TextArea(person.getTag());
+        textArea.setEditable(false);
+        textArea.setWrapText(true);
+        textArea.setFont(Font.font("Monospaced", FontWeight.NORMAL, FontPosture.REGULAR, 12));
+        if (person instanceof Agent) {            
+            textArea.setFont(Font.font("Monospaced", FontWeight.BOLD, FontPosture.REGULAR, 12));
+        } textArea.setScrollTop(0);
+        
+
+        textArea.prefHeightProperty().bind(Bindings.createDoubleBinding(
+                () -> textArea.getFont().getSize() * Math.ceil(
+                        textArea.getText().split("\\s").length / textArea.getPrefWidth()),
+                textArea.textProperty(), textArea.prefWidthProperty()));
+
+        
         Platform.runLater(() -> {
-            root.getChildren().add(textField);
+            root.getChildren().add(textArea);
         });
-        return textField;
+        return textArea;
     }
 
     @Override
     public void run() {
+        String thread = Thread.currentThread().getName();
+        Platform.runLater(()->root.getChildren().add(new TextField(thread)));
         int resume = this.resumeDialogeFrom();
         Platform.runLater(() -> stage.show());
         this.startShowing(resume);
 
-        boolean start = false;
-        Iterator<String> iterator = currentCall.lengthsSaved.keySet().iterator();
-
-        while (iterator.hasNext() && !stop) {
-            String key = iterator.next();
-            if (start) {
-                pacedPrint(key);
-            }
-            if (startFrom.equals(key)) {
-                start = true;
-            }
+        for(int i = lastVisted+1; i<len;i++){
+            pacedPrint(currentCall.getSentences(i),currentCall.getPerson(i));
         }
-        Platform.runLater(() -> stage.close());
-
+        Platform.runLater(() -> {stage.close();currentCall.getCheckBox().setSelected(false);currentCall.getCheckBox().setDisable(true);});
         phaser.arriveAndDeregister();
         windows.remove(this);
+        Call.linkCBtoDB.remove(currentCall.getCheckBox());
     }
 
     public void openEmptyWindow(String windowTitle, double x, double y) {

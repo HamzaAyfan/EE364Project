@@ -2,7 +2,7 @@
 
 package com.ee364project;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.HashSet;
 
 
@@ -13,7 +13,7 @@ import java.util.Random;
 
 public class Solution implements Cloneable{
     private static Random random = new Random();
-    public static HashMap<Problem, HashSet<Solution>> allSolutions = new HashMap<>();
+    // public static HashMap<Problem, ArrayList<Solution>> allSolutions = new HashMap<>();
     public String[] customerIntro;
     public String[] customerResponses;
     public String[] agentIntro;
@@ -78,14 +78,14 @@ public class Solution implements Cloneable{
                 } else {
                     this.agentResponses = agentResponses;
                 }
-        if (allSolutions.get(problem) == null) {
-            HashSet<Solution> arr = new HashSet<>();
-            arr.add(this);
-            allSolutions.put(problem, arr);
-            problem.solutions = arr;
-        } else {
-            allSolutions.get(problem).add(this);
-        }
+        // if (allSolutions.get(problem) == null) {  
+        //     ArrayList<Solution> arr = new ArrayList<>();
+        //     arr.add(this);
+        //     allSolutions.put(problem, arr);
+        //     problem.solutions = arr;
+        // } else {
+        //     allSolutions.get(problem).add(this);
+        // }
     }
 
     public static boolean checkIfAllEmptySolution(Solution solution) {
@@ -120,7 +120,7 @@ public class Solution implements Cloneable{
         return false;
     }
 
-    public static HashSet<Solution> removeEmptySolutions(HashSet<Solution> solutions) {
+    public static ArrayList<Solution> removeEmptySolutions(ArrayList<Solution> solutions) {
         HashSet<Solution> solutionsClone = new HashSet<>();
         for (Solution solution : solutions) {
             solutionsClone.add(solution);
@@ -133,7 +133,7 @@ public class Solution implements Cloneable{
         return solutions;
     }
 
-    public static HashSet<Solution> removeEmptySolutions(Problem problem) {
+    public static ArrayList<Solution> removeEmptySolutions(Problem problem) {
         return removeEmptySolutions(problem.solutions);
     }
 

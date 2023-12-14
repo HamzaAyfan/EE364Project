@@ -188,6 +188,7 @@ public class MainSceneController {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+        checkHeapSize.checkMemory();
     }
 
     public void pause() {
@@ -852,6 +853,7 @@ public class MainSceneController {
             }
             try {
                 Call.linkCBtoDB.get(checkbox).exit();
+                Call.linkCBtoDB.remove(checkbox);
             } catch (NullPointerException e) {
             }
 
@@ -861,7 +863,7 @@ public class MainSceneController {
     // */
     // End of DialogueBox code
     public static boolean running = true;
-
+    public static int i=0;
     @FXML
     void startbtnClicked(ActionEvent event) {
         try{
@@ -873,6 +875,8 @@ public class MainSceneController {
 
         new Thread(() -> {
             phaser.register();
+            String thread = Thread.currentThread().getName();
+            Platform.runLater(()-> CallVbox.getChildren().add(new Label(thread)));
             while (running) {
                 for (Customer customer : customers) {
                     customer.step();
@@ -892,7 +896,11 @@ public class MainSceneController {
                     e.printStackTrace();
                 } finally {
                     phaser.arriveAndAwaitAdvance();
+                    checkHeapSize.checkMemory();
                 }
+                // if(i==100)
+                // {System.out.println("step");}
+                // i++;                
             }
         }).start();
 
