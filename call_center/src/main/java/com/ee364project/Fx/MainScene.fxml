@@ -58,13 +58,14 @@
          </content>
       </ScrollPane>
       <Text fx:id="timeer" layoutX="30.0" layoutY="492.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Timer" textAlignment="CENTER" wrappingWidth="175.9765625" />
-      <ScrollPane layoutX="378.0" layoutY="71.0" prefHeight="376.0" prefWidth="79.0">
+      <ScrollPane layoutX="357.0" layoutY="71.0" prefHeight="376.0" prefWidth="120.0">
          <content>
             <VBox fx:id="CallVbox" prefHeight="369.0" prefWidth="74.0" />
          </content>
       </ScrollPane>
       <Label layoutX="83.0" layoutY="46.0" text="Customers" />
-      <Label layoutX="405.0" layoutY="46.0" text="Calls" />
+      <Label layoutX="373.0" layoutY="46.0" prefHeight="17.0" prefWidth="32.0" text="Calls:" />
       <Label layoutX="500.0" layoutY="46.0" prefHeight="17.0" prefWidth="43.0" text="Agents" />
+      <Text fx:id="ActiveText" layoutX="405.0" layoutY="59.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Active" />
    </children>
 </AnchorPane>

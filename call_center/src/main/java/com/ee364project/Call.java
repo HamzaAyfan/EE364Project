@@ -44,7 +44,7 @@ public class Call implements Simulated {
 
     public HBox hbox;
 
-    Image callimage = new Image("com\\ee364project\\Fx\\resources\\green.jpg");
+    
 
     public static final long MAXWAITTIME = 60;
 
@@ -62,7 +62,7 @@ public class Call implements Simulated {
     private static LinkedList<Call> callsToRemove = new LinkedList<>();
     LinkedHashMap<String, Person> sentencesHashMap = new LinkedHashMap<>();
     LinkedHashMap<String, Integer> lengthsSaved = new LinkedHashMap<>();
-    private static long callCount = 0;
+    public static long callCount = 0;
     public static Phaser phaser;
     public static HashMap<CheckBox, DialogeBox> linkCBtoDB = new HashMap<>();
 
@@ -77,6 +77,8 @@ public class Call implements Simulated {
     public static boolean newThreadAdded;
     Timeline callTime = new Timeline();
 
+
+    
     public static Call getACall() {
         // applyExpiry();
         Call call = callQueue.poll();

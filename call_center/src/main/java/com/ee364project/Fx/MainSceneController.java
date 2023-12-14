@@ -102,6 +102,11 @@ public class MainSceneController {
     private static ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
     private int checkedCount = 0;
 
+
+    @FXML
+    private Text ActiveText;
+
+
     @FXML
     private VBox AgentVbox;
 
@@ -776,18 +781,22 @@ public class MainSceneController {
     public Node[] createHbox() {
         HBox hBox = new HBox();
         CheckBox checkBox = new CheckBox();
+        Text callnumberr=new Text();
+        callnumberr.setText(String.valueOf(Call.callCount));
+        hBox.setSpacing(4);
+        
         
          ImageView callImageView = new ImageView(customerImage);
          ImageView callIcon = new ImageView(callImage);
          ImageView callImageViews = new ImageView(agentImage);
          ImageView showhideImageView = new ImageView(showCallImage);
          
-         callImageView.setFitWidth(20);
-         callImageView.setFitHeight(20);
-         callIcon.setFitWidth(10);
-         callIcon.setFitHeight(10);
-         callImageViews.setFitWidth(20);
-         callImageViews.setFitHeight(20);
+         callImageView.setFitWidth(30);
+         callImageView.setFitHeight(30);
+         callIcon.setFitWidth(15);
+         callIcon.setFitHeight(15);
+         callImageViews.setFitWidth(30);
+         callImageViews.setFitHeight(30);
          showhideImageView.setFitWidth(10);
          showhideImageView.setFitHeight(10);
 
@@ -800,6 +809,8 @@ public class MainSceneController {
          hBox.getChildren().add(callImageViews);
         // hBox.getChildren().add(rectangle);
         hBox.getChildren().add(checkBox);
+        hBox.getChildren().add(callnumberr);
+        
         HBox.setHgrow(checkBox, Priority.ALWAYS);
         checkBox.setAlignment(Pos.BOTTOM_RIGHT);
         //checkBox.setGraphic(showhideImageView);
@@ -881,7 +892,9 @@ public class MainSceneController {
 
                 for (Call call : Call.activeCalls) {
                     call.step();
+                    
                 }
+                ActiveText.setText(String.valueOf(Call.activeCalls.size()));
                 Call.terminateCalls();
                 callCenter.step();
                 Timekeeper.step();
