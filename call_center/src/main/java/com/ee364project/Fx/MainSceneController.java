@@ -922,8 +922,11 @@ public class MainSceneController {
             // Show the dialog and handle the result
             dialog.showAndWait().ifPresent(response -> {
                 if (response == ButtonType.YES) {
-                    System.exit(1);
-                    System.out.println("User clicked Yes");
+                    displayExitMessage(
+                        "Total Calls: " + Customer.getAllCallCount() + " calls" +
+                        "\nTotal Wait Time: " + Customer.getAllTotalWaitTime() + "s" +
+                        "\nAverage Wait Time: " + Customer.getAllAverageWaitTime() + "s");
+
                 } else {
                         phaser.arriveAndDeregister();
                         endThread = true;
@@ -935,6 +938,20 @@ public class MainSceneController {
                 }
             });
 
+        }
+    }
+
+    private void displayExitMessage(String message) {
+        ButtonType closeButton = new ButtonType("Close");
+        Alert alert = new Alert(Alert.AlertType.INFORMATION, message, closeButton);
+        alert.setTitle("Simulation Results");
+        alert.setHeaderText("Simulation Results"); // No header text
+        alert.showAndWait();
+
+        // Close the application when the "Exit" button is clicked
+        if(alert.getResult() == closeButton){
+            System.exit(0);
+            System.out.println("User clicked Yes --> Ended");
         }
     }
 
