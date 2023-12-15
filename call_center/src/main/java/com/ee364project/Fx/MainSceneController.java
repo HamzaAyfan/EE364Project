@@ -11,6 +11,7 @@ import java.net.Socket;
 //import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Time;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -77,6 +78,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
@@ -139,6 +141,10 @@ public class MainSceneController {
     private Text timeer;
 
     @FXML
+    private CheckBox checkPoint;
+    private ChangeListener<Number> timePropertyListener;
+
+    @FXML
     private VBox Vox;
 
     @FXML
@@ -169,6 +175,7 @@ public class MainSceneController {
         MenPasue.setOnAction(e -> {
             this.pause();
         });
+        MenPasue.setDisable(true);
         MenPlay.setDisable(true);
         Call.vBox = CallVbox;
         Call.phaser = phaser;
@@ -181,6 +188,18 @@ public class MainSceneController {
         timerTimeline = new Timeline(new KeyFrame(Duration.seconds(1), this::updateTimer));
         timerTimeline.setCycleCount(Timeline.INDEFINITE);
 
+        // Add a listener to the checkbox to enable/disable the number property listener
+        checkPoint.selectedProperty().addListener((checkbox, oldValue, newValue) -> {
+            if (newValue) {
+                // If the checkbox is checked, add the number property listener
+                addTimePropertyListener();
+            } else {
+                // If the checkbox is unchecked, remove the number property listener
+                removeTimePropertyListener();
+            }
+        });
+        
+
         try {
             // calling the methods below would load the recent files once the program runs
             loadRecentFiles();
@@ -189,6 +208,27 @@ public class MainSceneController {
             e.printStackTrace();
         }
         checkHeapSize.checkMemory();
+    }
+
+    private void addTimePropertyListener() {
+        // Add a listener to the number property using a lambda expression
+        timePropertyListener = (observable, oldValue, newValue) -> {
+            // Check if the number is a multiple of 50
+            if (newValue.intValue() % 50 == 0) {
+                // Show the dialog on the next iteration of the JavaFX Application Thread
+                Platform.runLater(() -> checkPoint());
+            }
+        };
+
+        // Add the listener to the number property
+        Timekeeper.getTimeProperty().addListener(timePropertyListener);
+    }
+
+    private void removeTimePropertyListener() {
+        // Remove the listener from the number property
+        if (timePropertyListener != null) {
+            Timekeeper.getTimeProperty().removeListener(timePropertyListener);
+        }
     }
 
     public void pause() {
@@ -215,8 +255,6 @@ public class MainSceneController {
     private void updateTimer(ActionEvent event) {
         Timekeeper.step();
         LocalDateTime properTime = Timekeeper.getProperTime();
-        int minutes = properTime.getMinute();
-        int seconds = properTime.getSecond();
         // timeer.setText(String.format("%02d:%02d", minutes, seconds));
         timeer.setText(properTime.toString() + 
         "\nTotal Calls: " + Customer.getAllCallCount() + " calls" +
@@ -865,6 +903,42 @@ public class MainSceneController {
     // *****************************************************************************************
     // */
     // End of DialogueBox code
+
+    public void checkPoint(){
+        if (Timekeeper.getTime() % 50 == 0){
+            pause();
+            // Create a custom confirmation dialog without the top bar
+            Dialog<ButtonType> dialog = new Dialog<>();
+            dialog.getDialogPane().getButtonTypes().addAll(ButtonType.YES, ButtonType.NO);
+
+            // Disable the default close button ("X") in the title bar
+            dialog.initStyle(javafx.stage.StageStyle.UNDECORATED);
+
+            // Set content for the dialog
+            Label label = new Label("Do you want to end the simulation and see the results?");
+            VBox content = new VBox(label);
+            dialog.getDialogPane().setContent(content);
+
+            // Show the dialog and handle the result
+            dialog.showAndWait().ifPresent(response -> {
+                if (response == ButtonType.YES) {
+                    System.exit(1);
+                    System.out.println("User clicked Yes");
+                } else {
+                        phaser.arriveAndDeregister();
+                        endThread = true;
+                        MenPasue.setDisable(false);
+                        MenPlay.setDisable(true);
+                        timerTimeline.play();
+                    // User clicked "No" or closed the dialog
+                    System.out.println("User clicked No or closed the dialog");
+                }
+            });
+
+        }
+    }
+
+
     public static boolean running = true;
     public static int i=0;
     @FXML
@@ -900,6 +974,7 @@ public class MainSceneController {
                 } finally {
                     phaser.arriveAndAwaitAdvance();
                     checkHeapSize.checkMemory();
+                    Platform.setImplicitExit(true);
                 }
                 // if(i==100)
                 // {System.out.println("step");}
@@ -913,6 +988,7 @@ public class MainSceneController {
 
             // Disable the "Start" button to prevent further clicks
             ((MenuItem) event.getSource()).setDisable(true);
+            MenPasue.setDisable(false);
         }
         }
         catch(Exception e){
