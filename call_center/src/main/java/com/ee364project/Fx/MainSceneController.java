@@ -253,7 +253,7 @@ public class MainSceneController {
 
     //////////////// Timer methods from TimeKeeper Class//////////////
     private void updateTimer(ActionEvent event) {
-        Timekeeper.step();
+        // Timekeeper.step();
         LocalDateTime properTime = Timekeeper.getProperTime();
         // timeer.setText(String.format("%02d:%02d", minutes, seconds));
         timeer.setText(properTime.toString() + 
@@ -984,7 +984,7 @@ public class MainSceneController {
                 Timekeeper.step();
 
                 try {
-                    Thread.sleep(200);
+                    Thread.sleep(Timekeeper.getDelayMs());
                 } catch (InterruptedException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();

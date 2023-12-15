@@ -14,6 +14,7 @@ import javafx.scene.layout.VBox;
 
 import java.util.concurrent.Phaser;
 
+import com.ee364project.Customer.CustomerState;
 import com.ee364project.Fx.MainSceneController;
 import com.ee364project.helpers.Utilities;
 
@@ -63,15 +64,11 @@ public class Call implements Simulated {
         // applyExpiry();
         Call call = callQueue.poll();
         if (call != null) {
+            call.caller.setState(CustomerState.INCALL);
             call.state = CallState.INCALL;
         }
         return call;
     }
-
-    public static void endACall(Call call) {
-        call.state = CallState.ENDED;
-    }
-
 
     public int getTimeElapsed() {
         return (Timekeeper.getTime() - startTime);
@@ -124,6 +121,7 @@ public class Call implements Simulated {
 
     public void terminateCall() {
         this.state = CallState.ENDED;
+        this.caller.callInfo.endCall();
         this.callCenter.releaseAgent(this.receiver);
         Call.activeCalls.remove(this);
         Platform.runLater(() -> {        
@@ -133,8 +131,8 @@ public class Call implements Simulated {
         // call.nullify();
         CheckBoxAndCall.remove(this.checkBox);            
         this.caller.problemState.solve();
+        this.caller.setState(CustomerState.IDLE);
         this.endTime = Timekeeper.getTime();
-        this.caller.callInfo.updateInformation();
     }
     
     public static void terminateCalls() {

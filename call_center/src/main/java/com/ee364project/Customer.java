@@ -8,6 +8,23 @@ import com.ee364project.exceptions.InvalidPhoneNumberException;
 import com.ee364project.helpers.*;
 
 public class Customer extends Person implements CanCall {
+
+    enum CustomerState {
+        IDLE,
+        INCALL,
+        CHECK_FAQS,
+        WAITING
+    }
+
+    public CustomerState getState() {
+        return this.state;
+    }
+
+    public void setState(CustomerState state) {
+        this.state = state;
+    }
+
+    private CustomerState state = CustomerState.IDLE;
     static int i;
     static int j;
     private static ArrayList<Customer> allCustomers = new ArrayList<>();
@@ -91,13 +108,14 @@ public class Customer extends Person implements CanCall {
         return arr;
     }
 
-
     public static long getAllTotalWaitTime() {
         long sum = 0;
         for (Customer customer : allCustomers) {
             sum += customer.callInfo.getTotalWaitTime();
         }
         return sum;
+        // CallInfo.addToTotal(sum);
+        // return CallInfo.getTotalCallWaitTime();
     }
 
     public static long getAllCallCount() {
@@ -142,6 +160,7 @@ public class Customer extends Person implements CanCall {
     @Override
     public void makeCall() {
         Call call = new Call(this);
+        this.state = CustomerState.WAITING;
         this.callInfo.newCall(call);
     }
 
@@ -149,9 +168,31 @@ public class Customer extends Person implements CanCall {
         Utilities.log(this, "idles", "", msg);
     }
 
+    private void checkFaqs() {
+        if (this.behaviour.getFaqsSolveChance().check()) {
+            this.problemState.solve();
+            this.state = CustomerState.IDLE;
+            Utilities.log(this, "solved thier own", this.problemState.getLastProblem(), "");
+        } else {
+            Utilities.log(this, "could not solve thier own", this.problemState.getLastProblem(), "they will try again");
+        }
+    }
+
     private void defaultRoutine() {
+        if (this.state == CustomerState.CHECK_FAQS) {
+            checkFaqs();
+            return;
+        }
+
         if (this.problemState.isGotProblem()) {
-            if (this.behaviour.callChance.check()) {
+            if (this.behaviour.getFaqsChance().check()) {
+                if (this.behaviour.getFaqsChance().check()) {
+                    this.state = CustomerState.CHECK_FAQS;
+                    Utilities.log(this, "visted faqs", "", "");
+                }
+            }
+
+            if (this.behaviour.getCallChance().check()) {
                 makeCall();
                 Utilities.log(this, "calls", "", "");
                 return;
@@ -160,7 +201,7 @@ public class Customer extends Person implements CanCall {
                 return;
             }
         } else {
-            if (this.behaviour.problemAffinity.check()) {
+            if (this.behaviour.getProblemAffinity().check()) {
                 this.problemState.acquireRandomProblem();
                 Utilities.log(this, "got", this.problemState.getLastProblem(), "");
                 return;
@@ -170,6 +211,7 @@ public class Customer extends Person implements CanCall {
             }
         }
     }
+
     @Override
     protected String getTag() {
         return "Customer: ";
@@ -181,7 +223,6 @@ public class Customer extends Person implements CanCall {
 
         if (this.callInfo.getLastCall() == null) {
             defaultRoutine();
-            
             return;
         }
         switch (this.callInfo.getLastCall().getState()) {
@@ -191,21 +232,6 @@ public class Customer extends Person implements CanCall {
 
             case INCALL:
                 idle("in-call");
-                // if (this.problemState.isGotProblem()) {
-                //     if (this.behaviour.solveChancePartial.check()) {
-                //         this.problemState.solve();
-                //         Utilities.log(this, "got his", this.problemState.getProblem(), "solved.");
-                //     } else {
-                //         Utilities.log(this, "idles", "", "");
-                //     }
-                // } else {
-                //     if (this.behaviour.callEndChancePartial.check()) {
-                //         this.callInfo.getLastCall().endCall();
-                //         Utilities.log(this, "ended", this.callInfo.getLastCall(), "");
-                //     } else {
-                //         Utilities.log(this, "idles", "", "");
-                //     }
-                // }
                 return;
 
             default:
@@ -215,10 +241,9 @@ public class Customer extends Person implements CanCall {
     }
 
     public String getStringInfo() {
-        return 
-        "Phone Number: " + getPhoneNumber() +
-        "\nName: " + getName() +
-        "\nBehaviour: " + this.behaviour.name ;
+        return "Phone Number: " + getPhoneNumber() +
+                "\nName: " + getName() +
+                "\nBehaviour: " + this.behaviour.name;
     }
 }
 
@@ -236,35 +261,104 @@ class CustomerBehaviour {
     }
 
     public static final class PreMade {
-        public static final CustomerBehaviour DEFAULT = new CustomerBehaviour(
+        public static final CustomerBehaviour DEFAULT = new CustomerBehaviour( // 90% chance to get a problem every
+                                                                               // month and 50% chance to call in every
+                                                                               // 2 days.
                 "default",
+                new Ratio(0.5), // new Ratio(0.9),
+                1, // Timekeeper.getSecondsInMonth(1),
                 new Ratio(0.5),
-                new Ratio(0.5));
-        public static final CustomerBehaviour SAVVY = new CustomerBehaviour(
+                1, // Timekeeper.getSecondsInDay(2),
+                new Ratio(0.5), // new Ratio(0.2),
+                1, // Timekeeper.getSecondsInDay(1),
+                new Ratio(0.5), // new Ratio(0.5),
+                1 // Timekeeper.getSecondsInDay(1)
+        );
+        public static final CustomerBehaviour SAVVY = new CustomerBehaviour( // 50% chance to get a problem every 2
+                                                                             // months and 50% chance to call in every
+                                                                             // week.
                 "savvy",
-                new Ratio(0.1),
-                new Ratio(0.2));
-        public static final CustomerBehaviour CHALLENGED = new CustomerBehaviour(
+                new Ratio(0.1), // new Ratio(0.5),
+                1, // Timekeeper.getSecondsInMonth(2),
+                new Ratio(0.2), // new Ratio(0.5),
+                1, // Timekeeper.getSecondsInWeek(1),
+                new Ratio(0.9), // new Ratio(0.9),
+                1, // Timekeeper.getSecondsInDay(1),
+                new Ratio(0.9), // new Ratio(0.9),
+                1 // Timekeeper.getSecondsInDay(1)
+        );
+        public static final CustomerBehaviour CHALLENGED = new CustomerBehaviour( // 90% chance to get a problem every 2
+                                                                                  // days and 90% chance to call every
+                                                                                  // day.
                 "challenged",
-                new Ratio(0.7),
-                new Ratio(0.9));
+                new Ratio(0.7), // new Ratio(0.9),
+                1, // Timekeeper.getSecondsInDay(2),
+                new Ratio(0.9), // new Ratio(0.9),
+                1, // Timekeeper.getSecondsInDay(1),
+                new Ratio(0.1), // new Ratio(0.1),
+                1, // Timekeeper.getSecondsInDay(1),
+                new Ratio(0.1), // new Ratio(0.2),
+                1 // Timekeeper.getSecondsInDay(1)
+        );
     }
 
     public String name;
-    public Ratio problemAffinity;
-    public Ratio callChance;
+    private Ratio problemAffinity;
+    private long problemAffinityPeriod;
+    private Ratio callChance;
+    private long callChancePeriod;
 
-    public CustomerBehaviour(String name, Ratio problemAffinity, Ratio callChance) {
+    private Ratio faqsVisitChance;
+    private long faqsVisitChancePeriod;
+    private Ratio faqsSolveChance;
+    private long faqsSolveChancePeriod;
+
+    public CustomerBehaviour(
+            String name, Ratio problemAffinity,
+            long problemAffinityPeriod,
+            Ratio callChance,
+            long callChancePeriod,
+            Ratio faqsVisitChance,
+            long faqsVisitChancePeriod,
+            Ratio faqsSolveChance,
+            long faqsSolveChancePeriod) {
         this.name = name;
         this.problemAffinity = problemAffinity;
+        this.problemAffinityPeriod = problemAffinityPeriod;
         this.callChance = callChance;
+        this.callChancePeriod = callChancePeriod;
+        this.faqsVisitChance = faqsVisitChance;
+        this.faqsSolveChance = faqsSolveChance;
+        this.faqsVisitChancePeriod = faqsVisitChancePeriod;
+    }
+
+    Ratio getProblemAffinity() {
+        return Timekeeper.adjustedChance(problemAffinity, problemAffinityPeriod);
+    }
+
+    Ratio getCallChance() {
+        return Timekeeper.adjustedChance(callChance, callChancePeriod);
+    }
+
+    Ratio getFaqsChance() {
+        return Timekeeper.adjustedChance(faqsVisitChance, faqsVisitChancePeriod);
+    }
+
+    Ratio getFaqsSolveChance() {
+        return Timekeeper.adjustedChance(faqsSolveChance, faqsSolveChancePeriod);
     }
 
     public CustomerBehaviour() {
         this(
                 Utilities.faker.brand().toString(),
                 Ratio.getRandRatio(),
-                Ratio.getRandRatio());
+                Utilities.random.nextLong(),
+                Ratio.getRandRatio(),
+                Utilities.random.nextLong(),
+                Ratio.getRandRatio(),
+                Utilities.random.nextLong(),
+                Ratio.getRandRatio(),
+                Utilities.random.nextLong());
     }
 
     @Override
@@ -273,7 +367,7 @@ class CustomerBehaviour {
                 "CBehaviour",
                 this.name);
     }
-    
+
 }
 
 class ProblemInfo {
@@ -296,7 +390,7 @@ class ProblemInfo {
             return true;
         }
         return false;
-    } 
+    }
 }
 
 class CallInfo {
@@ -304,7 +398,7 @@ class CallInfo {
     private long latestWaitTime;
     private long tallyAverageWaitTime;
     private long tallyTotalWaitTime;
-    private int tallyCallCount = 0;
+    private long tallyCallCount = 0;
 
     public void newCall(Call call) {
         this.lastCall = call;
@@ -317,34 +411,37 @@ class CallInfo {
         return (lastCall.getState() == CallState.INCALL)
                 || (lastCall.getState() == CallState.WAITING);
     }
-    
+
+    public void endCall() {
+        this.tallyAverageWaitTime = (this.tallyAverageWaitTime * this.tallyCallCount + this.lastCall.getWaitTime())
+                / (this.tallyCallCount + 1);
+        this.tallyCallCount++;
+        this.tallyTotalWaitTime += this.lastCall.getWaitTime();
+        this.latestWaitTime = 0;
+    }
+
     public void updateInformation() {
         if (this.lastCall == null) {
             return;
         }
-        if (this.lastCall.getState() == CallState.ENDED) {
-            this.tallyAverageWaitTime = (this.tallyAverageWaitTime * this.tallyCallCount + this.lastCall.getWaitTime()) / (this.tallyCallCount + 1);
-            this.tallyCallCount++;
-            this.tallyTotalWaitTime += this.lastCall.getWaitTime();
-            this.latestWaitTime = 0;
-        } else {
+        if (this.lastCall.getState() != CallState.INCALL) {
             this.latestWaitTime = this.lastCall.getWaitTime();
         }
     }
-    
+
     public Call getLastCall() {
         return this.lastCall;
     }
-    
-    public int getCallCount() {
-        int n = this.tallyCallCount;
+
+    public long getCallCount() {
+        long n = this.tallyCallCount;
         if (this.lastCall != null) {
             if (this.lastCall.getState() != CallState.ENDED) {
                 n++;
-            }    
-        }    
+            }
+        }
         return n;
-    }    
+    }
 
     public long getAverageWaitTime() {
         if (this.latestWaitTime > 0) {
@@ -352,7 +449,7 @@ class CallInfo {
         }
         return this.tallyAverageWaitTime;
     }
-    
+
     public long getTotalWaitTime() {
         return this.tallyTotalWaitTime + this.latestWaitTime;
     }

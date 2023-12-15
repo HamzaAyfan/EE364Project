@@ -104,7 +104,7 @@ public class Ratio {
     }
 
     public boolean check() {
-        return (this.compare(Utilities.random.nextDouble()) <= 0);
+        return (this.compare(Utilities.random.nextDouble()) > 0);
     }
 
     public Ratio complement() {

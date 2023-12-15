@@ -125,17 +125,17 @@ public class Agent extends Person {
         return this;
     }
 
-    private void idle(String msg) {
-        Utilities.log(this, "idles", "", msg);
-    }
+    // private void idle(String msg) {
+    //     Utilities.log(this, "idles", "", msg);
+    // }
 
     @Override
     public void step() {
-        if (callInfo.isInCall()) {
-            idle("in-call with " + callInfo.getLastCall().getReceiver());
-        } else {
-            idle("no call assigned");
-        }
+        // if (callInfo.isInCall()) {
+        //     idle("in-call with " + callInfo.getLastCall().getReceiver());
+        // } else {
+        //     idle("no call assigned");
+        // }
         
         // NOTE: for now, agents don't require active simulation.
 
@@ -168,11 +168,11 @@ public class Agent extends Person {
          */
     }
 
-    public CallInfo callInfo = new CallInfo();
+    // public CallInfo callInfo = new CallInfo();
 
-    public void assignCall(Call call) {
-        this.callInfo.newCall(call);
-    }
+    // public void assignCall(Call call) {
+    //     this.callInfo.newCall(call);
+    // }
 
     public String getStringInfo() {
         return  

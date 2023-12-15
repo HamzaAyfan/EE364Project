@@ -49,6 +49,7 @@ public class CallCenter implements Simulated {
         // availableAgentsCount++;
     }
 
+    // usless in phase 2
     public Agent assignAgent() {
         Agent agent = availableAgents.poll();
         // availableAgentsCount--;
@@ -65,6 +66,24 @@ public class CallCenter implements Simulated {
         Utilities.log(this, "idles", "", msg);
     }
 
+    private Agent getBestAgent(Call call) {
+        Agent selectedAgent = null;
+        Department dep = call.getCaller().problemState.getLastProblem().getDepartment();
+        for (Agent agent: availableAgents) {
+            if (agent.getDepartment().getName() == dep.getName()) {
+                selectedAgent = agent;
+                break;
+            }
+        }
+        if (selectedAgent == null) {
+            selectedAgent = availableAgents.poll();
+        } else {
+            availableAgents.remove(selectedAgent);
+        }
+        agentAvailability.put(selectedAgent, false);
+        return selectedAgent;
+    }
+
     @Override
     public void step() {
         if (getAvailableAgentsCount() > 0) {
@@ -74,8 +93,8 @@ public class CallCenter implements Simulated {
                 idle("no calls");
             } else {
                 // agents available and there is a call...
-                call.setReciever(assignAgent());
-                call.getReceiver().callInfo.newCall(call);
+                call.setReciever(getBestAgent(call));
+                // call.getReceiver().callInfo.newCall(call);
                 call.connectCall(this);
                 
                 Utilities.log(call.getReceiver(), "joined", call, null);
