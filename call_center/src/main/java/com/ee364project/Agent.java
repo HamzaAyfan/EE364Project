@@ -171,7 +171,7 @@ public class Agent extends Person {
     public CallInfo callInfo = new CallInfo();
 
     public void assignCall(Call call) {
-        this.callInfo.called(call);
+        this.callInfo.newCall(call);
     }
 
     public String getStringInfo() {

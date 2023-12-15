@@ -3,7 +3,7 @@ package com.ee364project;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-
+import com.ee364project.Call.CallState;
 import com.ee364project.exceptions.InvalidPhoneNumberException;
 import com.ee364project.helpers.*;
 
@@ -92,12 +92,28 @@ public class Customer extends Person implements CanCall {
     }
 
 
+    public static long getAllTotalWaitTime() {
+        long sum = 0;
+        for (Customer customer : allCustomers) {
+            sum += customer.callInfo.getTotalWaitTime();
+        }
+        return sum;
+    }
+
+    public static long getAllCallCount() {
+        int sum = 0;
+        for (Customer customer : allCustomers) {
+            sum += customer.callInfo.getCallCount();
+        }
+        return sum;
+    }
+
     public static long getAllAverageWaitTime() {
         long sum = 0;
         long n = 0;
         for (Customer customer : allCustomers) {
-            if (customer.callInfo.averageWaitTime() >= 0) {
-                sum += customer.callInfo.averageWaitTime();
+            if (customer.callInfo.getCallCount() > 0) {
+                sum += customer.callInfo.getAverageWaitTime();
                 n++;
             }
         }
@@ -126,7 +142,7 @@ public class Customer extends Person implements CanCall {
     @Override
     public void makeCall() {
         Call call = new Call(this);
-        this.callInfo.called(call);
+        this.callInfo.newCall(call);
     }
 
     private void idle(String msg) {
@@ -145,8 +161,8 @@ public class Customer extends Person implements CanCall {
             }
         } else {
             if (this.behaviour.problemAffinity.check()) {
-                this.problemState.acquireProblem();
-                Utilities.log(this, "got", this.problemState.getProblem(), "");
+                this.problemState.acquireRandomProblem();
+                Utilities.log(this, "got", this.problemState.getLastProblem(), "");
                 return;
             } else {
                 idle("");
@@ -161,6 +177,8 @@ public class Customer extends Person implements CanCall {
 
     @Override
     public void step() {
+        this.callInfo.updateInformation();
+
         if (this.callInfo.getLastCall() == null) {
             defaultRoutine();
             
@@ -259,97 +277,83 @@ class CustomerBehaviour {
 }
 
 class ProblemInfo {
-    private HashMap<Problem, Long> history = new HashMap<>();
-    private Problem problem = Problem.NO_PROBLEM;
-    private long currentActiveProblemDuration = 0;
-
-    private void finalizeLastProblem() {
-        Long problemDuration = this.history.get(this.problem);
-        if (problemDuration == null) {
-            this.history.put(this.problem, this.currentActiveProblemDuration);
-        } else {
-            this.history.put(this.problem, problemDuration + this.currentActiveProblemDuration);
-        }
-    }
+    private Problem lastProblem = Problem.NO_PROBLEM;
 
     public void solve() {
-        finalizeLastProblem();
-        this.problem = Problem.NO_PROBLEM;
-        this.currentActiveProblemDuration = history.get(Problem.NO_PROBLEM);
+        this.lastProblem = Problem.NO_PROBLEM;
     }
 
-    public void acquireProblem() {
-        finalizeLastProblem();
-        this.problem = (Problem) Utilities.getRandomFromArray(Problem.allProblems);
-        Long problemDuration = history.get(this.problem);
-        if (problemDuration == null) {
-            currentActiveProblemDuration = 0;
-        } else {
-            currentActiveProblemDuration = problemDuration;
-        }
+    public void acquireRandomProblem() {
+        this.lastProblem = (Problem) Utilities.getRandomFromArray(Problem.allProblems);
     }
 
-    public Problem getProblem() {
-        return this.problem;
-    }
-
-    public long getTotalProblemDuration() {
-        long sum = 0;
-        for (long i : history.values()) {
-            sum += i;
-        }
-        return sum - history.get(Problem.NO_PROBLEM);
-    }
-
-    public void incrmentDuration() {
-        this.currentActiveProblemDuration += Vars.TIMEINC;
+    public Problem getLastProblem() {
+        return this.lastProblem;
     }
 
     public boolean isGotProblem() {
-        if (this.problem != Problem.NO_PROBLEM) {
+        if (this.lastProblem != Problem.NO_PROBLEM) {
             return true;
         }
         return false;
-    }
-
-    
-    
+    } 
 }
 
-
-
 class CallInfo {
-    public ArrayList<Call> history = new ArrayList<>();
-    private Call call = null;
+    private Call lastCall = null;
+    private long latestWaitTime;
+    private long tallyAverageWaitTime;
+    private long tallyTotalWaitTime;
+    private int tallyCallCount = 0;
 
-    public void called(Call call) {
-        this.history.add(call);
-        this.call = call;
+    public void newCall(Call call) {
+        this.lastCall = call;
     }
 
     public boolean isInCall() {
-        if (call == null) {
+        if (lastCall == null) {
             return false;
         }
-        return (call.getState() == Call.CallState.INCALL)
-                || (call.getState() == Call.CallState.WAITING);
+        return (lastCall.getState() == CallState.INCALL)
+                || (lastCall.getState() == CallState.WAITING);
     }
-
-    public Call getLastCall() {
-        return this.call;
-    }
-
-    public long averageWaitTime() {
-        long sum = 0;
-        long n = 0;
-        for (Call call : this.history) {
-            sum += call.getWaitTime();
-            n++;
+    
+    public void updateInformation() {
+        if (this.lastCall == null) {
+            return;
         }
-        if (n != 0) {
-            return sum / n;
+        if (this.lastCall.getState() == CallState.ENDED) {
+            this.tallyAverageWaitTime = (this.tallyAverageWaitTime * this.tallyCallCount + this.lastCall.getWaitTime()) / (this.tallyCallCount + 1);
+            this.tallyCallCount++;
+            this.tallyTotalWaitTime += this.lastCall.getWaitTime();
+            this.latestWaitTime = 0;
         } else {
-            return -1;
+            this.latestWaitTime = this.lastCall.getWaitTime();
         }
+    }
+    
+    public Call getLastCall() {
+        return this.lastCall;
+    }
+    
+    public int getCallCount() {
+        int n = this.tallyCallCount;
+        if (this.lastCall != null) {
+            if (this.lastCall.getState() != CallState.ENDED) {
+                n++;
+            }    
+        }    
+        return n;
+    }    
+
+    public long getAverageWaitTime() {
+        if (this.latestWaitTime > 0) {
+            return (this.tallyAverageWaitTime * this.tallyCallCount + this.latestWaitTime) / (this.tallyCallCount + 1);
+        }
+        return this.tallyAverageWaitTime;
+    }
+    
+    public long getTotalWaitTime() {
+        return this.tallyTotalWaitTime + this.latestWaitTime;
     }
 }

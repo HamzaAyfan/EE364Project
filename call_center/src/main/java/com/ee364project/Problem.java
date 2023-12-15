@@ -120,7 +120,7 @@ public class Problem implements HasData {
 
     @Override
     public Problem shuffle() {
-        allProblems.remove(this.identifier);
+        allProblems.remove(this);
         this.identifier = Utilities.faker.azure().appServiceEnvironment();
         this.department = Department.getRandomDepartment();
         allProblems.add(this);

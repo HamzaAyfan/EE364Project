@@ -218,7 +218,10 @@ public class MainSceneController {
         int minutes = properTime.getMinute();
         int seconds = properTime.getSecond();
         // timeer.setText(String.format("%02d:%02d", minutes, seconds));
-        timeer.setText(properTime.toString() + "\nAverage Wait Time: " + Customer.getAllAverageWaitTime() + "s");
+        timeer.setText(properTime.toString() + 
+        "\nTotal Calls: " + Customer.getAllCallCount() + " calls" +
+        "\nTotal Wait Time: " + Customer.getAllTotalWaitTime() + "s" +
+        "\nAverage Wait Time: " + Customer.getAllAverageWaitTime() + "s");
     }
     ////////////////////////////////
 

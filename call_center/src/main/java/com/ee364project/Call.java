@@ -27,7 +27,7 @@ public class Call implements Simulated {
 
     Image callimage = new Image("com\\ee364project\\Fx\\resources\\green.jpg");
 
-    public static final long MAXWAITTIME = 60;
+    public static final long MAXWAITTIME = 1000000;
 
     public static enum CallState {
         WAITING,
@@ -78,7 +78,7 @@ public class Call implements Simulated {
     }
 
     public LinkedList<Solution> makeLinkedList(Customer caller) {
-        ArrayList<Solution> HSsolutions = caller.problemState.getProblem().solutions;
+        ArrayList<Solution> HSsolutions = caller.problemState.getLastProblem().solutions;
         LinkedList<Solution> LLsolutions = new LinkedList<>();
         for (Solution soultion : HSsolutions) {
             try {
@@ -97,7 +97,7 @@ public class Call implements Simulated {
     public void connectCall(CallCenter callCenter) {
         System.out.println("Call CONNECTED: ");
         Call.callQueue.remove(this);
-        receiver.assignLevel(caller.problemState.getProblem());
+        receiver.assignLevel(caller.problemState.getLastProblem());
         this.callCenter = callCenter;
         LinkedList<Solution> solutionsCopy = this.makeLinkedList(caller);
         MockDialoge dialoge = new MockDialoge(caller, receiver, this, solutionsCopy);
@@ -121,18 +121,25 @@ public class Call implements Simulated {
         lengthsSaved.add(length);
     }
 
+
+    public void terminateCall() {
+        this.state = CallState.ENDED;
+        this.callCenter.releaseAgent(this.receiver);
+        Call.activeCalls.remove(this);
+        Platform.runLater(() -> {        
+                    vBox.getChildren().remove(this.hbox);
+                });
+        Utilities.log(this, "ended", "", "");
+        // call.nullify();
+        CheckBoxAndCall.remove(this.checkBox);            
+        this.caller.problemState.solve();
+        this.endTime = Timekeeper.getTime();
+        this.caller.callInfo.updateInformation();
+    }
+    
     public static void terminateCalls() {
         for (Call call : Call.callsToRemove) {
-            call.callCenter.releaseAgent(call.receiver);
-            Call.activeCalls.remove(call);
-            Platform.runLater(() -> {        
-                        vBox.getChildren().remove(call.hbox);
-                    });
-            Utilities.log(call, "ended", "", "");
-            // call.nullify();
-            CheckBoxAndCall.remove(call.checkBox);            
-            call.caller.problemState.solve();
-            call.endTime = Timekeeper.getTime();
+            call.terminateCall();
         }
         System.gc();
         callsToRemove.clear();
@@ -183,6 +190,9 @@ public class Call implements Simulated {
     }
 
     public long getWaitTime() {
+        if (this.state != CallState.ENDED) {
+            return Timekeeper.getTime() - this.startTime;
+        }
         return this.answerTime - this.startTime;
     }
 
