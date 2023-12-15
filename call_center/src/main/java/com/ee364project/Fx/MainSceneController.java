@@ -52,6 +52,10 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.Tooltip;
+import javafx.scene.effect.Blend;
+import javafx.scene.effect.BlendMode;
+import javafx.scene.effect.ColorAdjust;
+import javafx.scene.effect.ColorInput;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
@@ -399,12 +403,12 @@ public class MainSceneController {
             for (int i = 0; i < customers.length; i++) {
 
                 ImageView imageView = new ImageView(customerImage);
-                imageView.setFitWidth(20);
-                imageView.setFitHeight(20);
+                imageView.setFitWidth(30);
+                imageView.setFitHeight(30);
 
                 StackPane stackPane = new StackPane();
 
-                Rectangle rectangle = new Rectangle(20, 20, Color.TRANSPARENT);
+                Rectangle rectangle = new Rectangle(30, 30, Color.TRANSPARENT);
                 // rectangle.setStyle("-fx-fill: green;");
                 // rectangle.setFill(new ImagePattern(image));
                 stackPane.getChildren().addAll(imageView, rectangle);
@@ -590,12 +594,12 @@ public class MainSceneController {
             customers[i] = (Customer) datum;
 
             ImageView imageView = new ImageView(customerImage);
-            imageView.setFitWidth(20);
-            imageView.setFitHeight(20);
+            imageView.setFitWidth(30);
+            imageView.setFitHeight(30);
 
             StackPane stackPane = new StackPane();
 
-            Rectangle rectangle = new Rectangle(20, 20, Color.TRANSPARENT);
+            Rectangle rectangle = new Rectangle(30, 30, Color.TRANSPARENT);
             // rectangle.setStyle("-fx-fill: green;");
             // rectangle.setFill(new ImagePattern(image));
             stackPane.getChildren().addAll(imageView, rectangle);
@@ -648,6 +652,45 @@ public class MainSceneController {
         }
         // CallCenter callCenter = new CallCenter(agents);
         System.out.println("Finished agents");
+    }
+
+    public void highlightCustomers(){
+        int index = 0;
+        for(Customer customer: customers){
+            StackPane customerStackPane = (StackPane) flowPane.getChildren().get(index);
+            ImageView customerImageView = (ImageView) customerStackPane.getChildren().get(0);
+
+            if (customer.callInfo.getLastCall() != null && customer.callInfo.getLastCall().getState() != null){
+                switch (customer.callInfo.getLastCall().getState()) {
+                    case INCALL:
+                        applyHighlight(customerImageView, 0.0, 1.0, 0.0, 0.5); // Green
+                        break;
+
+                    case WAITING:
+                        applyHighlight(customerImageView, 1.0, 1.0, 0.0, 0.5); // Yellow
+                        break;
+
+                    default:
+                        customerImageView.setEffect(null);
+                        break;
+                }
+            }
+            
+            index++;
+        }
+    }
+
+    // Method to apply ColorAdjust effect to highlight an ImageView
+    private void applyHighlight(ImageView imageView, double red, double green, double blue, double opacity) {
+        ColorInput colorInput = new ColorInput(
+                0, 0, imageView.getBoundsInLocal().getWidth(), imageView.getBoundsInLocal().getHeight(),
+                javafx.scene.paint.Color.rgb((int) (255 * red), (int) (255 * green), (int) (255 * blue), opacity)
+        );
+
+        Blend blend = new Blend(BlendMode.MULTIPLY);
+        blend.setTopInput(colorInput);
+
+        imageView.setEffect(blend);
     }
 
     // this method is being used to show an error alert whenever is needed to pop
@@ -900,6 +943,7 @@ public class MainSceneController {
                 Call.terminateCalls();
                 callCenter.step();
                 Timekeeper.step();
+                highlightCustomers();
 
                 try {
                     Thread.sleep(200);
