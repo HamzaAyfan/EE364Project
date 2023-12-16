@@ -45,13 +45,8 @@ public class Problem implements HasData {
         return problem;
     }
 
-    /**
-     * Returns the Problem object with the given identifier, creating a new Problem
-     * object if no Problem with the given identifier exists.
-     * 
-     * @param identifier the identifier of the Problem object to retrieve
-     * @return the Problem object with the given identifier, or a new Problem object
-     *         if no Problem with the given identifier exists
+    /*
+     * Return the NO_PROBLEM Problem object.
      */
     static public Problem getProblem() {
         return NO_PROBLEM;

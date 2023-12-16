@@ -30,9 +30,8 @@ public class Timekeeper {
     }
 
        /**
-     * Sets the delay value in milliseconds.
+     * Gets the delay value in milliseconds.
      *
-     * @param newDelayMs the new delay value in milliseconds
      */
     public static long getDelayMs() {
         return delayMs;

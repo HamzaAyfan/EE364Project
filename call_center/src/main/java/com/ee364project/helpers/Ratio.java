@@ -54,9 +54,10 @@ public class Ratio {
     }
 
     /**
-     * Sets the value of the ratio.
+     * Adds another ratio to this ratio.
      *
-     * @param value The new value of the ratio.
+     * @param other The ratio to add.
+     * @return A new Ratio object representing the sum.
      */
     public Ratio add(Ratio other) {
         double val = this.value + other.value;

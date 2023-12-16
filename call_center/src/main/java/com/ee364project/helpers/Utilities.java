@@ -1,8 +1,5 @@
 package com.ee364project.helpers;
 
-/**
- * This class provides various utility functions for the project.
- */
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -13,6 +10,12 @@ import com.ee364project.HasData;
 import com.ee364project.Timekeeper;
 
 import net.datafaker.Faker;
+
+/**
+ * This class provides various utility functions for the project.
+ * 
+ * @author Hamza Ayfan
+ */
 
 public class Utilities {
     public static Random random = new Random();
@@ -128,11 +131,12 @@ public class Utilities {
     }
 
     /**
-     * This method generates a random LocalDateTime object that is n months in the
-     * past.
+     * This method logs an event to the console.
      * 
-     * @param n the number of months in the past
-     * @return a random LocalDateTime object that is n months in the past
+     * @param subject the subject of the event
+     * @param verb    the verb of the event
+     * @param object  the object of the event
+     * @param msg     the message of the event
      */
     public static void log(Object subject, String verb, Object object, String msg) {
         // System.out.println("\n\n" + Timekeeper.getProperTime() + ": " + subject + " "
@@ -170,7 +174,6 @@ public class Utilities {
      * string consists of a random number of words from the seniority method of the
      * faker.job object, separated by spaces.
      * 
-     * @param len the desired length of the array
      * @return a random array of strings of the specified length
      */
     public static String[] getRandomStringArray() {
