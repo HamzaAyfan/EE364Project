@@ -189,7 +189,7 @@ public class Customer extends Person implements CanCall {
         }
 
         if (this.problemState.isGotProblem()) {
-            if (this.behaviour.getFaqsChance().check()) {
+            if (this.behaviour.getFaqsChance().check() && Vars.projectPhase) {
                 if (this.behaviour.getFaqsChance().check()) {
                     this.state = CustomerState.CHECK_FAQS;
                     this.faqsSteps = Utilities.random.nextInt(50, 200);

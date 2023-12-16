@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.CheckMenuItem?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
@@ -46,6 +47,7 @@
           </Menu>
           <Menu mnemonicParsing="false" text="Simulation">
             <items>
+                  <CheckMenuItem fx:id="phase2MenItem" mnemonicParsing="false" onAction="#phaseChecked" text="Start With Phase 2" />
               <MenuItem fx:id="MenStart" mnemonicParsing="false" onAction="#startbtnClicked" text="Start" />
                   <MenuItem fx:id="MenPasue" mnemonicParsing="false" onAction="#pausebtnClicked" text="Pasue" />
                   <MenuItem fx:id="MenPlay" mnemonicParsing="false" onAction="#playbtnClicked" text="Play" />
@@ -67,6 +69,6 @@
       <Label layoutX="83.0" layoutY="46.0" text="Customers" />
       <Label layoutX="373.0" layoutY="46.0" prefHeight="17.0" prefWidth="32.0" text="Calls:" />
       <Label layoutX="500.0" layoutY="46.0" prefHeight="17.0" prefWidth="43.0" text="Agents" />
-      <CheckBox fx:id="checkPoint" layoutX="253.0" layoutY="46.0" mnemonicParsing="false" text="Checkpoint" />
+      <CheckBox fx:id="checkPoint" layoutX="237.0" layoutY="46.0" mnemonicParsing="false" text="Checkpoint" />
    </children>
 </AnchorPane>

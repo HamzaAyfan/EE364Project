@@ -82,6 +82,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
@@ -149,7 +150,12 @@ public class MainSceneController {
 
     @FXML
     private CheckBox checkPoint;
+
     private ChangeListener<Number> timePropertyListener;
+
+    @FXML
+    private CheckMenuItem phase2MenItem;
+
 
     @FXML
     private VBox Vox;
@@ -1008,6 +1014,16 @@ public class MainSceneController {
     public static int i = 0;
 
     @FXML
+    void phaseChecked(ActionEvent event) {
+        if(phase2MenItem.isSelected()){
+            Vars.projectPhase = true;
+        }
+        else{
+            Vars.projectPhase = false;
+        }
+    }
+
+    @FXML
     void startbtnClicked(ActionEvent event) {
         try {
             // Check if the timer is not already running
@@ -1017,8 +1033,6 @@ public class MainSceneController {
 
             new Thread(() -> {
                 phaser.register();
-                String thread = Thread.currentThread().getName();
-                Platform.runLater(() -> CallVbox.getChildren().add(new Label(thread)));
                 while (running) {
                     for (Customer customer : customers) {
                         customer.step();
@@ -1058,6 +1072,7 @@ public class MainSceneController {
                 // Disable the "Start" button to prevent further clicks
                 ((MenuItem) event.getSource()).setDisable(true);
                 MenPasue.setDisable(false);
+                phase2MenItem.setDisable(true);
             }
         } catch (Exception e) {
             showErrorAlert("Starting Simulation", "Environment is not Loaded");

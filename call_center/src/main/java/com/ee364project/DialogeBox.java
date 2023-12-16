@@ -58,7 +58,7 @@ public class DialogeBox extends Thread {
         len = currentCall.getSentences().size();
         lastVisted = len;
         for (int i = 0; i<len ;i++ ){
-            startLength += currentCall.getlengths(0);
+            startLength += currentCall.getlengths(i);
             Person person = currentCall.getPerson(i);
             TextArea textField = createArea(person);
             String startFrom = currentCall.getSentences(i);

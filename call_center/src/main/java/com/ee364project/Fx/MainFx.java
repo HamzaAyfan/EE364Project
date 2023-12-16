@@ -23,6 +23,7 @@ public class MainFx extends Application {
 
             primaryStage.setTitle("Call Centre Simulation");
             primaryStage.setScene(new Scene(root, 600, 550));
+            primaryStage.setResizable(false);
             primaryStage.show();
 
             MainSceneController controller = loader.getController();
