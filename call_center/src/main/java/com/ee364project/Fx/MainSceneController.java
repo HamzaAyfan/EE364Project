@@ -212,7 +212,7 @@ public class MainSceneController {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        checkHeapSize.checkMemory();
+        HeapSizeChecker.checkMemory();
     }
 
     private void addTimePropertyListener() {
@@ -1042,7 +1042,7 @@ public class MainSceneController {
                         e.printStackTrace();
                     } finally {
                         phaser.arriveAndAwaitAdvance();
-                        checkHeapSize.checkMemory();
+                        HeapSizeChecker.checkMemory();
                         Platform.setImplicitExit(true);
                     }
                     // if(i==100)

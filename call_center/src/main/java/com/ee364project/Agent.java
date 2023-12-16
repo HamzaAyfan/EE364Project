@@ -1,5 +1,6 @@
 package com.ee364project;
 
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
@@ -10,17 +11,28 @@ import com.ee364project.helpers.Vars;
 
 import java.util.Random;
 
-
-
 enum Level{
     SAVEY,
     DEFULT,
     CHALLENGED
 }
+
+/**
+ * This class represents an agent in the EE364 project.
+ * 
+ * @author Team 2
+ *
+ */
+
 public class Agent extends Person {
 
     private static ArrayList<Agent> allAgents = new ArrayList<>();
 
+       /**
+     * Returns an array of all agents in the system.
+     * 
+     * @return an array of all agents in the system
+     */
     public Agent[] getAllAgents() {
         return allAgents.toArray(new Agent[allAgents.size()]);
     }
@@ -34,6 +46,15 @@ public class Agent extends Person {
     private LocalDateTime joinDate;
     private ArrayList<Problem> problemsSeen = new ArrayList<>();
 
+    
+    /**
+     * Creates a new agent with the given id, name, and department.
+     * 
+     * @param id the id of the agent
+     * @param name the name of the agent
+     * @param department the department of the agent
+     * @throws InvalidIdException if the given id is not valid
+     */
     public Agent(String id, String name, Department department) throws InvalidIdException {
         super(name);
         if (!Utilities.validateId(id)) {
@@ -46,6 +67,11 @@ public class Agent extends Person {
         
     }
 
+        /**
+     * Assigns a level to the agent based on their experience with the given problem.
+     * 
+     * @param problem the problem to evaluate the agent's experience with
+     */
     public void assignLevel(Problem problem){  
         for (Problem problemSeen: problemsSeen){
             if (problemSeen==problem){
@@ -60,27 +86,53 @@ public class Agent extends Person {
         }
     }
 
+        /**
+     * Returns the level of the agent.
+     * 
+     * @return the level of the agent
+     */
     public Level getlevel() {
 		return level;
 	}
 
+       /**
+     * Creates a new agent with a randomly generated id, name, and department.
+     * 
+     * @throws InvalidIdException if the randomly generated id is not valid
+     */
     public Agent() throws InvalidIdException {
         this(Vars.DEFALT_ID, Vars.NONE, Department.NO_DEPARTMENT);
     }
 
+    
     @Override
     public String toString() {
         return Utilities.prettyToString(CLSNAME, this.id, this.getName(), this.department.toString(), this.joinDate);
     }
 
+        /**
+     * Returns the join date of the agent.
+     * 
+     * @return the join date of the agent
+     */
     public LocalDateTime getJoinDate() {
         return this.joinDate;
     }
 
+        /**
+     * Returns the department of the agent.
+     * 
+     * @return the department of the agent
+     */
     public Department getDepartment() {
         return this.department;
     }
 
+        /**
+     * Returns the id of the agent.
+     * 
+     * @return the id of the agent
+     */
     public String getId() {
         return this.id;
     }
@@ -174,6 +226,11 @@ public class Agent extends Person {
     //     this.callInfo.newCall(call);
     // }
 
+        /**
+     * Returns a string containing information about the agent.
+     * 
+     * @return a string containing information about the agent
+     */
     public String getStringInfo() {
         return  
         "ID: " + getId() +
@@ -188,6 +245,12 @@ public class Agent extends Person {
     }
 }
 
+/**
+ * This class provides utility methods for working with enums.
+ * 
+ * @author {Your Name}
+ *
+ */
 class RandomSelect {
 	// public static <T extends Enum<?>> T getRandomEnumValue(Class<T> enumClass) {
     //     // Use values() method to get an array of enum constants

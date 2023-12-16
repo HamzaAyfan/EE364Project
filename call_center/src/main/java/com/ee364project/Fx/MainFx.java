@@ -1,18 +1,23 @@
 package com.ee364project.Fx;
 
-
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
+
+/**
+ * Main class for the JavaFX application.
+ * 
+ * @author Team 2
+ */
 public class MainFx extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
         try {
-            
+
             FXMLLoader loader = new FXMLLoader(getClass().getResource("MainScene.fxml"));
             Parent root = loader.load();
 
@@ -23,7 +28,9 @@ public class MainFx extends Application {
             MainSceneController controller = loader.getController();
             controller.showYesNoDialog(primaryStage);
 
-            primaryStage.setOnCloseRequest(e -> {MainSceneController.running=false;});
+            primaryStage.setOnCloseRequest(e -> {
+                MainSceneController.running = false;
+            });
 
         } catch (Exception e) {
             e.printStackTrace(); // Print the stack trace to the console
@@ -41,4 +48,5 @@ public class MainFx extends Application {
 // --add-modules javafx.controls,javafx.fxml"
 // "vmArgs": "--module-path call_center\\lib\\javafx-sdk-21.0.1\\lib
 // --add-modules javafx.controls,javafx.fxml"
-//"vmArgs": "--module-path call_center\\lib\\javafx-sdk-21.0.1\\lib --add-modules javafx.controls,javafx.fxml"
+// "vmArgs": "--module-path call_center\\lib\\javafx-sdk-21.0.1\\lib
+// --add-modules javafx.controls,javafx.fxml"
