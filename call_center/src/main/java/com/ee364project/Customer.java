@@ -9,7 +9,7 @@ import com.ee364project.helpers.*;
 
 public class Customer extends Person implements CanCall {
 
-    enum CustomerState {
+    public enum CustomerState {
         IDLE,
         INCALL,
         CHECK_FAQS,

@@ -53,6 +53,10 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.Tooltip;
+import javafx.scene.effect.Blend;
+import javafx.scene.effect.BlendMode;
+import javafx.scene.effect.ColorAdjust;
+import javafx.scene.effect.ColorInput;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
@@ -103,6 +107,9 @@ public class MainSceneController {
     public static boolean endThread;
     private static ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
     private int checkedCount = 0;
+
+    @FXML
+    private Text ActiveText;
 
     @FXML
     private VBox AgentVbox;
@@ -177,12 +184,11 @@ public class MainSceneController {
         });
         MenPasue.setDisable(true);
         MenPlay.setDisable(true);
+        MenPasue.setDisable(true);
         Call.vBox = CallVbox;
         Call.phaser = phaser;
         CallVbox.setSpacing(4);
         AgentVbox.setSpacing(4);
-
-        
 
         // timekeeper = new Timekeeper();
         timerTimeline = new Timeline(new KeyFrame(Duration.seconds(1), this::updateTimer));
@@ -198,7 +204,6 @@ public class MainSceneController {
                 removeTimePropertyListener();
             }
         });
-        
 
         try {
             // calling the methods below would load the recent files once the program runs
@@ -256,14 +261,12 @@ public class MainSceneController {
         // Timekeeper.step();
         LocalDateTime properTime = Timekeeper.getProperTime();
         // timeer.setText(String.format("%02d:%02d", minutes, seconds));
-        timeer.setText(properTime.toString() + 
-        "\nTotal Calls: " + Customer.getAllCallCount() + " calls" +
-        "\nTotal Wait Time: " + Customer.getAllTotalWaitTime() + "s" +
-        "\nAverage Wait Time: " + Customer.getAllAverageWaitTime() + "s");
+        timeer.setText(properTime.toString() +
+                "\nTotal Calls: " + Customer.getAllCallCount() + " calls" +
+                "\nTotal Wait Time: " + Customer.getAllTotalWaitTime() + "s" +
+                "\nAverage Wait Time: " + Customer.getAllAverageWaitTime() + "s");
     }
     ////////////////////////////////
-
-    
 
     // ******************************************************** *//
 
@@ -435,12 +438,12 @@ public class MainSceneController {
             for (int i = 0; i < customers.length; i++) {
 
                 ImageView imageView = new ImageView(customerImage);
-                imageView.setFitWidth(20);
-                imageView.setFitHeight(20);
+                imageView.setFitWidth(30);
+                imageView.setFitHeight(30);
 
                 StackPane stackPane = new StackPane();
 
-                Rectangle rectangle = new Rectangle(20, 20, Color.TRANSPARENT);
+                Rectangle rectangle = new Rectangle(30, 30, Color.TRANSPARENT);
                 // rectangle.setStyle("-fx-fill: green;");
                 // rectangle.setFill(new ImagePattern(image));
                 stackPane.getChildren().addAll(imageView, rectangle);
@@ -626,12 +629,12 @@ public class MainSceneController {
             customers[i] = (Customer) datum;
 
             ImageView imageView = new ImageView(customerImage);
-            imageView.setFitWidth(20);
-            imageView.setFitHeight(20);
+            imageView.setFitWidth(30);
+            imageView.setFitHeight(30);
 
             StackPane stackPane = new StackPane();
 
-            Rectangle rectangle = new Rectangle(20, 20, Color.TRANSPARENT);
+            Rectangle rectangle = new Rectangle(30, 30, Color.TRANSPARENT);
             // rectangle.setStyle("-fx-fill: green;");
             // rectangle.setFill(new ImagePattern(image));
             stackPane.getChildren().addAll(imageView, rectangle);
@@ -684,6 +687,46 @@ public class MainSceneController {
         }
         // CallCenter callCenter = new CallCenter(agents);
         System.out.println("Finished agents");
+    }
+
+    public void highlightCustomers() {
+        int index = 0;
+        for (Customer customer : customers) {
+            StackPane customerStackPane = (StackPane) flowPane.getChildren().get(index);
+            ImageView customerImageView = (ImageView) customerStackPane.getChildren().get(0);
+
+            switch (customer.getState()) {
+                case INCALL:
+                    applyHighlight(customerImageView, 0.0, 1.0, 0.0, 0.5); // Green
+                    break;
+
+                case WAITING:
+                    applyHighlight(customerImageView, 1.0, 1.0, 0.0, 0.5); // Yellow
+                    break;
+
+                case CHECK_FAQS:
+                    applyHighlight(customerImageView, 0.0, 0.0, 1.0, 0.5); // blue
+                    break;
+
+                default:
+                    customerImageView.setEffect(null);
+                    break;
+            }
+
+            index++;
+        }
+    }
+
+    // Method to apply ColorAdjust effect to highlight an ImageView
+    private void applyHighlight(ImageView imageView, double red, double green, double blue, double opacity) {
+        ColorInput colorInput = new ColorInput(
+                0, 0, imageView.getBoundsInLocal().getWidth(), imageView.getBoundsInLocal().getHeight(),
+                javafx.scene.paint.Color.rgb((int) (255 * red), (int) (255 * green), (int) (255 * blue), opacity));
+
+        Blend blend = new Blend(BlendMode.MULTIPLY);
+        blend.setTopInput(colorInput);
+
+        imageView.setEffect(blend);
     }
 
     // this method is being used to show an error alert whenever is needed to pop
@@ -814,43 +857,49 @@ public class MainSceneController {
     // Code For DialogueBox
     // *****************************************************************************************
     // */
+    static long callCount;
+
     public Node[] createHbox() {
+        long thisCallCount = ++callCount;
         HBox hBox = new HBox();
         CheckBox checkBox = new CheckBox();
-        
-         ImageView callImageView = new ImageView(customerImage);
-         ImageView callIcon = new ImageView(callImage);
-         ImageView callImageViews = new ImageView(agentImage);
-         ImageView showhideImageView = new ImageView(showCallImage);
-         
-         callImageView.setFitWidth(20);
-         callImageView.setFitHeight(20);
-         callIcon.setFitWidth(10);
-         callIcon.setFitHeight(10);
-         callImageViews.setFitWidth(20);
-         callImageViews.setFitHeight(20);
-         showhideImageView.setFitWidth(10);
-         showhideImageView.setFitHeight(10);
+        Text callnumberr = new Text();
+        callnumberr.setText(String.valueOf(thisCallCount));
+        hBox.setSpacing(4);
 
-         //Label label = new Label("", showhideImageView);
+        ImageView callImageView = new ImageView(customerImage);
+        ImageView callIcon = new ImageView(callImage);
+        ImageView callImageViews = new ImageView(agentImage);
+        ImageView showhideImageView = new ImageView(showCallImage);
 
+        callImageView.setFitWidth(30);
+        callImageView.setFitHeight(30);
+        callIcon.setFitWidth(15);
+        callIcon.setFitHeight(15);
+        callImageViews.setFitWidth(30);
+        callImageViews.setFitHeight(30);
+        showhideImageView.setFitWidth(10);
+        showhideImageView.setFitHeight(10);
+
+        // Label label = new Label("", showhideImageView);
 
         // Rectangle rectangle = new Rectangle(50, 50, Color.TRANSPARENT);
-         hBox.getChildren().add(callImageView);
-         hBox.getChildren().add(callIcon);
-         hBox.getChildren().add(callImageViews);
+        hBox.getChildren().add(callImageView);
+        hBox.getChildren().add(callIcon);
+        hBox.getChildren().add(callImageViews);
         // hBox.getChildren().add(rectangle);
         hBox.getChildren().add(checkBox);
+        hBox.getChildren().add(callnumberr);
+
         HBox.setHgrow(checkBox, Priority.ALWAYS);
         checkBox.setAlignment(Pos.BOTTOM_RIGHT);
-        //checkBox.setGraphic(showhideImageView);
-        checkBox.setOnAction(e -> handleCheckboxAction("Call", checkBox));
+        // checkBox.setGraphic(showhideImageView);
+        checkBox.setOnAction(e -> handleCheckboxAction("Call" + thisCallCount, checkBox));
         // checkBox.selectedProperty().addListener(createChangeListener(checkBox));
         Node[] pointers = { hBox, checkBox };
         return pointers;
     }
 
-    
     public void handleCheckboxAction(String callNumber, CheckBox checkbox) {
 
         // Count the number of checked checkboxes
@@ -904,8 +953,8 @@ public class MainSceneController {
     // */
     // End of DialogueBox code
 
-    public void checkPoint(){
-        if (Timekeeper.getTime() % 50 == 0){
+    public void checkPoint() {
+        if (Timekeeper.getTime() % 50 == 0) {
             pause();
             // Create a custom confirmation dialog without the top bar
             Dialog<ButtonType> dialog = new Dialog<>();
@@ -923,16 +972,16 @@ public class MainSceneController {
             dialog.showAndWait().ifPresent(response -> {
                 if (response == ButtonType.YES) {
                     displayExitMessage(
-                        "Total Calls: " + Customer.getAllCallCount() + " calls" +
-                        "\nTotal Wait Time: " + Customer.getAllTotalWaitTime() + "s" +
-                        "\nAverage Wait Time: " + Customer.getAllAverageWaitTime() + "s");
+                            "Total Calls: " + Customer.getAllCallCount() + " calls" +
+                                    "\nTotal Wait Time: " + Customer.getAllTotalWaitTime() + "s" +
+                                    "\nAverage Wait Time: " + Customer.getAllAverageWaitTime() + "s");
 
                 } else {
-                        phaser.arriveAndDeregister();
-                        endThread = true;
-                        MenPasue.setDisable(false);
-                        MenPlay.setDisable(true);
-                        timerTimeline.play();
+                    phaser.arriveAndDeregister();
+                    endThread = true;
+                    MenPasue.setDisable(false);
+                    MenPlay.setDisable(true);
+                    timerTimeline.play();
                     // User clicked "No" or closed the dialog
                     System.out.println("User clicked No or closed the dialog");
                 }
@@ -949,66 +998,67 @@ public class MainSceneController {
         alert.showAndWait();
 
         // Close the application when the "Exit" button is clicked
-        if(alert.getResult() == closeButton){
+        if (alert.getResult() == closeButton) {
             System.exit(0);
             System.out.println("User clicked Yes --> Ended");
         }
     }
 
-
     public static boolean running = true;
-    public static int i=0;
+    public static int i = 0;
+
     @FXML
     void startbtnClicked(ActionEvent event) {
-        try{
-        // Check if the timer is not already running
-        
+        try {
+            // Check if the timer is not already running
 
-        callCenter = new CallCenter(agents);
-        System.out.println("casted");
+            callCenter = new CallCenter(agents);
+            System.out.println("casted");
 
-        new Thread(() -> {
-            phaser.register();
-            String thread = Thread.currentThread().getName();
-            Platform.runLater(()-> CallVbox.getChildren().add(new Label(thread)));
-            while (running) {
-                for (Customer customer : customers) {
-                    customer.step();
+            new Thread(() -> {
+                phaser.register();
+                String thread = Thread.currentThread().getName();
+                Platform.runLater(() -> CallVbox.getChildren().add(new Label(thread)));
+                while (running) {
+                    for (Customer customer : customers) {
+                        customer.step();
+                    }
+
+                    for (Call call : Call.activeCalls) {
+                        call.step();
+
+                    }
+                    ActiveText.setText(String.valueOf(Call.activeCalls.size()));
+                    Call.terminateCalls();
+                    callCenter.step();
+                    Timekeeper.step();
+                    highlightCustomers();
+
+                    try {
+                        Thread.sleep(Timekeeper.getDelayMs());
+                    } catch (InterruptedException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } finally {
+                        phaser.arriveAndAwaitAdvance();
+                        checkHeapSize.checkMemory();
+                        Platform.setImplicitExit(true);
+                    }
+                    // if(i==100)
+                    // {System.out.println("step");}
+                    // i++;
                 }
+            }).start();
 
-                for (Call call : Call.activeCalls) {
-                    call.step();
-                }
-                Call.terminateCalls();
-                callCenter.step();
-                Timekeeper.step();
+            if (!timerTimeline.getStatus().equals(Timeline.Status.RUNNING)) {
+                // Start the timer when the "Start" button is clicked
+                timerTimeline.play();
 
-                try {
-                    Thread.sleep(Timekeeper.getDelayMs());
-                } catch (InterruptedException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                } finally {
-                    phaser.arriveAndAwaitAdvance();
-                    checkHeapSize.checkMemory();
-                    Platform.setImplicitExit(true);
-                }
-                // if(i==100)
-                // {System.out.println("step");}
-                // i++;                
+                // Disable the "Start" button to prevent further clicks
+                ((MenuItem) event.getSource()).setDisable(true);
+                MenPasue.setDisable(false);
             }
-        }).start();
-
-        if (!timerTimeline.getStatus().equals(Timeline.Status.RUNNING)) {
-            // Start the timer when the "Start" button is clicked
-            timerTimeline.play();
-
-            // Disable the "Start" button to prevent further clicks
-            ((MenuItem) event.getSource()).setDisable(true);
-            MenPasue.setDisable(false);
-        }
-        }
-        catch(Exception e){
+        } catch (Exception e) {
             showErrorAlert("Starting Simulation", "Environment is not Loaded");
         }
     }

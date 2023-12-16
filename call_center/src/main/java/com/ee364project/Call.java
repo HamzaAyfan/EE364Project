@@ -26,7 +26,7 @@ public class Call implements Simulated {
 
     public HBox hbox;
 
-    Image callimage = new Image("com\\ee364project\\Fx\\resources\\green.jpg");
+    
 
     public static final long MAXWAITTIME = 1000000;
 
@@ -45,7 +45,7 @@ public class Call implements Simulated {
     private ArrayList<Integer> lengthsSaved = new ArrayList<>();
     private ArrayList<Person> speaker = new ArrayList<>();
     
-    private static long callCount = 0;
+    public static long callCount;
     public static Phaser phaser;
     public static HashMap<CheckBox, DialogeBox> linkCBtoDB = new HashMap<>();
 
@@ -60,6 +60,8 @@ public class Call implements Simulated {
     public static boolean newThreadAdded;
     Timeline callTime = new Timeline();
 
+
+    
     public static Call getACall() {
         // applyExpiry();
         Call call = callQueue.poll();
