@@ -18,7 +18,7 @@ public class DialogeBox extends Thread {
     private Stage stage;
     private VBox root = new VBox(10);
     public DialogeBox thisWindow;
-    private Call currentCall;
+    public Call currentCall;
     private ScrollPane scrollPane;
     private boolean scrollDown = true;
     private boolean scrollDownCheck = true;
@@ -35,7 +35,7 @@ public class DialogeBox extends Thread {
         this.callNumber = callNumber;              
     }
 
-    public int resumeDialogeFrom() {
+    public void resumeDialogeFrom() {
         int startLength = 0;
         len = currentCall.getSentences().size();
         lastVisted = len;
@@ -46,55 +46,40 @@ public class DialogeBox extends Thread {
             TextArea textArea = createArea(person);
             String startFrom = currentCall.getSentences(i);            
             if (startLength > currentCall.getTimeElapsed()) {  
-                resumeLastPartsOfSentence(startFrom,textArea,(startLength-temp));              
-                return i;
+                resumeLastPartsOfSentence(startFrom,null,(startLength-temp));              
+                lastVisted = i;
+                break;
             }else if(startLength == currentCall.getTimeElapsed()){
                 Platform.runLater(()->textArea.appendText(startFrom));
-                return i;
+                lastVisted = i;
+                break;
             }
             Platform.runLater(() -> textArea.appendText(startFrom));                        
         }
-        return len;
     }
     
     private void resumeLastPartsOfSentence(String sentence, TextArea textArea, int displayUpTo) {           
         String[] words = sentence.split("\\s+");
-        System.out.println(sentence);
-        for (wordIndex = 0; wordIndex<words.length;wordIndex++){
-            String wordToDisplay = words[wordIndex];
-            Platform.runLater(()-> textArea.appendText(wordToDisplay + " "));
+        for (int i = 0; i < words.length;i++){            
+            try{
+                String wordToDisplay = words[i];
+                // Platform.runLater(()-> textArea.appendText(wordToDisplay + " ")); 
+            }catch(Exception e){
+
+            }           
             
             if (wordIndex>=displayUpTo){
                 phaser.arriveAndAwaitAdvance();
             }
         }
-        Platform.runLater(() -> stage.show());
-        // for (wordIndex=displayUpTo;wordIndex<left;wordIndex++){
-        //     System.out.println(words[wordIndex]);
-            
-        //     Platform.runLater(()->textArea.appendText(words[wordIndex] + " "));
-        // }
-        wordIndex = 0;
+        // Platform.runLater(() -> stage.show());
     }
 
     public void exit() {
         stop = true;
     }
 
-    private void pacedPrint(String sentence , Person speaker) {
-        TextArea textArea = this.createArea(speaker);
-        String[] words = sentence.split("\\s+");
-        for (String word : words) {
-            if (scrollDown) {
-                scrollPane.setVvalue(1.0);
-            }
-            phaser.arriveAndAwaitAdvance();
-            if (stop) {
-                break;
-            }
-            Platform.runLater(() -> textArea.appendText(word + " "));
-        }
-    }
+   
     private TextArea createArea(Person person) {
         TextArea textArea = new TextArea(person.getTag());
         textArea.setEditable(false);
@@ -116,17 +101,28 @@ public class DialogeBox extends Thread {
         });
         return textArea;
     }
+    private void pacedPrint(String sentence , Person speaker) {
+        TextArea textArea = this.createArea(speaker);
+        String[] words = sentence.split("\\s+");
+        for (String word : words) {
+            if (scrollDown) {
+                scrollPane.setVvalue(1.0); 
+            }            
+            System.out.println(phaser); 
+            phaser.arriveAndAwaitAdvance();
+            System.out.println(phaser); 
+            Platform.runLater(() -> textArea.appendText(word + " "));
+            }
+        }   
 
     @Override
     public void run() {
         phaser.register();          
-        lastVisted = this.resumeDialogeFrom();         
-
-        for(int i = lastVisted + 1; i<len;i++){
-            pacedPrint(currentCall.getSentences(i),currentCall.getPerson(i));
-            System.out.println("reach" + i);
-        }
-        Platform.runLater(() -> stage.close());            
+        this.resumeDialogeFrom();
+        
+        for(int i = lastVisted + 1; i<len;i++){            
+            pacedPrint(currentCall.getSentences(i),currentCall.getPerson(i));            
+        }           
         Platform.runLater(()-> closeWindow());
         Platform.runLater(()->root.getChildren().clear());
     }
@@ -142,7 +138,6 @@ public class DialogeBox extends Thread {
                     scrollDown = true;
                 } else {
                     scrollDown = false;
-
                 }
                 if (newValue.doubleValue() == scrollPane.getVmax()) {
                     scrollDownCheck = true;
@@ -153,7 +148,7 @@ public class DialogeBox extends Thread {
         });
 
         stage.setOnCloseRequest(e -> {
-            this.exit();
+            // this.exit();
             currentCall.getCheckBox().setSelected(false);
         });
         Scene scene = new Scene(scrollPane, 700, 200);
@@ -172,8 +167,9 @@ public class DialogeBox extends Thread {
         phaser.arriveAndDeregister();
     }
 
-    public void showWindow() {
+    public void showWindow(Phaser phaser) {
         stage.show();
+        this.phaser = phaser;
     }
 
     public void createStage() {

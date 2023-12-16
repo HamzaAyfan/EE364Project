@@ -850,12 +850,11 @@ public class MainSceneController {
     public void handleCheckboxAction(CheckBox checkbox) {        
         // limitCheckBoxes();
 
-        if (checkbox.isSelected()) {
+        if (checkbox.isSelected()) {            
             DialogeBox dialogeBox = Call.linkCBtoDB.get(checkbox);
-            dialogeBox.showWindow();            
-            executor.execute(dialogeBox);            
-        }
-        else{
+            dialogeBox.showWindow(phaser);        
+            executor.execute(dialogeBox);      
+        }else{
             Call.linkCBtoDB.get(checkbox).closeWindow();
         }        
     }

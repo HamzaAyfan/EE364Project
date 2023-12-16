@@ -95,7 +95,6 @@ public class Call implements Simulated {
     }
 
     public void connectCall(CallCenter callCenter) {
-        System.out.println("Call CONNECTED: ");
         Call.callQueue.remove(this);
         receiver.assignLevel(caller.problemState.getLastProblem());
         this.callCenter = callCenter;
@@ -227,7 +226,6 @@ public class Call implements Simulated {
             if (this.endTime <= Timekeeper.getTime()) {
                 this.state = Call.CallState.ENDED;
                 callsToRemove.add(this);
-                System.out.println("Adding to removed list: ");
             } else {
                 Utilities.log(this, "continues", activeCalls, (this.endTime - Timekeeper.getTime()) + " remaining...");
             }
