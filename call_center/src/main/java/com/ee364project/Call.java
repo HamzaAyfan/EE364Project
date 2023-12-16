@@ -106,13 +106,17 @@ public class Call implements Simulated {
         this.endTime = this.answerTime + totalTime;
         activeCalls.add(this);
         MainSceneController msc = new MainSceneController();
-        Node[] nodes = msc.createHbox();
+        Node[] nodes = msc.createHbox(this);
         hbox = (HBox) nodes[0];
         checkBox = (CheckBox) nodes[1];
         Platform.runLater(() -> {
             vBox.getChildren().add(hbox);
         });
         CheckBoxAndCall.put(checkBox, this);
+    }
+
+    public static VBox getCallVbox(){
+        return Call.vBox;
     }
 
     public void addLine(String sentenceString, Person person, int length){

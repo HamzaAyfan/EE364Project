@@ -55,9 +55,11 @@ public class Agent extends Person {
         }      
         if (this.getDepartment() == problem.getDepartment()){
             level = RandomSelect.getRandomEnumValue(Level.class,1);
+            
         }else{
             level = RandomSelect.getRandomEnumValue(Level.class,0);
         }
+        problemsSeen.add(problem);
     }
 
     public Level getlevel() {

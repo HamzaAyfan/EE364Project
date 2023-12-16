@@ -239,15 +239,15 @@ class CustomerBehaviour {
         public static final CustomerBehaviour DEFAULT = new CustomerBehaviour(
                 "default",
                 new Ratio(0.5),
-                new Ratio(0.5));
+                new Ratio(0.000000000000000005));
         public static final CustomerBehaviour SAVVY = new CustomerBehaviour(
                 "savvy",
                 new Ratio(0.1),
-                new Ratio(0.2));
+                new Ratio(0.0000000000000000002));
         public static final CustomerBehaviour CHALLENGED = new CustomerBehaviour(
                 "challenged",
                 new Ratio(0.7),
-                new Ratio(0.9));
+                new Ratio(0.0000000000000000009));
     }
 
     public String name;

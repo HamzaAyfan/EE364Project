@@ -20,8 +20,8 @@ public class MainFx extends Application {
             primaryStage.setScene(new Scene(root, 600, 550));
             primaryStage.show();
 
-            MainSceneController controller = loader.getController();
-            controller.showYesNoDialog(primaryStage);
+            // MainSceneController controller = loader.getController();
+            // controller.showYesNoDialog(primaryStage);
 
             primaryStage.setOnCloseRequest(e -> {MainSceneController.running=false;});
 

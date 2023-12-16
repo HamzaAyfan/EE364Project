@@ -814,14 +814,21 @@ public class MainSceneController {
     // Code For DialogueBox
     // *****************************************************************************************
     // */
-    public Node[] createHbox() {
+    static int callCount;
+    public Node[] createHbox(Call call) {
         HBox hBox = new HBox();
         CheckBox checkBox = new CheckBox();
+        int thisCallID = ++callCount;
+        Label CallID = new Label(""+thisCallID);
+
+        Runnable dialoge = new DialogeBox("Call " + thisCallID, phaser, call);
+        Platform.runLater(()->((DialogeBox)dialoge).createStage());
+        Call.linkCBtoDB.put(checkBox, (DialogeBox) dialoge);
         
-         ImageView callImageView = new ImageView(customerImage);
-         ImageView callIcon = new ImageView(callImage);
-         ImageView callImageViews = new ImageView(agentImage);
-         ImageView showhideImageView = new ImageView(showCallImage);
+        ImageView callImageView = new ImageView(customerImage);
+        ImageView callIcon = new ImageView(callImage);
+        ImageView callImageViews = new ImageView(agentImage);
+        ImageView showhideImageView = new ImageView(showCallImage);
          
          callImageView.setFitWidth(20);
          callImageView.setFitHeight(20);
@@ -831,73 +838,41 @@ public class MainSceneController {
          callImageViews.setFitHeight(20);
          showhideImageView.setFitWidth(10);
          showhideImageView.setFitHeight(10);
-
-         //Label label = new Label("", showhideImageView);
-
-
-        // Rectangle rectangle = new Rectangle(50, 50, Color.TRANSPARENT);
-         hBox.getChildren().add(callImageView);
-         hBox.getChildren().add(callIcon);
-         hBox.getChildren().add(callImageViews);
-        // hBox.getChildren().add(rectangle);
-        hBox.getChildren().add(checkBox);
+         hBox.getChildren().addAll(callImageView,callIcon,callImageViews,checkBox,CallID);
         HBox.setHgrow(checkBox, Priority.ALWAYS);
         checkBox.setAlignment(Pos.BOTTOM_RIGHT);
-        //checkBox.setGraphic(showhideImageView);
-        checkBox.setOnAction(e -> handleCheckboxAction("Call", checkBox));
-        // checkBox.selectedProperty().addListener(createChangeListener(checkBox));
+        checkBox.setOnAction(e -> handleCheckboxAction(checkBox));
         Node[] pointers = { hBox, checkBox };
         return pointers;
     }
 
     
-    public void handleCheckboxAction(String callNumber, CheckBox checkbox) {
+    public void handleCheckboxAction(CheckBox checkbox) {        
+        // limitCheckBoxes();
 
-        // Count the number of checked checkboxes
-
-        // for (int i = 0; i < CallVbox.getChildren().size(); i++) {
-        // HBox currentHBox = (HBox) CallVbox.getChildren().get(i);
-        // CheckBox currentCheckBox = (CheckBox)currentHBox.getChildren().get(0);
-        // if (currentCheckBox.isSelected()) {
-        // checkedCount++;
-        // }
-        // }
-
-        // If more than the allowed checkboxes are checked, uncheck the current checkbox
-
-        if (checkedCount >= 3) {
-            checkbox.setSelected(false);
-            return;
-        }
         if (checkbox.isSelected()) {
-            checkedCount++;
-            if (Call.linkCBtoDB.containsKey(checkbox)) {
-                if (!endThread) {
-                    Call.linkCBtoDB.get(checkbox).showWindow();
-                    return;
+            DialogeBox dialogeBox = Call.linkCBtoDB.get(checkbox);
+            dialogeBox.showWindow();            
+            executor.execute(dialogeBox);            
+        }
+        else{
+            Call.linkCBtoDB.get(checkbox).closeWindow();
+        }        
+    }
+
+    public void limitCheckBoxes(){
+        for (int i = 0; i < Call.getCallVbox().getChildren().size(); i++) {            
+            HBox currentHBox = (HBox) Call.getCallVbox().getChildren().get(i);
+            CheckBox checkBox = (CheckBox)currentHBox.getChildren().get(3);
+            if (checkBox.isSelected()) {
+                checkedCount++;
+                if (checkedCount > 3) {
+                    checkBox.setSelected(false);
                 }
             }
-            newThreadAdded = true;
-            Call call = Call.CheckBoxAndCall.get(checkbox);
-            Runnable dialoge = new DialogeBox(callNumber, phaser, call);
-            Call.linkCBtoDB.put(checkbox, (DialogeBox) dialoge);
-
-            // ((DialogeBox)dialoge).setupCall(call);
-
-            executor.execute(dialoge);
-
-        } else {
-            checkedCount--;
-            if (!endThread) {
-                Call.linkCBtoDB.get(checkbox).closeWindow();
-                return;
-            }
-            try {
-                Call.linkCBtoDB.get(checkbox).exit();
-                Call.linkCBtoDB.remove(checkbox);
-            } catch (NullPointerException e) {
-            }
-
+            // else{
+            //     checkedCount--;
+            // }
         }
     }
     // *****************************************************************************************
@@ -952,8 +927,6 @@ public class MainSceneController {
 
         new Thread(() -> {
             phaser.register();
-            String thread = Thread.currentThread().getName();
-            Platform.runLater(()-> CallVbox.getChildren().add(new Label(thread)));
             while (running) {
                 for (Customer customer : customers) {
                     customer.step();
@@ -973,7 +946,7 @@ public class MainSceneController {
                     e.printStackTrace();
                 } finally {
                     phaser.arriveAndAwaitAdvance();
-                    checkHeapSize.checkMemory();
+                    // checkHeapSize.checkMemory();
                     Platform.setImplicitExit(true);
                 }
                 // if(i==100)
