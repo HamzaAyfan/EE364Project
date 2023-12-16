@@ -15,6 +15,7 @@ public class Vars {
 
     }
 
+    public static boolean projectPhase = false;
     public static final String DEFAULT_OUTPUT_FOLDER = "./Output/";
     public static final String projectPrefix = "com.ee364project.";
     public static final String NONE = "NONE";
