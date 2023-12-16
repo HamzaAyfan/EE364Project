@@ -75,7 +75,8 @@ public class Timekeeper {
     }
 
     public static Ratio adjustedChance(Ratio originalChance, long originalPeriod) {
-        return adjustedChance(originalChance, originalPeriod, Timekeeper.step);
+            return originalChance;
+        // return adjustedChance(originalChance, originalPeriod, Timekeeper.step);
     }
 
     public static long getSecondsInDay(int n) {

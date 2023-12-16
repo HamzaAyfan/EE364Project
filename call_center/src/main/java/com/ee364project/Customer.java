@@ -168,13 +168,17 @@ public class Customer extends Person implements CanCall {
         Utilities.log(this, "idles", "", msg);
     }
 
+    private int faqsSteps = -1;
+
     private void checkFaqs() {
-        if (this.behaviour.getFaqsSolveChance().check()) {
+        if (this.faqsSteps > 0) {
+            this.faqsSteps--;
+            Utilities.log(this, "is visiting faq", "", this.faqsSteps + "remaining");
+        } else {
             this.problemState.solve();
             this.state = CustomerState.IDLE;
+            this.faqsSteps = -1;
             Utilities.log(this, "solved thier own", this.problemState.getLastProblem(), "");
-        } else {
-            Utilities.log(this, "could not solve thier own", this.problemState.getLastProblem(), "they will try again");
         }
     }
 
@@ -188,6 +192,7 @@ public class Customer extends Person implements CanCall {
             if (this.behaviour.getFaqsChance().check()) {
                 if (this.behaviour.getFaqsChance().check()) {
                     this.state = CustomerState.CHECK_FAQS;
+                    this.faqsSteps = Utilities.random.nextInt(50, 200);
                     Utilities.log(this, "visted faqs", "", "");
                 }
             }
@@ -328,8 +333,9 @@ class CustomerBehaviour {
         this.callChance = callChance;
         this.callChancePeriod = callChancePeriod;
         this.faqsVisitChance = faqsVisitChance;
-        this.faqsSolveChance = faqsSolveChance;
         this.faqsVisitChancePeriod = faqsVisitChancePeriod;
+        this.faqsSolveChance = faqsSolveChance;
+        this.faqsSolveChancePeriod = faqsSolveChancePeriod;
     }
 
     Ratio getProblemAffinity() {

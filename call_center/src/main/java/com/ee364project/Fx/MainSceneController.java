@@ -1028,7 +1028,8 @@ public class MainSceneController {
                         call.step();
 
                     }
-                    ActiveText.setText(String.valueOf(Call.activeCalls.size()));
+                    // TODO: Why is this causing problems?
+                    // ActiveText.setText(String.valueOf(Call.activeCalls.size()));
                     Call.terminateCalls();
                     callCenter.step();
                     Timekeeper.step();
