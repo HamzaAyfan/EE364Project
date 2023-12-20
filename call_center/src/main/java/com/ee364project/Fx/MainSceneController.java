@@ -52,6 +52,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.Tooltip;
+import javafx.scene.control.skin.TableRowSkin;
 import javafx.scene.effect.Blend;
 import javafx.scene.effect.BlendMode;
 import javafx.scene.effect.ColorInput;
@@ -78,25 +79,33 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TablePosition;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.stage.Modality;
 import javafx.stage.StageStyle;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.util.Duration;
+
 /**
  * The {@code MainSceneController} class manages the GUI of the application.
- * It holds references to agents, customers, problems, and departments, as well as
+ * It holds references to agents, customers, problems, and departments, as well
+ * as
  * handles recent files, thread synchronization, and thread execution.
  *
  * {@code agents}: an array of Agent objects.
  * {@code customers}: an array of Customer objects.
- * {@code problems}: an array of objects implementing the HasData interface representing problems.
- * {@code departments}: an array of objects implementing the HasData interface representing departments.
+ * {@code problems}: an array of objects implementing the HasData interface
+ * representing problems.
+ * {@code departments}: an array of objects implementing the HasData interface
+ * representing departments.
  * {@code recentFiles}: a list of recently accessed files.
  * {@code RECENT_FILES_FILE}: the file name to store recent files information.
- * {@code MAX_RECENT_FILES}: the maximum number of recent files to keep track of.
+ * {@code MAX_RECENT_FILES}: the maximum number of recent files to keep track
+ * of.
  * {@code phaser}: a Phaser for synchronization.
  * {@code pausePlay}: a thread used for pausing and playing the simulation.
  * {@code endThread}: a flag indicating the end of the simulation thread.
@@ -108,7 +117,8 @@ import javafx.util.Duration;
  * {@code callCenter}: the reference to the CallCenter.
  * {@code timerTimeline}: the timeline for handling timer events.
  * {@code callCount}: counts call number to display in GUI
- * {@code ActiveText}: a Text component displaying information about active elements.
+ * {@code ActiveText}: a Text component displaying information about active
+ * elements.
  * {@code AgentVbox}: a VBox for organizing Agent-related components.
  * {@code MenBar}: the main menu bar.
  * {@code saveAsbtn}: a MenuItem for the "Save As" option.
@@ -174,11 +184,11 @@ public class MainSceneController {
     @FXML
     private AnchorPane anchorPane;
     @FXML
-    private VBox flowPane; 
+    private VBox flowPane;
     @FXML
     private Text timeer;
     @FXML
-    private CheckBox checkPoint;  
+    private CheckBox checkPoint;
     @FXML
     private CheckMenuItem phase2MenItem;
     @FXML
@@ -193,19 +203,20 @@ public class MainSceneController {
     private TableColumn<Customer, String> customerColumn;
     @FXML
     private TableColumn<Customer, Number> AWTcolumn;
+    @FXML
+    private TableColumn<Customer, Number> MAXTcolumn;
 
-
-    
-
-
-/**
- * Initializes the main scene components and sets up event handlers.
- * It sets references and configurations for various UI elements, such as buttons, panes, and timelines.
- * Additionally, it configures the checkbox to add or remove a time property listener based on its state.
- */
+    /**
+     * Initializes the main scene components and sets up event handlers.
+     * It sets references and configurations for various UI elements, such as
+     * buttons, panes, and timelines.
+     * Additionally, it configures the checkbox to add or remove a time property
+     * listener based on its state.
+     */
     @FXML
     public void initialize() {
-        // Set cell value factory to map the Customer objects to the corresponding property
+        // Set cell value factory to map the Customer objects to the corresponding
+        // property
         customerColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getShortInfo()));
         // setting all the important references and spaces for panes internal look
         MenPasue.setOnAction(e -> {
@@ -237,12 +248,14 @@ public class MainSceneController {
             return;
         }
     }
-/**
- * Adds a listener to the time property of the checkpoint.
- * The listener checks if the time value is a multiple of 50 and, if true,
- * triggers the execution of the {@code checkPoint} method on the JavaFX Application Thread.
- * The listener is implemented using a lambda expression.
- */
+
+    /**
+     * Adds a listener to the time property of the checkpoint.
+     * The listener checks if the time value is a multiple of 50 and, if true,
+     * triggers the execution of the {@code checkPoint} method on the JavaFX
+     * Application Thread.
+     * The listener is implemented using a lambda expression.
+     */
     private void addTimePropertyListener() {
         // Add a listener to the number property using a lambda expression
         timePropertyListener = (observable, oldValue, newValue) -> {
@@ -250,32 +263,38 @@ public class MainSceneController {
             int timeElapsed = newValue.intValue();
             if (timeElapsed % 50 == 0) {
                 // Show the dialog on the next iteration of the JavaFX Application Thread
-                Platform.runLater(() -> 
-                    checkPoint());
+                Platform.runLater(() -> checkPoint());
             }
         };
         // Add the listener to the number property
         SimpleIntegerProperty timeProperty = Timekeeper.getTimeProperty();
         timeProperty.addListener(timePropertyListener);
     }
-/**
- * Removes the previously added listener from the time property of the Timekeeper class. This is when the checkpoint is unchecked
- * If no listener was added before, this method has no effect.
- */
+
+    /**
+     * Removes the previously added listener from the time property of the
+     * Timekeeper class. This is when the checkpoint is unchecked
+     * If no listener was added before, this method has no effect.
+     */
     private void removeTimePropertyListener() {
         // Remove the listener from the number property
         if (timePropertyListener != null) {
             SimpleIntegerProperty timeProperty = Timekeeper.getTimeProperty();
-           timeProperty.removeListener(timePropertyListener);
+            timeProperty.removeListener(timePropertyListener);
         }
-    }    
-/**
- * Pauses the simulation, disabling the pause button and enabling the play button.
- * The timeline controlling the timer is paused, and a separate thread is started to wait
- * for the play button to be clicked. Once the play button is clicked, the simulation resumes,
- * re-enabling the pause button and disabling the play button. This is done by deresitering the
- * thread from the phaser and ending the loop
- */
+    }
+
+    /**
+     * Pauses the simulation, disabling the pause button and enabling the play
+     * button.
+     * The timeline controlling the timer is paused, and a separate thread is
+     * started to wait
+     * for the play button to be clicked. Once the play button is clicked, the
+     * simulation resumes,
+     * re-enabling the pause button and disabling the play button. This is done by
+     * deresitering the
+     * thread from the phaser and ending the loop
+     */
     public void pause() {
         MenPasue.setDisable(true);
         MenPlay.setDisable(false);
@@ -296,12 +315,13 @@ public class MainSceneController {
         pausePlay.start();
     }
 
-/**
- * Updates the display of the simulation timer and relevant statistics.
- * This method is invoked by the JavaFX timeline at regular intervals.
- *
- * @param event the action event triggering the method call (automatically provided by JavaFX).
- */
+    /**
+     * Updates the display of the simulation timer and relevant statistics.
+     * This method is invoked by the JavaFX timeline at regular intervals.
+     *
+     * @param event the action event triggering the method call (automatically
+     *              provided by JavaFX).
+     */
     private void updateTimer(ActionEvent event) {
         LocalDateTime properTime = Timekeeper.getProperTime();
         String time = properTime.toString();
@@ -314,13 +334,16 @@ public class MainSceneController {
                 "\nAverage Wait Time: " + meanWaitTime + "s");
     }
 
-/**
- * Displays a confirmation dialog for selecting the simulation type: old customers or new customers.
- * This method creates a JavaFX Alert with custom buttons for the two simulation types and waits for
- * the user's response. Depending on the chosen option, the corresponding callback method is invoked.
- *
- * @param primaryStage the primary stage used as the owner of the dialog.
- */
+    /**
+     * Displays a confirmation dialog for selecting the simulation type: old
+     * customers or new customers.
+     * This method creates a JavaFX Alert with custom buttons for the two simulation
+     * types and waits for
+     * the user's response. Depending on the chosen option, the corresponding
+     * callback method is invoked.
+     *
+     * @param primaryStage the primary stage used as the owner of the dialog.
+     */
     public void showYesNoDialog(Stage primaryStage) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Simulation Type");
@@ -334,7 +357,7 @@ public class MainSceneController {
         ButtonType costumeNoButtonType = new ButtonType("New Costumers");
 
         // Add buttons
-        ObservableList<ButtonType> buttons =  alert.getButtonTypes();
+        ObservableList<ButtonType> buttons = alert.getButtonTypes();
         buttons.setAll(costumeYesButtonType, costumeNoButtonType);
 
         // Show and wait for user response
@@ -348,11 +371,13 @@ public class MainSceneController {
         });
     }
 
-/**
- * Handles the action when the "Old Environment" button is clicked. Opens a file explorer to
- * allow the user to choose a zip file. The selected zip file is then processed to load the panes
- * and prepare them for the simulation process.
- */
+    /**
+     * Handles the action when the "Old Environment" button is clicked. Opens a file
+     * explorer to
+     * allow the user to choose a zip file. The selected zip file is then processed
+     * to load the panes
+     * and prepare them for the simulation process.
+     */
     void oldCosbtnClicked() {
         try {
             FileChooser fileChooser = new FileChooser();
@@ -369,14 +394,18 @@ public class MainSceneController {
 
     }
 
-/**
- * Handles the opening of a zip file selected by the user. The method processes the zip file by
- * extracting its components into a directory named "extracted." It then processes the CSV files
- * extracted from the zip file and deletes the extracted files and directory after processing.
- * The method also updates the recent files list, the recent files menu, and saves the recent files.
- *
- * @param zipFile the zip file selected by the user to be opened and processed.
- */
+    /**
+     * Handles the opening of a zip file selected by the user. The method processes
+     * the zip file by
+     * extracting its components into a directory named "extracted." It then
+     * processes the CSV files
+     * extracted from the zip file and deletes the extracted files and directory
+     * after processing.
+     * The method also updates the recent files list, the recent files menu, and
+     * saves the recent files.
+     *
+     * @param zipFile the zip file selected by the user to be opened and processed.
+     */
     public void handleOpenFile(File zipFile) {
         System.out.println("Handling now");
         // Check if the file is already in the recent files list
@@ -395,7 +424,7 @@ public class MainSceneController {
             // Trim the list to the maximum allowed size
             int size = recentFiles.size();
             if (size > MAX_RECENT_FILES) {
-                List<File> file =  recentFiles.subList(MAX_RECENT_FILES, size);
+                List<File> file = recentFiles.subList(MAX_RECENT_FILES, size);
                 file.clear();
             }
 
@@ -430,13 +459,17 @@ public class MainSceneController {
 
     }
 
-/**
- * Processes the CSV files located in the specified extracted directory individually. The method iterates
- * through an array of predefined CSV file names ("Problem.csv", "Customer.csv", "Agent.csv",
- * "Department.csv") and calls specific methods to process each corresponding CSV file.
- *
- * @param extractedDirectory the directory where the CSV files are extracted from the zip file.
- */
+    /**
+     * Processes the CSV files located in the specified extracted directory
+     * individually. The method iterates
+     * through an array of predefined CSV file names ("Problem.csv", "Customer.csv",
+     * "Agent.csv",
+     * "Department.csv") and calls specific methods to process each corresponding
+     * CSV file.
+     *
+     * @param extractedDirectory the directory where the CSV files are extracted
+     *                           from the zip file.
+     */
     private void processCsvFiles(String extractedDirectory) {
         String[] csvFileNames = { "Problem.csv", "Customer.csv", "Agent.csv", "Department.csv" };
         for (String fileName : csvFileNames) {
@@ -457,15 +490,17 @@ public class MainSceneController {
                     processDepartmentFile(departmentFile);
                 }
             } catch (IOException e) {
-                showErrorAlert(fileName, "Failed to extract "+ fileName);
+                showErrorAlert(fileName, "Failed to extract " + fileName);
             }
         }
     }
-/**
- * Handles the action when the "Old" menu item is clicked. Call on {@oldCosbtnClicked}
- *
- * @param event The ActionEvent associated with the "Old" menu item click.
- */
+
+    /**
+     * Handles the action when the "Old" menu item is clicked. Call on
+     * {@oldCosbtnClicked}
+     *
+     * @param event The ActionEvent associated with the "Old" menu item click.
+     */
     @FXML
     void oldCosbtnClicked(ActionEvent event) {
         try {
@@ -474,14 +509,15 @@ public class MainSceneController {
             return;
         }
     }
-/**
- * Processes a CSV file containing customer data. Reads the CSV file using the
- * {@link Csv#read(String)} method, creates an array of {@code Customer} objects
- * from the read data, and updates the GUI to display the customer information.
- * 
- * @param selectedFile The CSV file to be processed.
- * @throws IOException If an I/O error occurs during the file processing.
- */
+
+    /**
+     * Processes a CSV file containing customer data. Reads the CSV file using the
+     * {@link Csv#read(String)} method, creates an array of {@code Customer} objects
+     * from the read data, and updates the GUI to display the customer information.
+     * 
+     * @param selectedFile The CSV file to be processed.
+     * @throws IOException If an I/O error occurs during the file processing.
+     */
     @FXML
     private void processCustomerFile(File selectedFile) throws IOException {
         try {
@@ -522,18 +558,19 @@ public class MainSceneController {
                 flowPaneChild.add(stackPane);
             }
             loadCustomersTable();
-        } catch (NumberFormatException e) {            
+        } catch (NumberFormatException e) {
             showErrorAlert("Agent.csv", "Failed to process please use the correct format");
-        } 
+        }
     }
-/**
- * Processes a CSV file containing agent data. Reads the CSV file using the
- * {@link Csv#read(String)} method, creates an array of {@code Agent} objects
- * from the read data, and updates the GUI to display the agent information.
- * 
- * @param selectedFile The CSV file to be processed.
- * @throws IOException If an I/O error occurs during the file processing.
- */
+
+    /**
+     * Processes a CSV file containing agent data. Reads the CSV file using the
+     * {@link Csv#read(String)} method, creates an array of {@code Agent} objects
+     * from the read data, and updates the GUI to display the agent information.
+     * 
+     * @param selectedFile The CSV file to be processed.
+     * @throws IOException If an I/O error occurs during the file processing.
+     */
     @FXML
     private void processAgentFile(File selectedFile) throws IOException {
         try {
@@ -579,13 +616,16 @@ public class MainSceneController {
             showErrorAlert("Agent.csv", "Failed to process please use the correct format");
         }
     }
-/**
- * Processes a CSV file containing problem data. Reads the CSV file using the
- * {@link Csv#read(String, String)} method, creates an array of {@code Problem} objects
- * from the read data, and handles any exceptions that may occur during the process.
- * 
- * @param problemFile The CSV file containing problem data to be processed.
- */
+
+    /**
+     * Processes a CSV file containing problem data. Reads the CSV file using the
+     * {@link Csv#read(String, String)} method, creates an array of {@code Problem}
+     * objects
+     * from the read data, and handles any exceptions that may occur during the
+     * process.
+     * 
+     * @param problemFile The CSV file containing problem data to be processed.
+     */
     public void processProblemFile(File problemFile) {
         try {
             problems = Csv.read(problemFile.getAbsolutePath(), Vars.DataClasses.Problem);
@@ -594,13 +634,17 @@ public class MainSceneController {
         }
 
     }
-/**
- * Processes a CSV file containing department data. Reads the CSV file using the
- * {@link Csv#read(String, String)} method, creates an array of {@code Department} objects
- * from the read data, and handles any exceptions that may occur during the process.
- * 
- * @param departmentFile The CSV file containing department data to be processed.
- */
+
+    /**
+     * Processes a CSV file containing department data. Reads the CSV file using the
+     * {@link Csv#read(String, String)} method, creates an array of
+     * {@code Department} objects
+     * from the read data, and handles any exceptions that may occur during the
+     * process.
+     * 
+     * @param departmentFile The CSV file containing department data to be
+     *                       processed.
+     */
     public void processDepartmentFile(File departmentFile) {
         try {
             departments = Csv.read(departmentFile.getAbsolutePath(), Vars.DataClasses.Department);
@@ -713,7 +757,6 @@ public class MainSceneController {
             Rectangle rectangle = new Rectangle(30, 30, Color.TRANSPARENT);
             stackPane.getChildren().addAll(imageView, rectangle);
 
-
             addTooltip(rectangle, ((Customer) customers[i]).getStringInfo());
 
             flowPane.getChildren().add(stackPane);
@@ -729,7 +772,6 @@ public class MainSceneController {
             AgentVbox.getChildren().clear();
         }
 
-
         agents = new Agent[number];
 
         int i = 0;
@@ -743,19 +785,66 @@ public class MainSceneController {
             StackPane stackPane = new StackPane();
 
             Rectangle rectangle = new Rectangle(20, 20, Color.TRANSPARENT);
- 
+
             stackPane.getChildren().addAll(imageView, rectangle);
-           
-       
+
             addTooltip(rectangle, ((Agent) agents[i]).getStringInfo());
 
             AgentVbox.getChildren().add(stackPane);
 
             i = i + 1;
-    
+
         }
-       
+
         System.out.println("Finished agents");
+    }
+
+    private int lastMaxIndex = -1;
+
+    public void highlightMax() {
+        Customer maxCustomer = Customer.getAllMaxWaitTime();
+        int maxCustomerIndex = 0;
+        for (int i = 0; i < customers.length; i++) {
+            if (maxCustomer == customers[i]) {
+                maxCustomerIndex = i;
+                break;
+            }
+        }
+        if (maxCustomerIndex == lastMaxIndex) {
+            return;
+        }
+        if (maxCustomerIndex < customers.length) {
+            lastMaxIndex = maxCustomerIndex;
+            resetHighlightRows();
+            customerTable.refresh();
+            highlightRow(maxCustomerIndex - 1);
+            customerTable.refresh();
+        }
+    }
+
+    private void highlightRow(int rowIndex) {
+            customerTable.setRowFactory(tv -> new TableRow<>() {
+            @Override
+            protected void updateItem(Customer item, boolean empty) {
+                super.updateItem(item, empty);
+                if (getIndex() == rowIndex) {
+                    setStyle("-fx-background-color: red;");
+                } else {
+                    setStyle("");
+                }
+            }
+        });
+    }
+
+    // Function to reset changes and remove background color
+    private void resetHighlightRows() {
+        customerTable.setRowFactory(tv -> new TableRow<>() {
+            @Override
+            protected void updateItem(Customer item, boolean empty) {
+                super.updateItem(item, empty);
+                    setStyle("");
+            }
+        });
     }
 
     public void highlightCustomers() {
@@ -807,19 +896,25 @@ public class MainSceneController {
         alert.showAndWait();
     }
 
-    private void loadCustomersTable(){
+    private void loadCustomersTable() {
         customerTable.getItems().addAll(customers);
     }
 
     private void updateCustomersTable() {
-    // Load numbers into the second column when the button is clicked
-    
-    AWTcolumn.setCellValueFactory(cellData -> {
-        double someDoubleValue = cellData.getValue().getAWT();
-        return new SimpleDoubleProperty(someDoubleValue);
-    });
-    // Update the table to reflect the changes
-    customerTable.refresh();
+        // Load numbers into the second column when the button is clicked
+
+        AWTcolumn.setCellValueFactory(cellData -> {
+            double someDoubleValue = cellData.getValue().getAverageWaiTime();
+            return new SimpleDoubleProperty(someDoubleValue);
+        });
+
+        MAXTcolumn.setCellValueFactory(cellData -> {
+            double someDoubleValue = cellData.getValue().getMaxWaitTime();
+            return new SimpleDoubleProperty(someDoubleValue);
+        });
+
+        // Update the table to reflect the changes
+        customerTable.refresh();
     }
 
     // this method is called when the menubar item "Save as" is clicked
@@ -937,23 +1032,21 @@ public class MainSceneController {
     void playbtnClicked(ActionEvent event) {
         timerTimeline.play();
     }
-    
 
-
-    public void connectingCall(Call call){
+    public void connectingCall(Call call) {
         Label label = new Label("Connecting...");
         Platform.runLater(() -> call.hbox.getChildren().add(label));
         PauseTransition delay = new PauseTransition(Duration.millis(600));
         delay.setOnFinished(event -> {
             // Code to execute after the delay
             Platform.runLater(() -> call.hbox.getChildren().remove(label));
-            this.activateCall(call.hbox,call.getReceiver(),call);
+            this.activateCall(call.hbox, call.getReceiver(), call);
             call.connectCall(CallCenter.getCallCentre());
         });
         delay.play();
-    }  
+    }
 
-    public void activateCall(HBox hBox, Agent agent, Call call){
+    public void activateCall(HBox hBox, Agent agent, Call call) {
         ImageView callIcon = new ImageView(callImage);
         ImageView callImageViews = new ImageView(agentImage);
         CheckBox checkBox = call.getCheckBox();
@@ -962,13 +1055,13 @@ public class MainSceneController {
         callIcon.setFitHeight(15);
         callImageViews.setFitWidth(30);
         callImageViews.setFitHeight(30);
-        Platform.runLater(()-> {            
+        Platform.runLater(() -> {
             Rectangle rectangle = new Rectangle(20, 20, Color.TRANSPARENT);
             StackPane stackPane = new StackPane();
             stackPane.getChildren().addAll(callImageViews, rectangle);
-            hBox.getChildren().addAll(checkBox,callIcon,stackPane,callNumber);
-            addTooltip(rectangle, agent.getStringInfo());}
-            );
+            hBox.getChildren().addAll(checkBox, callIcon, stackPane, callNumber);
+            addTooltip(rectangle, agent.getStringInfo());
+        });
     }
 
     public Node[] createHbox() {
@@ -985,7 +1078,7 @@ public class MainSceneController {
         HBox.setHgrow(checkBox, Priority.ALWAYS);
         checkBox.setAlignment(Pos.BOTTOM_RIGHT);
         checkBox.setOnAction(e -> handleCheckboxAction("Call" + thisCallCount, checkBox));
-        Node[] pointers = { hBox, checkBox, callnumberr};
+        Node[] pointers = { hBox, checkBox, callnumberr };
         return pointers;
     }
 
@@ -1078,10 +1171,9 @@ public class MainSceneController {
 
     @FXML
     void phaseChecked(ActionEvent event) {
-        if(phase2MenItem.isSelected()){
+        if (phase2MenItem.isSelected()) {
             Vars.projectPhase = true;
-        }
-        else{
+        } else {
             Vars.projectPhase = false;
         }
     }
@@ -1111,6 +1203,7 @@ public class MainSceneController {
                     callCenter.step();
                     Timekeeper.step();
                     highlightCustomers();
+                    highlightMax();
                     updateCustomersTable();
 
                     try {

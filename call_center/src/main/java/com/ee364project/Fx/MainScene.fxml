@@ -75,6 +75,7 @@
         <columns>
           <TableColumn fx:id="customerColumn" prefWidth="102.0" text="Customer" />
           <TableColumn fx:id="AWTcolumn" prefWidth="132.0" text="Average Wait Time" />
+          <TableColumn fx:id="MAXTcolumn" prefWidth="132.0" text="Max Wait Time" />
         </columns>
       </TableView>
    </children>

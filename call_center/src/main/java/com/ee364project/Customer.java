@@ -108,7 +108,7 @@ public class Customer extends Person implements CanCall {
         return HEADERS;
     }
 
-    public double getAWT(){
+    public long getAverageWaiTime(){
         return this.callInfo.getAverageWaitTime(); 
     }
 
@@ -134,15 +134,21 @@ public class Customer extends Person implements CanCall {
         int bestIndex = 0;
         long bestMax = 0;
         long currentMax = 0;
-        for (Customer customer : customers) {
-            currentMax = customer.getMaxWaitTime();
+        for (int i = 0; i < customers.length; i++) {
+            currentMax = customers[i].getMaxWaitTime();
             currnetIndex++;
             if (currentMax > bestMax) {
                 bestMax = currentMax;
                 bestIndex = currnetIndex;
             }
         }
-        return customers[bestIndex];
+
+        if (bestIndex < customers.length) {
+            return customers[bestIndex];
+    
+        } else {
+            return customers[0];
+        }
     }
 
     public static Customer getAllMinWaitTime() {
@@ -151,15 +157,18 @@ public class Customer extends Person implements CanCall {
         int bestIndex = 0;
         long bestMin = 0;
         long currentMin = 0;
-        for (Customer customer : customers) {
-            currentMin = customer.getMinWaitTime();
-            currnetIndex++;
+        for (int i = 0; i < customers.length; i++) {
+            currentMin = customers[i].getMinWaitTime();
             if (currentMin < bestMin) {
                 bestMin = currentMin;
                 bestIndex = currnetIndex;
             }
         }
-        return customers[bestIndex];
+        if (bestIndex < customers.length) {
+            return customers[bestIndex];
+        } else {
+            return customers[0];
+        }
     }
 
 
@@ -472,11 +481,13 @@ class CallInfo {
         long lastCallWaitTime = this.lastCall.getWaitTime();
      
         if (lastCallWaitTime > this.maxWaitTime) {
-            this.maxWaitTime = this.lastCall.getWaitTime();
+            this.maxWaitTime = lastCallWaitTime;
         }
 
         if (lastCallWaitTime < this.minWaitTime) {
-            this.minWaitTime = lastCallWaitTime;
+            if (lastCallWaitTime != 0) {
+                this.minWaitTime = lastCallWaitTime;
+            }
         }
         this.tallyAverageWaitTime = (this.tallyAverageWaitTime * this.tallyCallCount + lastCallWaitTime)
                 / (this.tallyCallCount + 1);
