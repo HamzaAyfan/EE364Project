@@ -29,7 +29,7 @@ public class MainFx extends Application {
             URL fxml = getClass().getResource("MainScene.fxml");
             FXMLLoader loader = new FXMLLoader(fxml);
             Parent root = loader.load();
-            Scene scene = new Scene(root, 600, 550);
+            Scene scene = new Scene(root);
 
             primaryStage.setTitle("Call Centre Simulation");
             primaryStage.setScene(scene);
