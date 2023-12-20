@@ -169,7 +169,7 @@ public class Problem implements HasData {
     @Override
     public Problem shuffle() {
         allProblems.remove(this);
-        this.identifier = Utilities.faker.azure().appServiceEnvironment();
+        this.identifier = Utilities.faker.azure().appServiceEnvironment();      // chain: external.
         this.department = Department.getRandomDepartment();
         allProblems.add(this);
         this.solutions = Solution.removeEmptySolutions(this.solutions);

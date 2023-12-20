@@ -2,6 +2,8 @@ package com.ee364project;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.ee364project.Call.CallState;
 import com.ee364project.exceptions.InvalidPhoneNumberException;
@@ -17,6 +19,7 @@ public class Customer extends Person implements CanCall {
     }
 
     public long getMaxWaitTime() {
+        CallInfo callInfo = this.callInfo;
         return this.callInfo.maxWaitTime;
     }
 
@@ -215,7 +218,7 @@ public class Customer extends Person implements CanCall {
 
     @Override
     public Customer shuffle() {
-        this.setName(Utilities.faker.name().firstName());
+        this.setName(Utilities.faker.name().firstName());   // chain: external.
         this.phoneNumber = "05" + Utilities.faker.number().digits(8);
         this.behaviour = CustomerBehaviour.getRandomCustomerBehaviour();
         return this;
@@ -249,15 +252,17 @@ public class Customer extends Person implements CanCall {
         }
 
         if (this.problemState.isGotProblem()) {
-            if (this.behaviour.getFaqsChance().check() && Vars.projectPhase) {
-                if (this.behaviour.getFaqsChance().check()) {
+            Ratio faqsChance = this.behaviour.getFaqsChance();
+            if (faqsChance.check() && Vars.projectPhase) {
+                if (faqsChance.check()) {
                     this.state = CustomerState.CHECK_FAQS;
-                    this.faqsSteps = Utilities.random.nextInt(50, 200);
+                    this.faqsSteps = Utilities.random.nextInt(50, 200);     // chain: java
                     
                 }
             }
 
-            if (this.behaviour.getCallChance().check()) {
+            Ratio callChanceRatio = this.behaviour.getCallChance();
+            if (callChanceRatio.check()) {
                 makeCall();
                 
                 return;
@@ -266,7 +271,8 @@ public class Customer extends Person implements CanCall {
                 return;
             }
         } else {
-            if (this.behaviour.getProblemAffinity().check()) {
+            Ratio problemAffinityRatio = this.behaviour.getProblemAffinity();
+            if (problemAffinityRatio.check()) {
                 this.problemState.acquireRandomProblem();
                 return;
             } else {
@@ -288,7 +294,8 @@ public class Customer extends Person implements CanCall {
             defaultRoutine();
             return;
         }
-        switch (this.callInfo.getLastCall().getState()) {
+        Call callInfo = this.callInfo.getLastCall();
+        switch (callInfo.getState()) {
             case WAITING:
                 return;
 
@@ -317,8 +324,9 @@ class CustomerBehaviour {
     }
 
     public static CustomerBehaviour getRandomCustomerBehaviour() {
+        Set<String> keys = customerBehaviourByName.keySet();
         return customerBehaviourByName.get(
-                customerBehaviourByName.keySet().toArray()[Utilities.random.nextInt(customerBehaviourByName.size())]);
+                keys.toArray()[Utilities.random.nextInt(customerBehaviourByName.size())]);  // java
     }
 
     public static final class PreMade {
@@ -412,7 +420,7 @@ class CustomerBehaviour {
 
     public CustomerBehaviour() {
         this(
-                Utilities.faker.brand().toString(),
+                Utilities.faker.brand().toString(),     // chain: external.
                 Ratio.getRandRatio(),
                 Utilities.random.nextLong(),
                 Ratio.getRandRatio(),

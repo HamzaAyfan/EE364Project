@@ -80,7 +80,9 @@ public class Call implements Simulated {
     }
 
     public LinkedList<Solution> makeLinkedList(Customer caller) {
-        ArrayList<Solution> HSsolutions = caller.getProblemInfo().getLastProblem().solutions;
+        ProblemInfo problemInfo = caller.getProblemInfo();
+        Problem lastProblem = problemInfo.getLastProblem();
+        ArrayList<Solution> HSsolutions = lastProblem.solutions;
         LinkedList<Solution> LLsolutions = new LinkedList<>();
         for (Solution soultion : HSsolutions) {
             try {
@@ -99,7 +101,9 @@ public class Call implements Simulated {
     public void connectCall(CallCenter callCenter) {
         System.out.println("Call CONNECTED: ");
         Call.callQueue.remove(this);
-        receiver.assignLevel(caller.getProblemInfo().getLastProblem());
+        ProblemInfo problemInfo = caller.getProblemInfo();
+        Problem lastProblem = problemInfo.getLastProblem();
+        receiver.assignLevel(lastProblem);
         this.callCenter = callCenter;
         LinkedList<Solution> solutionsCopy = this.makeLinkedList(caller);
         MockDialoge dialoge = new MockDialoge(caller, receiver, this, solutionsCopy);
@@ -124,8 +128,9 @@ public class Call implements Simulated {
         Platform.runLater(() -> {        
                     vBox.getChildren().remove(this.hbox);
                 });
-        CheckBoxAndCall.remove(this.checkBox);            
-        this.caller.getProblemInfo().solve();
+        CheckBoxAndCall.remove(this.checkBox);
+        ProblemInfo problemInfo = this.caller.getProblemInfo();
+        problemInfo.solve();            
         this.caller.setState(CustomerState.IDLE);
         this.endTime = Timekeeper.getTime();
     }
@@ -162,7 +167,7 @@ public class Call implements Simulated {
         hbox = (HBox) nodes[0];
         checkBox = (CheckBox) nodes[1];
         callNumber = (Text) nodes[2];
-        int randomIndex = (int) (Math.random() * (vBox.getChildren().size() + 1));
+        int randomIndex = (int) (Math.random() * (vBox.getChildren().size() + 1));  // chain: java
         Platform.runLater(() -> {
             vBox.getChildren().add(randomIndex,hbox);
         });

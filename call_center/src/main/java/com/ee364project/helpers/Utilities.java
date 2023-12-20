@@ -32,7 +32,7 @@ public class Utilities {
         try {
             for (int i = 0; i < count; i++) {
                 Class<?> dataClass = Class.forName(Vars.projectPrefix + cls);
-                object = (HasData) dataClass.getDeclaredConstructor().newInstance();
+                object = (HasData) dataClass.getDeclaredConstructor().newInstance();    // chain: java
                 object.shuffle();
                 objects.add(object);
             }
