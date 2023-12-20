@@ -61,7 +61,9 @@ public class Ratio {
      */
     public Ratio add(Ratio other) {
         double val = this.value + other.value;
-        return new Ratio(validate(val));
+        double validation = validate(val);
+        Ratio validatedRatio = new Ratio(validation);
+        return validatedRatio;
     }
 
     /**
@@ -71,7 +73,8 @@ public class Ratio {
      * @return A new Ratio object representing the sum.
      */
     public Ratio add(double other) {
-        return add(new Ratio(other));
+        Ratio ratio = new Ratio(other);
+        return add(ratio);
     }
 
     /**
@@ -82,7 +85,8 @@ public class Ratio {
      */
     public Ratio sub(Ratio other) {
         double val = this.value - other.value;
-        return new Ratio(validate(val));
+        double  validate = validate(val);
+        return new Ratio(validate);
     }
 
     /**
@@ -92,7 +96,8 @@ public class Ratio {
      * @return A new Ratio object representing the result of the subtraction.
      */
     public Ratio sub(double other) {
-        return sub(new Ratio(other));
+        Ratio ratio = new Ratio(other);
+        return sub(ratio);
     }
 
     /**
@@ -104,7 +109,8 @@ public class Ratio {
      */
     public Ratio rsub(Ratio other) {
         double val = other.value - this.value;
-        return new Ratio(validate(val));
+        double validate = validate(val);
+        return new Ratio(validate);
     }
 
     /**
@@ -115,7 +121,8 @@ public class Ratio {
      *         subtraction.
      */
     public Ratio rsub(double other) {
-        return sub(new Ratio(other));
+        Ratio ratio = new Ratio(other);
+        return sub(ratio);
     }
 
     /**
@@ -126,7 +133,8 @@ public class Ratio {
      */
     public Ratio mul(Ratio other) {
         double val = this.value * other.value;
-        return new Ratio(validate(val));
+        double validate = validate(val);
+        return new Ratio(validate);
     }
 
     /**
@@ -136,7 +144,8 @@ public class Ratio {
      * @return A new Ratio object representing the result of the multiplication.
      */
     public Ratio mul(double other) {
-        return mul(new Ratio(other));
+        Ratio ratio = new Ratio(other);
+        return mul(ratio);
     }
 
     /**
@@ -181,7 +190,8 @@ public class Ratio {
      *         -1 if the other ratio is greater.
      */
     public int compare(double other, double tol) {
-        return compare(new Ratio(other), tol);
+        Ratio ratio = new Ratio(other);
+        return compare(ratio, tol);
     }
 
     /**
@@ -193,7 +203,8 @@ public class Ratio {
      *         -1 if the other ratio is greater.
      */
     public int compare(double other) {
-        return compare(new Ratio(other), DEFAULT_TOL);
+        Ratio ratio = new Ratio(other);
+        return compare(ratio, DEFAULT_TOL);
     }
 
     /**
@@ -220,7 +231,8 @@ public class Ratio {
      * @return A new Ratio object with a random value.
      */
     public static Ratio getRandRatio() {
-        return new Ratio(Utilities.random.nextDouble());
+        double RandomDouble = Utilities.random.nextDouble();
+        return new Ratio(RandomDouble);
     }
 
     /**
@@ -239,7 +251,8 @@ public class Ratio {
      * @return true if the random value is greater, false otherwise.
      */
     public boolean check() {
-        return (this.compare(Utilities.random.nextDouble()) > 0);
+        double RandomDouble = Utilities.random.nextDouble();
+        return (this.compare(RandomDouble) > 0);
     }
 
     /**

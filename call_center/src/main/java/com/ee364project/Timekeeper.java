@@ -9,14 +9,24 @@ import javafx.beans.property.SimpleIntegerProperty;
 
 
 /**
- * This class is used to keep track of time. It provides methods for advancing time, getting the current time, and
- * calculating adjusted chances based on the current time.
+ The {@code TimeManager} class manages time-related properties for simulation.
+ * It includes a starting point, a step size, a time property, and a delay in milliseconds.
+ *
+ * <p><b>Fields:</b>
+ * <ul>
+ *   <li>{@code startPoint}: The starting point of the simulation time, set to January 1, 2001, 00:00:00.</li>
+ *   <li>{@code step}: The step size representing the duration of each time step, initially set to 1 second.</li>
+ *   <li>{@code time}: A {@code SimpleIntegerProperty} representing the current simulated time in seconds.</li>
+ *   <li>{@code delayMs}: The delay in milliseconds used for controlling the simulation speed.</li>
+ * </ul>
+ * 
  * 
  * @author Hamza Ayfan
+ *  
  */
 public class Timekeeper {
     private static LocalDateTime startPoint = LocalDateTime.of(2001, 1, 1, 0, 0, 0);
-    private static int step = 1; // 60 * 60 * 24;
+    private static int step = 1; 
     private static SimpleIntegerProperty time = new SimpleIntegerProperty(0);
     private static long delayMs = 100;
    /**
@@ -55,7 +65,8 @@ public class Timekeeper {
      * Advances the time by one step.
      */
     public static void step() {
-        time.set(time.get() + step); // this is the way to increment the property similar to: time += step;
+        int timeReceived = time.get();
+        time.set(timeReceived + step); // this is the way to increment the property similar to: time += step;
         // System.out.println("Time now: " + getProperTime());
     }
 
@@ -102,7 +113,8 @@ public class Timekeeper {
      * Returns the current time, adjusted for the start point.
      */
     public static LocalDateTime getProperTime() {
-        return startPoint.plus(getTime(), ChronoUnit.SECONDS);
+        int time =getTime();
+        return startPoint.plus(time, ChronoUnit.SECONDS);
     }
 
         /**
@@ -114,7 +126,9 @@ public class Timekeeper {
      * @return the adjusted chance
      */
     public static Ratio adjustedChance(Ratio originalChance, long originalPeriod, long newPeriod) {
-        return new Ratio( 1 - Math.pow(1 - originalChance.getValue(), (double) newPeriod / (double) originalPeriod) );
+        double power = (double) newPeriod / (double) originalPeriod;
+        double chance = 1 - originalChance.getValue();
+        return new Ratio( 1 - Math.pow(chance, power ));
     }
 
         /**

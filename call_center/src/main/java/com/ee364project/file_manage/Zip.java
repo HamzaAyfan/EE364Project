@@ -4,41 +4,66 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-// import java.util.zip.ZipOutputStream;
-
+import com.ee364project.Fx.MainSceneController;
+/**
+ * The {@code Zip} class provides utility methods for extracting and compressing ZIP files.
+ * It includes methods to extract files from a ZIP archive and compress files into a ZIP archive.
+ * The class also supports compressing and decompressing CSV files related to a specific application.
+ *
+ * {@code csvFileNames}: an array of CSV file names to be handled by the class.
+ */
 public class Zip {
 
     private static String[] csvFileNames = {"Customer.csv", "Agent.csv", "Problem.csv", "Department.csv"};
-
-    public static void extractZip(File zipFile, String outputDirectory) throws IOException {
-        try (ZipInputStream zipInputStream = new ZipInputStream(Files.newInputStream(zipFile.toPath()))) {
+/**
+ * Extracts files from a ZIP archive to the specified output directory.
+ *
+ * @param zipFile         the ZIP file to extract.
+ * @param outputDirectory the directory where the files will be extracted.
+ */
+    public static void extractZip(File zipFile, String outputDirectory) {
+        Path zipPath = zipFile.toPath();
+        
+        try (
+            InputStream file = Files.newInputStream(zipPath);
+            ZipInputStream zipInputStream = new ZipInputStream(file);) {
             ZipEntry entry;
             while ((entry = zipInputStream.getNextEntry()) != null) {
-                Path outputPath = Paths.get(outputDirectory, entry.getName());
+                String name = entry.getName();
+                Path outputPath = Paths.get(outputDirectory, name);
 
                 // Create directories if they don't exist
-                Files.createDirectories(outputPath.getParent());
+                Path outputPathParent = outputPath.getParent();
+                Files.createDirectories(outputPathParent);
 
                 // Extract the entry
                 Files.copy(zipInputStream, outputPath, StandardCopyOption.REPLACE_EXISTING);
             }
+        }catch (IOException e){
+            MainSceneController.showErrorAlert("Invalid File", "The file does not exist");
+            return;
         }
     }
-
-    public static void compressToZip(String outputZip, String csvFilesPlace){
-
-        
+/**
+ * Compresses CSV files into a ZIP archive.
+ *
+ * @param outputZip       the path where the ZIP file will be created.
+ * @param csvFilesPlace   the directory containing the CSV files to be compressed.
+ */
+    public static void compressToZip(String outputZip, String csvFilesPlace){        
         String tempDirectory = "temp";
 
         try {
             // Create the temporary directory if it doesn't exist
-            Files.createDirectories(Paths.get(tempDirectory));
+            Path tempDir = Paths.get(tempDirectory);
+            Files.createDirectories(tempDir);
 
             // Move the CSV files to the temporary directory
             for (String fileName : csvFileNames) {
@@ -52,18 +77,23 @@ public class Zip {
 
             // Delete the original CSV files
             for (String fileName : csvFileNames) {
-                Files.deleteIfExists(Paths.get(tempDirectory, fileName));
+                Path fileToDel = Paths.get(tempDirectory, fileName);
+                Files.deleteIfExists(fileToDel);
             }
-
-            System.out.println("CSV files compressed to " + outputZip + " and original files deleted.");
-
             deleteExtracted(tempDirectory);
         } catch (IOException e) {
-            e.printStackTrace();
+            MainSceneController.showErrorAlert("Compression Failed", "This file can't be compressed");
+            return;
         }
 
     }
-
+/**
+ * Compresses the contents of a directory into a ZIP file.
+ *
+ * @param sourceDirectory the path to the directory whose contents will be compressed.
+ * @param zipFileName     the path where the ZIP file will be created.
+ * @throws IOException if an I/O error occurs during the compression process.
+ */
     private static void compressZip(String sourceDirectory, String zipFileName) throws IOException {
         try (FileOutputStream fos = new FileOutputStream(zipFileName);
              ZipOutputStream zipOut = new ZipOutputStream(fos)) {
@@ -90,7 +120,12 @@ public class Zip {
         }
     }
 
-    // delete the extracted directory after exctracting the zip file
+/**
+ * Deletes the extracted directory and its contents.
+ *
+ * @param extractedDirectory the path to the directory to be deleted.
+ * @throws IOException if an I/O error occurs during the deletion process.
+ */
     public static void deleteExtracted(String extractedDirectory) throws IOException{
         try {
 
@@ -98,7 +133,8 @@ public class Zip {
                 Files.deleteIfExists(Paths.get(extractedDirectory, fileName));
             }
             // Delete the directory if it exists and is empty
-            Files.walkFileTree(Paths.get(extractedDirectory), new SimpleFileVisitor<Path>() {
+            Path path = Paths.get(extractedDirectory);
+            Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
                 @Override
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                     Files.delete(file);
@@ -111,10 +147,9 @@ public class Zip {
                     return FileVisitResult.CONTINUE;
                 }
             });
-
-            System.out.println("Directory deleted successfully.");
         } catch (IOException e) {
-            e.printStackTrace();
+            MainSceneController.showErrorAlert("Deletion Failed", "Unable to delete");
+            return;
         }
     }
 }

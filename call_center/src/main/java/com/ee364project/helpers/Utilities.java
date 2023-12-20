@@ -5,11 +5,9 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Random;
-
 import com.ee364project.HasData;
-import com.ee364project.Timekeeper;
-
 import net.datafaker.Faker;
+import net.datafaker.providers.base.Job;
 
 /**
  * This class provides various utility functions for the project.
@@ -57,8 +55,8 @@ public class Utilities {
         for (int i = 0; i < attrs.length; i++) {
             accumlate += "" + attrs[i] + ", ";
         }
-
-        accumlate = accumlate.substring(0, accumlate.length() - 2);
+        int length = accumlate.length();
+        accumlate = accumlate.substring(0, length - 2);
         return cls + "(" + accumlate + ")";
     }
 
@@ -98,9 +96,11 @@ public class Utilities {
     public static LocalDateTime getRandomLocalDateTime(int n) {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime startDate = now.minus(n, ChronoUnit.MONTHS);
-        long secondsBetween = ChronoUnit.SECONDS.between(startDate, now);
+        ChronoUnit seconds = ChronoUnit.SECONDS;
+        long secondsBetween = seconds.between(startDate, now);
 
-        return startDate.plus((long) (secondsBetween * random.nextDouble()), ChronoUnit.SECONDS);
+        long duration = (long) (secondsBetween * random.nextDouble());
+        return startDate.plus(duration, ChronoUnit.SECONDS);
     }
 
     /**
@@ -119,7 +119,9 @@ public class Utilities {
      * @return a random object from the specified array
      */
     public static Object getRandomFromArray(Object[] objects) {
-        return objects[random.nextInt(objects.length)];
+        int length = objects.length;
+        int randomInteger = random.nextInt(length);
+        return objects[randomInteger];
     }
 
     /**
@@ -127,20 +129,9 @@ public class Utilities {
      * 
      */
     public static Object getRandomFromArray(ArrayList<?> objects) {
-        return objects.get(random.nextInt(objects.size()));
-    }
-
-    /**
-     * This method logs an event to the console.
-     * 
-     * @param subject the subject of the event
-     * @param verb    the verb of the event
-     * @param object  the object of the event
-     * @param msg     the message of the event
-     */
-    public static void log(Object subject, String verb, Object object, String msg) {
-        // System.out.println("\n\n" + Timekeeper.getProperTime() + ": " + subject + " "
-        // + verb + " " + object + " | " + msg);
+        int length = objects.size();
+        int randomInteger = random.nextInt(length);
+        return objects.get(randomInteger);
     }
 
     /**
@@ -158,11 +149,12 @@ public class Utilities {
         int x;
         String inStr;
         String[] str = new String[len];
+        Job fakerCategory = faker.job();
         for (int i = 0; i < len; i++) {
             x = random.nextInt(19);
             inStr = "";
             for (int j = 0; j < (1 + x); j++) {
-                inStr += faker.job().seniority() + " ";
+                inStr += fakerCategory.seniority() + " ";
             }
             str[i] = inStr.strip();
         }
@@ -177,7 +169,8 @@ public class Utilities {
      * @return a random array of strings of the specified length
      */
     public static String[] getRandomStringArray() {
-        return getRandomStringArray(random.nextInt(10));
+        int randomInteger = random.nextInt(10);
+        return getRandomStringArray(randomInteger);
     }
 
     /**
@@ -199,7 +192,6 @@ public class Utilities {
         try {
             return result;
         } catch (Exception e) {
-            e.printStackTrace();
             return result;
         }
     }

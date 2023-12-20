@@ -8,9 +8,9 @@ import javafx.application.Platform;
 
 import javafx.scene.Node;
 import javafx.scene.control.CheckBox;
-import javafx.scene.image.Image;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 
 import java.util.concurrent.Phaser;
 
@@ -59,6 +59,9 @@ public class Call implements Simulated {
     private CallCenter callCenter;
     public static boolean newThreadAdded;
     Timeline callTime = new Timeline();
+    public Text callNumber;
+    // Text callNumber;
+
 
 
     
@@ -77,7 +80,7 @@ public class Call implements Simulated {
     }
 
     public LinkedList<Solution> makeLinkedList(Customer caller) {
-        ArrayList<Solution> HSsolutions = caller.problemState.getLastProblem().solutions;
+        ArrayList<Solution> HSsolutions = caller.getProblemInfo().getLastProblem().solutions;
         LinkedList<Solution> LLsolutions = new LinkedList<>();
         for (Solution soultion : HSsolutions) {
             try {
@@ -96,7 +99,7 @@ public class Call implements Simulated {
     public void connectCall(CallCenter callCenter) {
         System.out.println("Call CONNECTED: ");
         Call.callQueue.remove(this);
-        receiver.assignLevel(caller.problemState.getLastProblem());
+        receiver.assignLevel(caller.getProblemInfo().getLastProblem());
         this.callCenter = callCenter;
         LinkedList<Solution> solutionsCopy = this.makeLinkedList(caller);
         MockDialoge dialoge = new MockDialoge(caller, receiver, this, solutionsCopy);
@@ -104,14 +107,6 @@ public class Call implements Simulated {
         this.answerTime = Timekeeper.getTime();
         this.endTime = this.answerTime + totalTime;
         activeCalls.add(this);
-        MainSceneController msc = new MainSceneController();
-        Node[] nodes = msc.createHbox();
-        hbox = (HBox) nodes[0];
-        checkBox = (CheckBox) nodes[1];
-        Platform.runLater(() -> {
-            vBox.getChildren().add(hbox);
-        });
-        CheckBoxAndCall.put(checkBox, this);
     }
 
     public void addLine(String sentenceString, Person person, int length){
@@ -129,10 +124,8 @@ public class Call implements Simulated {
         Platform.runLater(() -> {        
                     vBox.getChildren().remove(this.hbox);
                 });
-        Utilities.log(this, "ended", "", "");
-        // call.nullify();
         CheckBoxAndCall.remove(this.checkBox);            
-        this.caller.problemState.solve();
+        this.caller.getProblemInfo().solve();
         this.caller.setState(CustomerState.IDLE);
         this.endTime = Timekeeper.getTime();
     }
@@ -140,26 +133,17 @@ public class Call implements Simulated {
     public static void terminateCalls() {
         for (Call call : Call.callsToRemove) {
             call.terminateCall();
+            
         }
         System.gc();
         callsToRemove.clear();
     }
 
-
-    // this.state = Call.CallState.ENDED;
-
-    private void nullify() {
-        sentences = null;
-        lengthsSaved = null;
-        speaker = null;
-    }
-
-    private static void applyExpiry() { // run after every step.
+    private static void applyExpiry() { 
         Call call;
         while (callQueue.size() > 0 && (Timekeeper.getTime() - callQueue.peek().startTime >= MAXWAITTIME)) {
             call = callQueue.poll();
             call.state = CallState.EXIRED;
-            Utilities.log(call, "expired", "", "");
         }
     }
 
@@ -173,7 +157,16 @@ public class Call implements Simulated {
         this.receiver = null;
         this.state = CallState.WAITING;
         callQueue.add(this);
-        
+        MainSceneController msc = new MainSceneController();
+        Node[] nodes = msc.createHbox();
+        hbox = (HBox) nodes[0];
+        checkBox = (CheckBox) nodes[1];
+        callNumber = (Text) nodes[2];
+        int randomIndex = (int) (Math.random() * (vBox.getChildren().size() + 1));
+        Platform.runLater(() -> {
+            vBox.getChildren().add(randomIndex,hbox);
+        });
+        CheckBoxAndCall.put(checkBox, this);
     }
 
 
@@ -224,9 +217,7 @@ public class Call implements Simulated {
                 this.state = Call.CallState.ENDED;
                 callsToRemove.add(this);
                 System.out.println("Adding to removed list: ");
-            } else {
-                Utilities.log(this, "continues", activeCalls, (this.endTime - Timekeeper.getTime()) + " remaining...");
-            }
+            } 
         }
         applyExpiry();
     }
@@ -305,9 +296,9 @@ class MockDialoge {
     }
 
     private void getSteps(Solution selectedSolution) {
-        for (int j = 0; j < selectedSolution.agentResponses.length; j++) {
-            currentCall.addLine(selectedSolution.agentResponses[j], receiver, MockDialoge.getlength(selectedSolution.agentResponses[j]));
-            currentCall.addLine(selectedSolution.customerResponses[j], caller, MockDialoge.getlength(selectedSolution.agentResponses[j]));
+        for (int j = 0; j < selectedSolution.getAgentResponse().length; j++) {
+            currentCall.addLine(selectedSolution.getAgentResponse()[j], receiver, MockDialoge.getlength(selectedSolution.getAgentResponse()[j]));
+            currentCall.addLine(selectedSolution.getCustomerResponse()[j], caller, MockDialoge.getlength(selectedSolution.getCustomerResponse()[j]));
         }
     }
 

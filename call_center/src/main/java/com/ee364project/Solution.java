@@ -9,23 +9,73 @@ import com.ee364project.helpers.Vars;
 import java.util.Random;
 
 /**
- * A class that represents a Solution to a Problem in the simulation.
+ * The {@code ConversationData} class encapsulates data related to conversations
+ * between customers and agents in a simulated environment. It includes randomization
+ * functionality and arrays for customer and agent dialogue intros and responses.
+ *
+ * <p><b>Fields:</b>
+ * <ul>
+ *   <li>{@code random}: A {@code Random} instance used for generating random values.</li>
+ *   <li>{@code customerIntro}: An array containing possible introduction phrases from customers.</li>
+ *   <li>{@code customerResponses}: An array containing possible responses from customers.</li>
+ *   <li>{@code agentIntro}: An array containing possible introduction phrases from agents.</li>
+ *   <li>{@code agentResponses}: An array containing possible responses from agents.</li>
+ * </ul>
  * 
  * @author Team 2
  */
 public class Solution implements Cloneable {
     private static Random random = new Random();
-    // public static HashMap<Problem, ArrayList<Solution>> allSolutions = new
-    // HashMap<>();
-    public String[] customerIntro;
-    public String[] customerResponses;
-    public String[] agentIntro;
-    public String[] agentResponses;
+    private String[] customerIntro;
+    private String[] customerResponses;
+    private String[] agentIntro;
+    private String[] agentResponses;
 
+
+/**
+ * Creates and returns a shallow copy of this solution. The cloning is performed
+ * using the {@code clone} method of the superclass {@code Object}.
+ * 
+ * @return a shallow copy of this solution.
+ * @throws CloneNotSupportedException if cloning is not supported for this object.
+ */
     @Override
     public Object clone() throws CloneNotSupportedException {
         return super.clone();
     }
+/**
+ * Gets the array of customer introduction strings associated with this solution.
+ *
+ * @return the array of customer introduction strings.
+ */
+    public String[] getCustomerIntro(){
+        return customerIntro;
+    }
+/**
+ * Gets the array of customer response strings associated with this solution.
+ *
+ * @return the array of customer response strings.
+ */
+    public String[] getCustomerResponse(){
+        return customerResponses;
+    }
+/**
+ * Gets the array of agent introduction strings associated with this solution.
+ *
+ * @return the array of agent introduction strings.
+ */
+    public String[] getAgentIntro(){
+        return agentIntro;
+    }
+/**
+ * Gets the array of agent response strings associated with this solution.
+ *
+ * @return the array of agent response strings.
+ */
+    public String[] getAgentResponse(){
+        return agentResponses;
+    }
+
 
     /**
      * Returns a random intro string from the given array of intro strings
@@ -40,7 +90,8 @@ public class Solution implements Cloneable {
         } else {
             intro = customerIntro;
         }
-        int selectedIndex = (int) (Math.random() * intro.length);
+        int length = intro.length;
+        int selectedIndex = (int) (Math.random() * length);
         return intro[selectedIndex];
     }
 
@@ -78,12 +129,6 @@ public class Solution implements Cloneable {
      */
     public Solution(Problem problem, String[] customerIntro, String[] customerResponses, String[] agentIntro,
             String[] agentResponses) {
-
-        // TODO:
-        // FIXME: apparently some part of the program is calling this method with an
-        // empty arguemnt like customerResponses = [],
-        // for now this checks if that happens and replaces it with a random 1
-        // String[]/.
         if (customerIntro.length == 0) {
             this.customerIntro = Utilities.getRandomStringArray(1);
         } else {
@@ -106,14 +151,6 @@ public class Solution implements Cloneable {
         } else {
             this.agentResponses = agentResponses;
         }
-        // if (allSolutions.get(problem) == null) {
-        // ArrayList<Solution> arr = new ArrayList<>();
-        // arr.add(this);
-        // allSolutions.put(problem, arr);
-        // problem.solutions = arr;
-        // } else {
-        // allSolutions.get(problem).add(this);
-        // }
     }
 
     /**
@@ -173,7 +210,7 @@ public class Solution implements Cloneable {
             solutionsClone.add(solution);
         }
         for (Solution solution : solutionsClone) {
-            if (checkIfAllEmptySolution(solution)) { // NOTE: maybe change to any instead of all.
+            if (checkIfAllEmptySolution(solution)) { 
                 solutions.remove(solution);
             }
         }
@@ -205,10 +242,4 @@ public class Solution implements Cloneable {
         String[] agentResponses = Utilities.getRandomStringArray(numberOfLines);
         return new Solution(problem, customerIntro, customerResponses, agentIntro, agentResponses);
     }
-
-    // 1. maintained data structure instead of HashSet
-    // becomes solutions[n]
-    // 2. or sort solution on the go.
-    // Solutions.getSolutionFromLevel(int n): Solution // solution is the (n+1)th
-    // best solution
 }

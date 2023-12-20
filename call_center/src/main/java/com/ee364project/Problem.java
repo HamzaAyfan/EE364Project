@@ -1,9 +1,6 @@
 package com.ee364project;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
 
 import com.ee364project.helpers.Utilities;
 import com.ee364project.helpers.Vars;
@@ -77,13 +74,9 @@ public class Problem implements HasData {
      * intro, customer responses, agent intro, and agent responses.
      */
     public Problem() {
-        this(Vars.NONE, Department.getRandomDepartment(), Vars.NONE2D, Vars.NONE2D, Vars.NONE2D, Vars.NONE2D);
+        this(Vars.NONE, Department.getRandomDepartment(), Vars.NONE2D, Vars.NONE2D, Vars.NONE2D, Vars.NONE2D);   
     }
-
-    @Override
-    public String toString() {
-        return Utilities.prettyToString(CLSNAME, this.identifier, this.department);
-    }
+    
 
     /**
      * Returns the department of the Problem object
@@ -132,10 +125,10 @@ public class Problem implements HasData {
             inArr = new String[] {
                     this.identifier,
                     this.department.getName(),
-                    Utilities.joinStrings(solution.customerIntro, ";"),
-                    Utilities.joinStrings(solution.customerResponses, ";"),
-                    Utilities.joinStrings(solution.agentIntro, ";"),
-                    Utilities.joinStrings(solution.agentResponses, ";"),
+                    Utilities.joinStrings(solution.getAgentIntro(), ";"),
+                    Utilities.joinStrings(solution.getCustomerResponse(), ";"),
+                    Utilities.joinStrings(solution.getAgentIntro(), ";"),
+                    Utilities.joinStrings(solution.getAgentResponse(), ";"),
             };
             arr[i++] = inArr;
         }

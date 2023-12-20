@@ -38,7 +38,7 @@ public class Customer extends Person implements CanCall {
 
     private String phoneNumber;
     private CustomerBehaviour behaviour;
-    public ProblemInfo problemState = new ProblemInfo();
+    private ProblemInfo problemState = new ProblemInfo();
     public CallInfo callInfo = new CallInfo();
 
     public Customer(String phoneNumber, CustomerBehaviour behaviour, String name) throws InvalidPhoneNumberException {
@@ -53,6 +53,9 @@ public class Customer extends Person implements CanCall {
 
     public Customer() throws InvalidPhoneNumberException {
         this("0500000000", CustomerBehaviour.getRandomCustomerBehaviour(), Vars.NONE);
+    }
+    public ProblemInfo getProblemInfo(){
+        return problemState;
     }
 
     public Customer clone() {
@@ -164,21 +167,17 @@ public class Customer extends Person implements CanCall {
         this.callInfo.newCall(call);
     }
 
-    private void idle(String msg) {
-        Utilities.log(this, "idles", "", msg);
-    }
-
     private int faqsSteps = -1;
 
     private void checkFaqs() {
         if (this.faqsSteps > 0) {
             this.faqsSteps--;
-            Utilities.log(this, "is visiting faq", "", this.faqsSteps + "remaining");
+            
         } else {
             this.problemState.solve();
             this.state = CustomerState.IDLE;
             this.faqsSteps = -1;
-            Utilities.log(this, "solved thier own", this.problemState.getLastProblem(), "");
+           
         }
     }
 
@@ -193,25 +192,23 @@ public class Customer extends Person implements CanCall {
                 if (this.behaviour.getFaqsChance().check()) {
                     this.state = CustomerState.CHECK_FAQS;
                     this.faqsSteps = Utilities.random.nextInt(50, 200);
-                    Utilities.log(this, "visted faqs", "", "");
+                    
                 }
             }
 
             if (this.behaviour.getCallChance().check()) {
                 makeCall();
-                Utilities.log(this, "calls", "", "");
+                
                 return;
             } else {
-                idle("");
+                
                 return;
             }
         } else {
             if (this.behaviour.getProblemAffinity().check()) {
                 this.problemState.acquireRandomProblem();
-                Utilities.log(this, "got", this.problemState.getLastProblem(), "");
                 return;
             } else {
-                idle("");
                 return;
             }
         }
@@ -232,11 +229,9 @@ public class Customer extends Person implements CanCall {
         }
         switch (this.callInfo.getLastCall().getState()) {
             case WAITING:
-                idle("waiting for answer");
                 return;
 
             case INCALL:
-                idle("in-call");
                 return;
 
             default:

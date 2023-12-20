@@ -9,8 +9,15 @@ import com.ee364project.exceptions.InvalidIdException;
 import com.ee364project.helpers.Utilities;
 import com.ee364project.helpers.Vars;
 
-import java.util.Random;
+import net.datafaker.providers.base.Name;
 
+import java.util.Random;
+/**
+ * The {@code Level} enum represents different levels of Agents.
+ * It defines three levels: SAVEY, DEFULT, and CHALLENGED.
+ * These levels are typically control the duration of the calls
+ * and number of solutions seeked.
+ */
 enum Level{
     SAVEY,
     DEFULT,
@@ -25,7 +32,13 @@ enum Level{
  */
 
 public class Agent extends Person {
-
+    private static final String CLSNAME = "Agent";
+    private static final String[] HEADERS = new String[] { "id", "name", "department", "joinDate" };
+    private Level level;
+    private String id;
+    private Department department;
+    private LocalDateTime joinDate;
+    private ArrayList<Problem> problemsSeen = new ArrayList<>();
     private static ArrayList<Agent> allAgents = new ArrayList<>();
 
        /**
@@ -34,19 +47,10 @@ public class Agent extends Person {
      * @return an array of all agents in the system
      */
     public Agent[] getAllAgents() {
-        return allAgents.toArray(new Agent[allAgents.size()]);
-    }
-
-    private static final String CLSNAME = "Agent";
-    private static final String[] HEADERS = new String[] { "id", "name", "department", "joinDate" };
-    private Level level;
-
-    private String id;
-    private Department department;
-    private LocalDateTime joinDate;
-    private ArrayList<Problem> problemsSeen = new ArrayList<>();
-
-    
+        int size = allAgents.size();
+        Agent[] agents = new Agent[size];
+        return allAgents.toArray(agents);
+    }    
     /**
      * Creates a new agent with the given id, name, and department.
      * 
@@ -67,11 +71,14 @@ public class Agent extends Person {
         
     }
 
-        /**
-     * Assigns a level to the agent based on their experience with the given problem.
-     * 
-     * @param problem the problem to evaluate the agent's experience with
-     */
+/**
+ * Assigns a level to the agent based on the given problem. If the agent has already seen
+ * the problem before, the level is set to "SAVEY." If the agent's department matches the
+ * problem's department, the level is randomly selected from the levels "SAVEY" and "DEFULT."
+ * Otherwise, the level is randomly selected from all available levels.
+ *
+ * @param problem The Problem object for which the level is to be assigned.
+ */
     public void assignLevel(Problem problem){  
         for (Problem problemSeen: problemsSeen){
             if (problemSeen==problem){
@@ -101,13 +108,7 @@ public class Agent extends Person {
      * @throws InvalidIdException if the randomly generated id is not valid
      */
     public Agent() throws InvalidIdException {
-        this(Vars.DEFALT_ID, Vars.NONE, Department.NO_DEPARTMENT);
-    }
-
-    
-    @Override
-    public String toString() {
-        return Utilities.prettyToString(CLSNAME, this.id, this.getName(), this.department.toString(), this.joinDate);
+        this(Vars.DEFALT_ID, Vars.NONE, Department.getDepartment());
     }
 
         /**
@@ -136,17 +137,31 @@ public class Agent extends Person {
     public String getId() {
         return this.id;
     }
-
+/**
+ * Retrieves the name of the data type associated with this class.
+ *
+ * @return A string representing the name of the data type.
+ */
     @Override
     public String getDataTypeName() {
         return CLSNAME;
     }
-
+/**
+ * Retrieves an array of headers representing the fields or properties of the data type.
+ *
+ * @return An array of strings containing the headers of the data type.
+ */
     @Override
     public String[] getHeaders() {
         return HEADERS;
     }
-
+/**
+ * Retrieves a two-dimensional array of data representing the values of the data type.
+ * Each row in the array corresponds to an instance of the data type, and each column
+ * contains specific properties or fields.
+ *
+ * @return A two-dimensional array of strings containing the data values of the data type.
+ */
     @Override
     public String[][] getData() {
         String[][] arr = new String[1][4];
@@ -158,7 +173,14 @@ public class Agent extends Person {
         };
         return arr;
     }
-
+/**
+ * Parses an array of data fields and populates the properties of the Agent instance with the
+ * corresponding values. The order of the data fields should match the order expected by the
+ * {@link #getData()} method.
+ *
+ * @param dataFields An array of strings containing the data fields to be parsed.
+ * @return The Agent instance with properties populated based on the provided data fields.
+ */
     @Override
     public Agent parseData(String[] dataFields) {
         this.id = dataFields[0];
@@ -167,102 +189,65 @@ public class Agent extends Person {
         this.joinDate = LocalDateTime.parse(dataFields[3]);
         return this;
     }
-
+/**
+ * Shuffles the properties of the Agent instance, generating new random values for each property.
+ * This method is useful for creating instances with randomized data for testing or simulation purposes.
+ *
+ * @return The Agent instance with properties shuffled and populated with new random values.
+ */
     @Override
     public Agent shuffle() {
+        Name name = Utilities.faker.name();
         this.id = Utilities.faker.number().digits(8);
-        this.setName(Utilities.faker.name().firstName());
+        this.setName(name.firstName());
         this.department = Department.getRandomDepartment();
         this.joinDate = Utilities.getRandLocalDateTime();
         return this;
-    }
+    }   
 
-    // private void idle(String msg) {
-    //     Utilities.log(this, "idles", "", msg);
-    // }
-
-    @Override
-    public void step() {
-        // if (callInfo.isInCall()) {
-        //     idle("in-call with " + callInfo.getLastCall().getReceiver());
-        // } else {
-        //     idle("no call assigned");
-        // }
-        
-        // NOTE: for now, agents don't require active simulation.
-
-        /*
-         * To whoever writing this method:
-         * - this method will be called for each agent on each cycle.
-         * - in this method you should define how the agent will interact with environment.
-         * - the most crucial piece of information is callInfo.
-         * - when the agent gets assigned a call, it will be stored in callInfo.
-         * 
-         * - NOTE that callInfo is not of type Call.
-         * 
-         * - callInfo.getLastCall() will give you the last call the agent had.
-         * 
-         * 
-         * = callInfo.history will give you all the calls assigned to this agent.
-         * 
-         * - callInfo.isInACall() will tell you whether the agent is currently in a call or not.
-         * 
-         * - if you want more informatino about the call, you can do
-         *      callInfo.getLastCall().{any method the object of class Call has.}
-         * 
-         * - for example, if you want the customer which is in the call, you can do that by:
-         *      callInfo.getLastCall().getCaller()
-         * 
-         * - or to get the problem:
-         *      callInfo.getLastCall().getCaller().problemInfo.getProblem()
-         * 
-         * - so, in conclusion, everything you need to manipulate the outcome of the call is in the callInfo object.
-         */
-    }
-
-    // public CallInfo callInfo = new CallInfo();
-
-    // public void assignCall(Call call) {
-    //     this.callInfo.newCall(call);
-    // }
-
-        /**
-     * Returns a string containing information about the agent.
-     * 
-     * @return a string containing information about the agent
-     */
+/**
+* Returns a string containing information about the agent which is used in the toggle feature.
+* 
+* @return a string containing information about the agent
+*/
     public String getStringInfo() {
+        Department department = getDepartment();
         return  
         "ID: " + getId() +
         "\nName: " + getName() +
-        "\nDepartment: " + getDepartment().getName() +
+        "\nDepartment: " + department.getName() +
         "\nJoin Date: " + getJoinDate();
-    }
-
+        }
+/**
+ * Retrieves the tag associated with the Agent class, which is used for identification or labeling purposes in the Dialogue window.
+ *
+ * @return A string containing the tag associated with the Agent class.
+ */
     @Override
     protected String getTag() {
         return "Agent: ";
     }
+
+/**
+ * Throws an {@link UnsupportedOperationException} to indicate that the 'step' method is not implemented.
+ * This method is typically used as a placeholder or a signal that the subclass should provide its
+ * own implementation for the 'step' behavior.
+ *
+ * @throws UnsupportedOperationException Always thrown to indicate that the 'step' method is not implemented.
+ */
+    @Override
+    public void step() {
+        throw new UnsupportedOperationException("Unimplemented method 'step'");
+    }
 }
 
 /**
- * This class provides utility methods for working with enums.
+ * This class provides utility methods for getting a Random Enum for Agent's Level.
  * 
- * @author {Your Name}
+ * @author Team 2
  *
  */
 class RandomSelect {
-	// public static <T extends Enum<?>> T getRandomEnumValue(Class<T> enumClass) {
-    //     // Use values() method to get an array of enum constants
-    //     T[] values = enumClass.getEnumConstants();
-
-    //     // Generate a random index
-    //     Random random = new Random();
-    //     int randomIndex = random.nextInt(values.length);
-
-    //     // Return the enum constant at the random index
-    // //     return values[randomIndex];
-    // }
     public static <T extends Enum<?>> T getRandomEnumValue(Class<T> enumClass,int removeFromEnd) {
         // Use values() method to get an array of enum constants
         T[] values = enumClass.getEnumConstants();

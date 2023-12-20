@@ -3,10 +3,21 @@ package com.ee364project;
 import java.util.ArrayList;
 import java.util.Random;
 
-import com.ee364project.helpers.Ratio;
-
 /**
- * A class that represents a person in the simulation.
+ * The {@code Person} class represents an entity with a name and a tag.
+ * All instances of the class share a common list, {@code allPersons}, which
+ * stores references to every created person.
+ *
+ * <p>Each person has a randomly generated tag, and the class provides methods
+ * to access and manipulate the person's information.
+ *
+ * <p><b>Fields:</b>
+ * <ul>
+ *   <li>{@code allPersons}: A static {@code ArrayList} containing references to all created persons.</li>
+ *   <li>{@code name}: The name of the person.</li>
+ *   <li>{@code random}: A {@code Random} instance for generating random values.</li>
+ *   <li>{@code tag}: The tag associated with the person.</li>
+ * </ul>
  * 
  * @author Team 2
  */
@@ -15,13 +26,6 @@ public abstract class Person implements HasData, Simulated {
     private String name;
     Random random = new Random();
     protected String tag;
-
-    private double defultRateOfSpeech = random.nextDouble();
-    private double defultSoundLevel = random.nextDouble();
-    private double hearingLevel = random.nextDouble();
-
-    private double rateOfSpeech = defultRateOfSpeech;
-    private double soundLevel = defultSoundLevel;
 
     /**
      * A class that represents a person in the simulation.
@@ -52,34 +56,7 @@ public abstract class Person implements HasData, Simulated {
         this.name = name;
     }
 
-    /**
-     * Increases the sound level of the person
-     */
-    public void increaseSoundLevel() {
-        soundLevel = soundLevel * (1 + random.nextDouble() / 10);
-    }
-
-    /**
-     * Decreases the sound level of the person
-     */
-    public void decreaseSoundLevel() {
-        soundLevel = soundLevel * (1 - random.nextDouble() / 50);
-    }
-
-    /**
-     * Speeds up the rate of speech of the person
-     */
-    public void speedUp() {
-        rateOfSpeech = rateOfSpeech * (1 + random.nextDouble() / 50);
-    }
-
-    /**
-     * Slows down the rate of speech of the person
-     */
-    public void slowDown() {
-        rateOfSpeech = rateOfSpeech * (1 - random.nextDouble() / 10);
-    }
-
+    
     /**
      * Returns the number of milliseconds of sleep time for the person
      * 
@@ -90,7 +67,7 @@ public abstract class Person implements HasData, Simulated {
     }
 
     /**
-     * Returns the tag of the person
+     * Returns the tag of the person for display in {@code DialogeBox}
      * 
      * @return the tag of the person
      */
