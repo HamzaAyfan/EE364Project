@@ -100,6 +100,15 @@ public class Customer extends Person implements CanCall {
         return HEADERS;
     }
 
+    public double getAWT(){
+        return this.callInfo.getAverageWaitTime(); 
+    }
+
+    public String getShortInfo(){      
+        return  "Name: " + getName() +
+                "\n(" + this.behaviour.name + ")";
+    }
+
     @Override
     public String[][] getData() {
         String[][] arr = new String[1][3];

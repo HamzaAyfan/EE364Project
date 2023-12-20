@@ -7,20 +7,21 @@
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
 <?import javafx.scene.input.KeyCodeCombination?>
 <?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
 
-<AnchorPane fx:id="anchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="518.0" prefWidth="579.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ee364project.Fx.MainSceneController">
+<AnchorPane fx:id="anchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="557.0" prefWidth="660.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ee364project.Fx.MainSceneController">
    <children>
-      <ScrollPane fitToHeight="true" fitToWidth="true" layoutX="19.0" layoutY="74.0" nodeOrientation="RIGHT_TO_LEFT" prefHeight="370.0" prefWidth="197.0">
+      <ScrollPane fitToHeight="true" fitToWidth="true" layoutX="422.0" layoutY="70.0" nodeOrientation="RIGHT_TO_LEFT" prefHeight="376.0" prefWidth="81.0">
          <content>
-            <FlowPane fx:id="flowPane" hgap="10.0" nodeOrientation="LEFT_TO_RIGHT" prefHeight="368.0" prefWidth="195.0" vgap="10.0" />
+            <VBox fx:id="flowPane" prefHeight="200.0" prefWidth="170.0" />
          </content>
       </ScrollPane>
-      <MenuBar layoutY="2.0" prefHeight="25.0" prefWidth="579.0">
+      <MenuBar layoutY="2.0" prefHeight="25.0" prefWidth="660.0">
         <menus>
           <Menu fx:id="MenBar" mnemonicParsing="false" text="File">
             <items>
@@ -55,20 +56,26 @@
           </Menu>
         </menus>
       </MenuBar>
-      <ScrollPane fitToHeight="true" fitToWidth="true" layoutX="486.0" layoutY="71.0" prefHeight="376.0" prefWidth="71.0">
+      <ScrollPane fitToHeight="true" fitToWidth="true" layoutX="523.0" layoutY="70.0" prefHeight="376.0" prefWidth="71.0">
          <content>
-            <VBox fx:id="AgentVbox" prefHeight="379.0" prefWidth="69.0" />
+            <VBox fx:id="AgentVbox" prefHeight="374.0" prefWidth="84.0" />
          </content>
       </ScrollPane>
       <Text fx:id="timeer" layoutX="30.0" layoutY="492.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Timer" textAlignment="CENTER" wrappingWidth="175.9765625" />
-      <ScrollPane layoutX="338.0" layoutY="71.0" prefHeight="376.0" prefWidth="139.0">
+      <ScrollPane layoutX="14.0" layoutY="70.0" prefHeight="376.0" prefWidth="139.0">
          <content>
             <VBox fx:id="CallVbox" prefHeight="369.0" prefWidth="74.0" />
          </content>
       </ScrollPane>
-      <Label layoutX="83.0" layoutY="46.0" text="Customers" />
-      <Label layoutX="373.0" layoutY="46.0" prefHeight="17.0" prefWidth="32.0" text="Calls:" />
-      <Label layoutX="500.0" layoutY="46.0" prefHeight="17.0" prefWidth="43.0" text="Agents" />
+      <Label layoutX="434.0" layoutY="47.0" text="Customers" />
+      <Label layoutX="68.0" layoutY="46.0" prefHeight="17.0" prefWidth="32.0" text="Calls:" />
+      <Label layoutX="537.0" layoutY="47.0" prefHeight="17.0" prefWidth="43.0" text="Agents" />
       <CheckBox fx:id="checkPoint" layoutX="237.0" layoutY="46.0" mnemonicParsing="false" text="Checkpoint" />
+      <TableView fx:id="customerTable" layoutX="174.0" layoutY="70.0" prefHeight="376.0" prefWidth="235.0">
+        <columns>
+          <TableColumn fx:id="customerColumn" prefWidth="102.0" text="Customer" />
+          <TableColumn fx:id="AWTcolumn" prefWidth="132.0" text="Average Wait Time" />
+        </columns>
+      </TableView>
    </children>
 </AnchorPane>
