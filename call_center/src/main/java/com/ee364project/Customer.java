@@ -119,7 +119,8 @@ public class Customer extends Person implements CanCall {
         return arr;
     }
 
-    public static Customer getAllMaxWaitTime(Customer[] customers) {
+    public static Customer getAllMaxWaitTime() {
+        Customer[] customers = allCustomers();
         int currnetIndex = 0;
         int bestIndex = 0;
         long bestMax = 0;
@@ -135,7 +136,8 @@ public class Customer extends Person implements CanCall {
         return customers[bestIndex];
     }
 
-    public static Customer getAllMinWaitTime(Customer[] customers) {
+    public static Customer getAllMinWaitTime() {
+        Customer[] customers = allCustomers();
         int currnetIndex = 0;
         int bestIndex = 0;
         long bestMin = 0;
