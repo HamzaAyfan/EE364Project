@@ -36,8 +36,8 @@ public class MainFx extends Application {
             primaryStage.setResizable(false);
             primaryStage.show();
 
-            // MainSceneController controller = loader.getController();
-            // controller.showYesNoDialog(primaryStage);
+            MainSceneController controller = loader.getController();
+            controller.showYesNoDialog(primaryStage);
 
             primaryStage.setOnCloseRequest(e -> {
                 MainSceneController.running = false;

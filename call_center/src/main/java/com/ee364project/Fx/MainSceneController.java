@@ -39,7 +39,9 @@ import javafx.animation.PauseTransition;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -76,6 +78,8 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.stage.Modality;
 import javafx.stage.StageStyle;
@@ -170,7 +174,7 @@ public class MainSceneController {
     @FXML
     private AnchorPane anchorPane;
     @FXML
-    private FlowPane flowPane; 
+    private VBox flowPane; 
     @FXML
     private Text timeer;
     @FXML
@@ -183,6 +187,15 @@ public class MainSceneController {
     public VBox CallVbox;
     @FXML
     private Button connected;
+    @FXML
+    private TableView<Customer> customerTable;
+    @FXML
+    private TableColumn<Customer, String> customerColumn;
+    @FXML
+    private TableColumn<Customer, Number> AWTcolumn;
+
+
+    
 
 
 /**
@@ -192,6 +205,8 @@ public class MainSceneController {
  */
     @FXML
     public void initialize() {
+        // Set cell value factory to map the Customer objects to the corresponding property
+        customerColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getShortInfo()));
         // setting all the important references and spaces for panes internal look
         MenPasue.setOnAction(e -> {
             this.pause();
@@ -506,6 +521,7 @@ public class MainSceneController {
                 ObservableList<Node> flowPaneChild = flowPane.getChildren();
                 flowPaneChild.add(stackPane);
             }
+            loadCustomersTable();
         } catch (NumberFormatException e) {            
             showErrorAlert("Agent.csv", "Failed to process please use the correct format");
         } 
@@ -704,6 +720,7 @@ public class MainSceneController {
 
             i = i + 1;
         }
+        loadCustomersTable();
     }
 
     // this method generates fake agents depending on the user's input
@@ -788,6 +805,21 @@ public class MainSceneController {
         alert.setHeaderText(null);
         alert.setContentText(content);
         alert.showAndWait();
+    }
+
+    private void loadCustomersTable(){
+        customerTable.getItems().addAll(customers);
+    }
+
+    private void updateCustomersTable() {
+    // Load numbers into the second column when the button is clicked
+    
+    AWTcolumn.setCellValueFactory(cellData -> {
+        double someDoubleValue = cellData.getValue().getAWT();
+        return new SimpleDoubleProperty(someDoubleValue);
+    });
+    // Update the table to reflect the changes
+    customerTable.refresh();
     }
 
     // this method is called when the menubar item "Save as" is clicked
@@ -1079,6 +1111,7 @@ public class MainSceneController {
                     callCenter.step();
                     Timekeeper.step();
                     highlightCustomers();
+                    updateCustomersTable();
 
                     try {
                         Thread.sleep(Timekeeper.getDelayMs());
