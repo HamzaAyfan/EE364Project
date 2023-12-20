@@ -30,19 +30,6 @@ public class Solution implements Cloneable {
     private String[] customerResponses;
     private String[] agentIntro;
     private String[] agentResponses;
-
-
-/**
- * Creates and returns a shallow copy of this solution. The cloning is performed
- * using the {@code clone} method of the superclass {@code Object}.
- * 
- * @return a shallow copy of this solution.
- * @throws CloneNotSupportedException if cloning is not supported for this object.
- */
-    @Override
-    public Object clone() throws CloneNotSupportedException {
-        return super.clone();
-    }
 /**
  * Gets the array of customer introduction strings associated with this solution.
  *
@@ -225,7 +212,7 @@ public class Solution implements Cloneable {
      * @return the problem's array of solutions without empty solutions
      */
     public static ArrayList<Solution> removeEmptySolutions(Problem problem) {
-        return removeEmptySolutions(problem.solutions);
+        return removeEmptySolutions(problem.getSolutionsList());
     }
 
     /**

@@ -16,6 +16,7 @@ import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.concurrent.Phaser;
 
@@ -203,7 +204,8 @@ public class DialogeBox extends Thread {
             checkBox.setSelected(false);});
         phaser.arriveAndDeregister();
         windows.remove(this);
-        Call.linkCBtoDB.remove(checkBox);
+        HashMap<CheckBox, DialogeBox> checkBoxLink = Call.getLinkBetweenCheckBoxesAndDialoge();
+        checkBoxLink.remove(checkBox);
     }
 /**
  * Opens an empty window for displaying the dialogue. The window is configured with a ScrollPane,

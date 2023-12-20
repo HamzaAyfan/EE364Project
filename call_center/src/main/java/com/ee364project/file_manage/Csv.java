@@ -87,8 +87,7 @@ public final class Csv {
                     if (clsName.equals("Problem")){
                         object = Problem.checkRepeatedProblem(arg[0]);
                     }else{
-                        Constructor conctructor = DataClass.getDeclaredConstructor();
-                        object = (HasData) conctructor.newInstance();
+                        object = (HasData) DataClass.getDeclaredConstructor().newInstance();
                     }                                        
                     object.parseData(arg);
                     objects.add(object);

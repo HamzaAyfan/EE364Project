@@ -448,7 +448,7 @@ class ProblemInfo {
     }
 
     public void acquireRandomProblem() {
-        this.lastProblem = (Problem) Utilities.getRandomFromArray(Problem.allProblems);
+        this.lastProblem = (Problem) Utilities.getRandomFromArray(Problem.getProblemsList());
     }
 
     public Problem getLastProblem() {
