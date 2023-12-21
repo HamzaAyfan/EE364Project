@@ -11,7 +11,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import java.util.concurrent.Phaser;
-import javax.sound.midi.Receiver;
 import com.ee364project.Customer.CustomerState;
 import com.ee364project.Fx.MainSceneController;
 import com.ee364project.helpers.Utilities;
