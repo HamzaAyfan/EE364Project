@@ -2,7 +2,6 @@ package com.ee364project;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Set;
 
 import com.ee364project.Call.CallState;
@@ -10,6 +9,16 @@ import com.ee364project.exceptions.InvalidPhoneNumberException;
 import com.ee364project.helpers.*;
 
 public class Customer extends Person implements CanCall {
+    private CustomerState state = CustomerState.IDLE;
+    private static ArrayList<Customer> allCustomers = new ArrayList<>();
+    private String phoneNumber;
+    private CustomerBehaviour behaviour;
+    private ProblemInfo problemState = new ProblemInfo();
+    private CallInfo callInfo = new CallInfo();
+    private static final String CLSNAME = "Customer";
+    private static final String[] HEADERS = new String[] { "phone_number", "behaviour", "name" };
+    private int faqsSteps = -1;
+
 
     public enum CustomerState {
         IDLE,
@@ -17,14 +26,23 @@ public class Customer extends Person implements CanCall {
         CHECK_FAQS,
         WAITING
     }
+/**
+ * Gets the CallInfo associated with this instance of CustomerBehaviour.
+ *
+ * @return The CallInfo object representing information about calls associated with this CustomerBehaviour.
+ */    
+    public CallInfo getCallInfo(){
+        return callInfo;
+    }
 
     public long getMaxWaitTime() {
         CallInfo callInfo = this.callInfo;
-        return this.callInfo.maxWaitTime;
+        return callInfo.getMaxWaitTime();
     }
 
     public long getMinWaitTime() {
-        return this.callInfo.minWaitTime;
+        CallInfo callInfo = this.callInfo;
+        return callInfo.getMinWaitTime();
     }
 
     public CustomerState getState() {
@@ -35,23 +53,13 @@ public class Customer extends Person implements CanCall {
         this.state = state;
     }
 
-    private CustomerState state = CustomerState.IDLE;
-    static int i;
-    static int j;
-    private static ArrayList<Customer> allCustomers = new ArrayList<>();
+
 
     public static Customer[] allCustomers() {
         return allCustomers.toArray(new Customer[allCustomers.size()]);
     }
 
-    private static final String CLSNAME = "Customer";
-    private static final String[] HEADERS = new String[] { "phone_number", "behaviour", "name" };
-
-    private String phoneNumber;
-    private CustomerBehaviour behaviour;
-    private ProblemInfo problemState = new ProblemInfo();
-    public CallInfo callInfo = new CallInfo();
-
+ 
     public Customer(String phoneNumber, CustomerBehaviour behaviour, String name) throws InvalidPhoneNumberException {
         super(name);
         if (!Utilities.validatePhone(phoneNumber)) {
@@ -117,7 +125,7 @@ public class Customer extends Person implements CanCall {
 
     public String getShortInfo(){      
         return  "Name: " + getName() +
-                "\n(" + this.behaviour.name + ")";
+                "\n(" + this.behaviour.getName() + ")";
     }
 
     @Override
@@ -125,7 +133,7 @@ public class Customer extends Person implements CanCall {
         String[][] arr = new String[1][3];
         arr[0] = new String[] {
                 this.phoneNumber,
-                this.behaviour.name,
+                this.behaviour.getName(),
                 this.getName()
         };
         return arr;
@@ -181,8 +189,6 @@ public class Customer extends Person implements CanCall {
             sum += customer.callInfo.getTotalWaitTime();
         }
         return sum;
-        // CallInfo.addToTotal(sum);
-        // return CallInfo.getTotalCallWaitTime();
     }
 
     public static long getAllCallCount() {
@@ -211,7 +217,8 @@ public class Customer extends Person implements CanCall {
 
     public Customer parseData(String[] dataFields) {
         this.phoneNumber = dataFields[0];
-        this.behaviour = CustomerBehaviour.customerBehaviourByName.get(dataFields[1]);
+        String customerBehaviour = dataFields[1];
+        this.behaviour = CustomerBehaviour.customerBehaviour(customerBehaviour);
         this.setName(dataFields[2]);
         return this;
     }
@@ -231,7 +238,7 @@ public class Customer extends Person implements CanCall {
         this.callInfo.newCall(call);
     }
 
-    private int faqsSteps = -1;
+
 
     private void checkFaqs() {
         if (this.faqsSteps > 0) {
@@ -311,12 +318,39 @@ public class Customer extends Person implements CanCall {
     public String getStringInfo() {
         return "Phone Number: " + getPhoneNumber() +
                 "\nName: " + getName() +
-                "\nBehaviour: " + this.behaviour.name;
+                "\nBehaviour: " + this.behaviour.getName();
     }
 }
 
-class CustomerBehaviour {
-    public static HashMap<String, CustomerBehaviour> customerBehaviourByName = new HashMap<>();
+class CustomerBehaviour {   
+    private String name;
+    private Ratio problemAffinity;
+    private long problemAffinityPeriod;
+    private Ratio callChance;
+    private long callChancePeriod;
+
+    private Ratio faqsVisitChance;
+    private long faqsVisitChancePeriod;
+    private Ratio faqsSolveChance;
+    private long faqsSolveChancePeriod;
+    private static HashMap<String, CustomerBehaviour> customerBehaviourByName = new HashMap<>();
+/**
+ * Gets the name associated with this instance of CustomerBehaviour.
+ *
+ * @return The name of the CustomerBehaviour.
+ */
+    public String getName(){
+        return name;
+    }
+/**
+ * Retrieves the CustomerBehaviour associated with the specified name.
+ *
+ * @param name The name of the customer behavior to retrieve.
+ * @return The CustomerBehaviour associated with the given name, or null if not found.
+ */
+    public static CustomerBehaviour customerBehaviour(String name){
+        return customerBehaviourByName.get(name);
+    }
     static {
         customerBehaviourByName.put(PreMade.DEFAULT.name, PreMade.DEFAULT);
         customerBehaviourByName.put(PreMade.SAVVY.name, PreMade.SAVVY);
@@ -370,27 +404,15 @@ class CustomerBehaviour {
                 1 // Timekeeper.getSecondsInDay(1)
         );
     }
-
-    public String name;
-    private Ratio problemAffinity;
-    private long problemAffinityPeriod;
-    private Ratio callChance;
-    private long callChancePeriod;
-
-    private Ratio faqsVisitChance;
-    private long faqsVisitChancePeriod;
-    private Ratio faqsSolveChance;
-    private long faqsSolveChancePeriod;
-
     public CustomerBehaviour(
-            String name, Ratio problemAffinity,
-            long problemAffinityPeriod,
-            Ratio callChance,
-            long callChancePeriod,
-            Ratio faqsVisitChance,
-            long faqsVisitChancePeriod,
-            Ratio faqsSolveChance,
-            long faqsSolveChancePeriod) {
+        String name, Ratio problemAffinity,
+        long problemAffinityPeriod,
+        Ratio callChance,
+        long callChancePeriod,
+        Ratio faqsVisitChance,
+        long faqsVisitChancePeriod,
+        Ratio faqsSolveChance,
+        long faqsSolveChancePeriod) {
         this.name = name;
         this.problemAffinity = problemAffinity;
         this.problemAffinityPeriod = problemAffinityPeriod;
@@ -464,13 +486,29 @@ class ProblemInfo {
 }
 
 class CallInfo {
-    long maxWaitTime = 0;
-    long minWaitTime = 0;
+    private long maxWaitTime = 0;
+    private long minWaitTime = 0;
     private Call lastCall = null;
     private long latestWaitTime;
     private long tallyAverageWaitTime;
     private long tallyTotalWaitTime;
     private long tallyCallCount = 0;
+/**
+ * Gets the maximum wait time for this specific customer.
+ *
+ * @return The maximum wait time in seconds for the customer.
+ */
+    public long getMaxWaitTime(){
+        return maxWaitTime;
+    }
+/**
+ * Gets the minimum wait time for this specific customer.
+ *
+ * @return The minimum wait time in seconds for the customer.
+ */
+    public long getMinWaitTime(){
+        return minWaitTime;
+    }
 
     public void newCall(Call call) {
         this.lastCall = call;

@@ -293,7 +293,8 @@ public class Call implements Simulated {
  */
     public void terminateCall() {
         this.state = CallState.ENDED;
-        this.caller.callInfo.endCall();
+        CallInfo callInfo = this.caller.getCallInfo();
+        callInfo.endCall();
         this.callCenter.releaseAgent(this.receiver);
         Call.activeCalls.remove(this);
         Platform.runLater(() -> {        
