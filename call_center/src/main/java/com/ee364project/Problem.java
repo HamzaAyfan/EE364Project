@@ -298,10 +298,18 @@ public class Problem implements HasData {
      */
     @Override
     public Problem shuffle() {
+
+        // randomise the data in the problem.
+
+        // removes the current problem from the problem pool.
         allProblems.remove(this);
         this.identifier = Utilities.faker.azure().appServiceEnvironment(); // chain: external.
         this.department = Department.getRandomDepartment();
+
+        // after randomisation it adds it back.
         allProblems.add(this);
+
+        // also randomise the solutions.
         this.solutions = Solution.removeEmptySolutions(this.solutions);
         solutions.add(Solution.addRandomSolution(this));
         return this;

@@ -260,6 +260,7 @@ public class Department implements HasData {
     * @return A randomly selected {@code Department} instance.
     */
     public static Department getRandomDepartment() {
+        // a sequence for getting a random department.
         HashMap<String, Department> deps = Department.getAllDepartments();
         int size = deps.size();
         int randomIndex = Utilities.random.nextInt(size);

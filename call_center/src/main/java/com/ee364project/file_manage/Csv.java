@@ -16,8 +16,6 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.csv.CSVPrinter;
 
-import java.lang.reflect.Constructor;
-
 /**
  * The {@code Csv} class provides utility methods for reading and writing CSV
  * files
@@ -46,10 +44,14 @@ public final class Csv {
         }
         File file = new File(path);
         File fileParent = new File(file.getParent());
+
+        // make parent dirs if not made
         fileParent.mkdirs();
         try {
             FileWriter fileWriter = new FileWriter(path);
             CSVPrinter printer = new CSVPrinter(fileWriter, CSVFormat.DEFAULT);
+
+            // get the csv headers (first row)
             Object[] headers = (Object[]) objects[0].getHeaders();
             printer.printRecord(headers);
             for (HasData datum : objects) {
@@ -80,9 +82,15 @@ public final class Csv {
             File file = new File(path);
             FileReader fileReader = new FileReader(file);
             try (CSVParser reader = new CSVParser(fileReader, CSVFormat.DEFAULT)) {
+
+                // get the actual java class from the class name string
                 Class<?> DataClass = Class.forName(Vars.projectPrefix + clsName);
+
+                // for making the csv file
                 ArrayList<ArrayList<String>> mat = new ArrayList<>();
                 ArrayList<String> row = new ArrayList<>();
+
+                // populate the csv file
                 for (CSVRecord record : reader.getRecords()) {
                     row = new ArrayList<>();
                     for (String word : record.toList()) {
@@ -91,6 +99,8 @@ public final class Csv {
                     mat.add(row);
                 }
                 String[] arg;
+
+                // this code is an exception for the problem class because it requires nested tables.
                 for (ArrayList<String> rowInMat : mat.subList(1, mat.size())) {
                     int horzLength = rowInMat.size();
                     String[] line = new String[horzLength];
@@ -107,6 +117,8 @@ public final class Csv {
         } catch (Exception e) {
             MainSceneController.showErrorAlert("Invalid File", "File contents are unparsable");
         }
+
+        // make it an array from a arraylist
         int dataSize = objects.size();
         HasData[] data = new HasData[dataSize];
         return objects.toArray(data);

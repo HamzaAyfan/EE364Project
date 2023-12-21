@@ -1,7 +1,6 @@
 package com.ee364project;
 
 import java.util.ArrayList;
-import java.util.Random;
 
 /**
  * The {@code Person} class represents an entity with a name and a tag.

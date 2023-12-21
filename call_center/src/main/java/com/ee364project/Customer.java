@@ -369,10 +369,11 @@ public class Customer extends Person implements CanCall {
      * @return The updated Customer instance after parsing the data.
      */
     public Customer parseData(String[] dataFields) {
-        this.phoneNumber = dataFields[0];
-        String customerBehaviour = dataFields[1];
+
+        this.phoneNumber = dataFields[0]; // from the csv
+        String customerBehaviour = dataFields[1]; // from the csv
         this.behaviour = CustomerBehaviour.customerBehaviour(customerBehaviour);
-        this.setName(dataFields[2]);
+        this.setName(dataFields[2]); // from the csv
         return this;
     }
 
@@ -382,8 +383,8 @@ public class Customer extends Person implements CanCall {
     @Override
     public Customer shuffle() {
         this.setName(Utilities.faker.name().firstName()); // chain: external.
-        this.phoneNumber = "05" + Utilities.faker.number().digits(8);
-        this.behaviour = CustomerBehaviour.getRandomCustomerBehaviour();
+        this.phoneNumber = "05" + Utilities.faker.number().digits(8); // gets 8 rand digits + 05
+        this.behaviour = CustomerBehaviour.getRandomCustomerBehaviour(); // random behaviour
         return this;
     }
 
@@ -403,10 +404,12 @@ public class Customer extends Person implements CanCall {
      * problem is solved and the customer returns to the idle state.
      */
     private void checkFaqs() {
+        // the customer is currently reading the faqs
         if (this.faqsSteps > 0) {
             this.faqsSteps--;
 
         } else {
+            // if the customer finished reading the faqs
             this.problemState.solve();
             this.state = CustomerState.IDLE;
             this.faqsSteps = -1;
@@ -421,13 +424,16 @@ public class Customer extends Person implements CanCall {
      * and the customer returns to the idle state.
      */
     private void defaultRoutine() {
+        // roll for faqs
         if (this.state == CustomerState.CHECK_FAQS) {
             checkFaqs();
             return;
         }
 
+        // roll for gettign a problem
         if (this.problemState.isGotProblem()) {
             Ratio faqsChance = this.behaviour.getFaqsChance();
+            // check if the phase 2 is active and if the faqs can be done
             if (faqsChance.check() && Vars.projectPhase) {
                 if (faqsChance.check()) {
                     this.state = CustomerState.CHECK_FAQS;
@@ -436,6 +442,7 @@ public class Customer extends Person implements CanCall {
                 }
             }
 
+            // rolls for a chance to make a call
             Ratio callChanceRatio = this.behaviour.getCallChance();
             if (callChanceRatio.check()) {
                 makeCall();
@@ -446,6 +453,8 @@ public class Customer extends Person implements CanCall {
                 return;
             }
         } else {
+
+            // rolls for a chance to a get a problem based on behaviour
             Ratio problemAffinityRatio = this.behaviour.getProblemAffinity();
             if (problemAffinityRatio.check()) {
                 this.problemState.acquireRandomProblem();
@@ -493,12 +502,16 @@ public class Customer extends Person implements CanCall {
      */
     @Override
     public void step() {
+        // updates the numeric info like maxes and averages
         this.callInfo.updateInformation();
 
+        // if these was no call ever, do the default routine
         if (this.callInfo.getLastCall() == null) {
             defaultRoutine();
             return;
         }
+
+        // based on the last call state, pick the appropriate path
         Call callInfo = this.callInfo.getLastCall();
         switch (callInfo.getState()) {
             case WAITING:
@@ -532,6 +545,10 @@ public class Customer extends Person implements CanCall {
  * @author Team 2
  */
 class CustomerBehaviour {
+
+    // the follwoing variables model the customer's behaviour related to the
+    // simulation
+
     private String name;
     private Ratio problemAffinity;
     private long problemAffinityPeriod;
@@ -863,15 +880,19 @@ class CallInfo {
 
         long lastCallWaitTime = this.lastCall.getWaitTime();
 
+        // update and set the max wait time
         if (lastCallWaitTime > this.maxWaitTime) {
             this.maxWaitTime = lastCallWaitTime;
         }
 
+        // update and set the min wait time
         if (lastCallWaitTime < this.minWaitTime) {
             if (lastCallWaitTime != 0) {
                 this.minWaitTime = lastCallWaitTime;
             }
         }
+
+        // update and set the average wait time
         this.tallyAverageWaitTime = (this.tallyAverageWaitTime * this.tallyCallCount + lastCallWaitTime)
                 / (this.tallyCallCount + 1);
         this.tallyCallCount++;

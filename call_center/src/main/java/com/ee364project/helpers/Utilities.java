@@ -56,12 +56,20 @@ public class Utilities {
      * @return a string representation of the object
      */
     public static String prettyToString(String cls, Object... attrs) {
+        // defines a common these for string printing for data classes.
+
         String accumlate = "";
+
+        // sepeartes each attr with command add applies this format: attrName=attrValue
         for (int i = 0; i < attrs.length; i++) {
             accumlate += "" + attrs[i] + ", ";
         }
+        
+        // this exludes the extra space and comma of the last element
         int length = accumlate.length();
         accumlate = accumlate.substring(0, length - 2);
+
+        // close with parens
         return cls + "(" + accumlate + ")";
     }
 
@@ -99,11 +107,17 @@ public class Utilities {
      * @return a random LocalDateTime object that is n months in the past
      */
     public static LocalDateTime getRandomLocalDateTime(int n) {
+        // first get the local time
         LocalDateTime now = LocalDateTime.now();
+
+        // deduct the number of months from now
         LocalDateTime startDate = now.minus(n, ChronoUnit.MONTHS);
+
+        // will use seconds since it is the base time unit for the entire sim
         ChronoUnit seconds = ChronoUnit.SECONDS;
         long secondsBetween = seconds.between(startDate, now);
 
+        // return the random date
         long duration = (long) (secondsBetween * random.nextDouble());
         return startDate.plus(duration, ChronoUnit.SECONDS);
     }
@@ -151,12 +165,16 @@ public class Utilities {
      * @return a random array of strings of the specified length
      */
     public static String[] getRandomStringArray(int len) {
+
+        // the array must have at least one element.
         if (len <= 0) {
             len = 1;
         }
         int x;
         String inStr;
         String[] str = new String[len];
+
+        // will populate the array with random words
         Job fakerCategory = faker.job();
         for (int i = 0; i < len; i++) {
             x = random.nextInt(19);
