@@ -421,9 +421,9 @@ public class Call implements Simulated {
         Node[] nodes = msc.createHbox(this.getCaller());
         hbox = (HBox) nodes[0];
         checkBox = (CheckBox) nodes[1];
-        callNumber = (Text) nodes[2];
-        int randomIndex = (int) (Math.random() * (vBox.getChildren().size() + 1)); // chain: java
+        callNumber = (Text) nodes[2];        
         Platform.runLater(() -> {
+            int randomIndex = (int) (Math.random() * (vBox.getChildren().size() + 1)); // chain: java
             vBox.getChildren().add(randomIndex, hbox);
         });
         CheckBoxAndCall.put(checkBox, this);
