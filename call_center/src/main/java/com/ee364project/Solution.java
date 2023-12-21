@@ -10,16 +10,24 @@ import java.util.Random;
 
 /**
  * The {@code ConversationData} class encapsulates data related to conversations
- * between customers and agents in a simulated environment. It includes randomization
- * functionality and arrays for customer and agent dialogue intros and responses.
+ * between customers and agents in a simulated environment. It includes
+ * randomization
+ * functionality and arrays for customer and agent dialogue intros and
+ * responses.
  *
- * <p><b>Fields:</b>
+ * 
+ * <b>Fields:</b>
  * <ul>
- *   <li>{@code random}: A {@code Random} instance used for generating random values.</li>
- *   <li>{@code customerIntro}: An array containing possible introduction phrases from customers.</li>
- *   <li>{@code customerResponses}: An array containing possible responses from customers.</li>
- *   <li>{@code agentIntro}: An array containing possible introduction phrases from agents.</li>
- *   <li>{@code agentResponses}: An array containing possible responses from agents.</li>
+ * <li>{@code random}: A {@code Random} instance used for generating random
+ * values.</li>
+ * <li>{@code customerIntro}: An array containing possible introduction phrases
+ * from customers.</li>
+ * <li>{@code customerResponses}: An array containing possible responses from
+ * customers.</li>
+ * <li>{@code agentIntro}: An array containing possible introduction phrases
+ * from agents.</li>
+ * <li>{@code agentResponses}: An array containing possible responses from
+ * agents.</li>
  * </ul>
  * 
  * @author Team 2
@@ -31,51 +39,42 @@ public class Solution implements Cloneable {
     private String[] agentIntro;
     private String[] agentResponses;
 
-
-/**
- * Creates and returns a shallow copy of this solution. The cloning is performed
- * using the {@code clone} method of the superclass {@code Object}.
- * 
- * @return a shallow copy of this solution.
- * @throws CloneNotSupportedException if cloning is not supported for this object.
- */
-    @Override
-    public Object clone() throws CloneNotSupportedException {
-        return super.clone();
-    }
-/**
- * Gets the array of customer introduction strings associated with this solution.
- *
- * @return the array of customer introduction strings.
- */
-    public String[] getCustomerIntro(){
+    /**
+     * Gets the array of customer introduction strings associated with this
+     * solution.
+     *
+     * @return the array of customer introduction strings.
+     */
+    public String[] getCustomerIntro() {
         return customerIntro;
     }
-/**
- * Gets the array of customer response strings associated with this solution.
- *
- * @return the array of customer response strings.
- */
-    public String[] getCustomerResponse(){
+
+    /**
+     * Gets the array of customer response strings associated with this solution.
+     *
+     * @return the array of customer response strings.
+     */
+    public String[] getCustomerResponse() {
         return customerResponses;
     }
-/**
- * Gets the array of agent introduction strings associated with this solution.
- *
- * @return the array of agent introduction strings.
- */
-    public String[] getAgentIntro(){
+
+    /**
+     * Gets the array of agent introduction strings associated with this solution.
+     *
+     * @return the array of agent introduction strings.
+     */
+    public String[] getAgentIntro() {
         return agentIntro;
     }
-/**
- * Gets the array of agent response strings associated with this solution.
- *
- * @return the array of agent response strings.
- */
-    public String[] getAgentResponse(){
+
+    /**
+     * Gets the array of agent response strings associated with this solution.
+     *
+     * @return the array of agent response strings.
+     */
+    public String[] getAgentResponse() {
         return agentResponses;
     }
-
 
     /**
      * Returns a random intro string from the given array of intro strings
@@ -210,7 +209,7 @@ public class Solution implements Cloneable {
             solutionsClone.add(solution);
         }
         for (Solution solution : solutionsClone) {
-            if (checkIfAllEmptySolution(solution)) { 
+            if (checkIfAllEmptySolution(solution)) {
                 solutions.remove(solution);
             }
         }
@@ -225,7 +224,7 @@ public class Solution implements Cloneable {
      * @return the problem's array of solutions without empty solutions
      */
     public static ArrayList<Solution> removeEmptySolutions(Problem problem) {
-        return removeEmptySolutions(problem.solutions);
+        return removeEmptySolutions(problem.getSolutionsList());
     }
 
     /**

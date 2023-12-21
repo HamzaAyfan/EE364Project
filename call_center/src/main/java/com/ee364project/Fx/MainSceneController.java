@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -52,7 +53,6 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.Tooltip;
-import javafx.scene.control.skin.TableRowSkin;
 import javafx.scene.effect.Blend;
 import javafx.scene.effect.BlendMode;
 import javafx.scene.effect.ColorInput;
@@ -60,7 +60,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -79,9 +78,7 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
-import javafx.scene.control.TablePosition;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -110,7 +107,6 @@ import javafx.util.Duration;
  * {@code pausePlay}: a thread used for pausing and playing the simulation.
  * {@code endThread}: a flag indicating the end of the simulation thread.
  * {@code executor}: a ThreadPoolExecutor for managing threads.
- * {@code checkedCount}: the count of checked items.
  * {@code customerImage}: the image for representing customers.
  * {@code agentImage}: the image for representing agents.
  * {@code callImage}: the image for representing calls.
@@ -148,11 +144,14 @@ public class MainSceneController {
     private static final int MAX_RECENT_FILES = 5;
     private static Phaser phaser = new Phaser(0);
     private Thread pausePlay = new Thread();
+    /**
+     * Indicates whehter to end the current thread or not.
+     */
     public static boolean endThread;
     private static ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
-    private int checkedCount = 0;
     private ChangeListener<Number> timePropertyListener;
     private static long callCount;
+    private int lastMaxIndex = -1;
 
     // initializing the images that is going to be used for loading the main stage
     private Image customerImage = new Image("com\\ee364project\\Fx\\resources\\user.png");
@@ -160,6 +159,11 @@ public class MainSceneController {
     private Image callImage = new Image("com\\ee364project\\Fx\\resources\\green.jpg");
     private CallCenter callCenter;
     private Timeline timerTimeline;
+
+    /**
+     * Indicate whehter the UI is running or not.
+     */
+    public static boolean running = true;
 
     @FXML
     private Text ActiveText;
@@ -193,6 +197,9 @@ public class MainSceneController {
     private CheckMenuItem phase2MenItem;
     @FXML
     private VBox Vox;
+    /**
+     * The VBox for the call.
+     */
     @FXML
     public VBox CallVbox;
     @FXML
@@ -653,8 +660,15 @@ public class MainSceneController {
         }
     }
 
-    // this method helps us to add toolTips for both customers and agents by taking
-    // thier representing rectangle and the text we want to display
+/**
+ * Adds a tooltip to a rectangle, providing additional information when the mouse hovers over it.
+ *
+ * This method helps to add tooltips for both customers and agents by associating a rectangle
+ * representing them and the text to be displayed in the tooltip.
+ *
+ * @param rectangle The rectangle representing the customer or agent.
+ * @param tooltipText The text to be displayed in the tooltip.
+ */
     @FXML
     private void addTooltip(Rectangle rectangle, String tooltipText) {
         Tooltip tooltip = new Tooltip(tooltipText);
@@ -671,10 +685,13 @@ public class MainSceneController {
         });
     }
 
-    // this method allows the user to create his own call center environment by
-    // asking him to enter the main
-    // parameters that synethize a call center, which are the number of customer,
-    // agents, departments, and problems
+/**
+ * Opens an input dialog to allow the user to create a new call center environment by entering parameters.
+ *
+ * This method displays an input dialog prompting the user to enter the main parameters that define a call center:
+ * the number of customers, agents, departments, and problems. After the user enters the parameters, it generates fake
+ * problems and departments based on the user's input and creates fake customers and agents accordingly.
+ */
     void newCosbtnClicked() {
         TextInputDialog inputDialog = new TextInputDialog();
         inputDialog.setTitle("Input Dialog");
@@ -730,13 +747,26 @@ public class MainSceneController {
             }
         });
     }
-
+/**
+ * Handles the "New" menu item click event, triggering the creation of a new call center environment.
+ * This method delegates to the {@link #newCosbtnClicked()} method.
+ *
+ * @param event The ActionEvent triggered by clicking the "New" menu item.
+ */
     @FXML
     void newCosbtnClicked(ActionEvent event) {
         newCosbtnClicked(); // the menubar item "New" will call this method whenever it was clicked
     }
-
-    // this method generates fake customers depending on the user's input
+/**
+ * Generates fake customers based on the user's input and updates the UI accordingly.
+ *
+ * This method generates a specified number of fake customers and updates the UI to display them.
+ * It uses a FlowPane to organize the visual representation of customers, consisting of an image view
+ * and a transparent rectangle. Tooltips are added to provide additional information when hovering
+ * over each customer's representation.
+ *
+ * @param number The number of fake customers to generate.
+ */
     private void generateNewCustomers(int number) {
         if (flowPane.getChildren().size() != 0) {
             flowPane.getChildren().clear();
@@ -766,7 +796,16 @@ public class MainSceneController {
         loadCustomersTable();
     }
 
-    // this method generates fake agents depending on the user's input
+/**
+ * Generates fake agents based on the user's input and updates the UI accordingly.
+ *
+ * This method generates a specified number of fake agents and updates the UI to display them.
+ * It uses a VBox (vertical box) to organize the visual representation of agents, consisting of an
+ * image view and a transparent rectangle. Tooltips are added to provide additional information when
+ * hovering over each agent's representation.
+ *
+ * @param number The number of fake agents to generate.
+ */
     private void generateNewAgents(int number) {
         if (AgentVbox.getChildren().size() != 0) {
             AgentVbox.getChildren().clear();
@@ -799,8 +838,15 @@ public class MainSceneController {
         System.out.println("Finished agents");
     }
 
-    private int lastMaxIndex = -1;
 
+/**
+ * Highlights the row of the customer with the maximum wait time in the customer table.
+ *
+ * This method identifies the customer with the maximum wait time, finds its corresponding row index in
+ * the customer table, and highlights that row. If the identified row index is the same as the last highlighted
+ * index, the method does nothing to avoid unnecessary refreshes. The method utilizes the {@code resetHighlightRows}
+ * and {@code highlightRow} methods to handle the highlighting logic.
+ */
     public void highlightMax() {
         Customer maxCustomer = Customer.getAllMaxWaitTime();
         int maxCustomerIndex = 0;
@@ -821,7 +867,17 @@ public class MainSceneController {
             customerTable.refresh();
         }
     }
-
+/**
+ * Highlights a specific row in the customer table.
+ *
+ * This method sets a custom background color for the specified row in the customer table.
+ * It utilizes the {@code setStyle} method to apply the styling. The highlighted row will have
+ * a red background color, and other rows will have the default background color. This method is
+ * typically used in conjunction with the {@code highlightMax} method to visually emphasize specific
+ * rows, such as the one representing the customer with the maximum wait time.
+ *
+ * @param rowIndex The index of the row to be highlighted in the customer table.
+ */
     private void highlightRow(int rowIndex) {
             customerTable.setRowFactory(tv -> new TableRow<>() {
             @Override
@@ -836,7 +892,14 @@ public class MainSceneController {
         });
     }
 
-    // Function to reset changes and remove background color
+/**
+ * Resets the highlighting of all rows in the customer table.
+ *
+ * This method sets the style of all rows in the customer table to the default background color,
+ * effectively removing any previous highlighting. It utilizes the {@code setStyle} method to apply
+ * the styling. This method is typically used when there's a need to clear or reset the highlighting
+ * of rows in the customer table, ensuring a clean visual state.
+ */
     private void resetHighlightRows() {
         customerTable.setRowFactory(tv -> new TableRow<>() {
             @Override
@@ -846,7 +909,15 @@ public class MainSceneController {
             }
         });
     }
-
+/**
+ * Highlights the visual representation of customers in the UI based on their current state.
+ *
+ * This method iterates through the array of customers, retrieves their visual representation from
+ * the UI, and applies specific highlights based on their current state. The highlights are applied by
+ * adjusting the properties of the ImageView associated with each customer. Different states result in
+ * different highlight colors (green for INCALL, yellow for WAITING, blue for CHECK_FAQS), while the
+ * default state removes any applied effects.
+ */
     public void highlightCustomers() {
         int index = 0;
         for (Customer customer : customers) {
@@ -875,7 +946,20 @@ public class MainSceneController {
         }
     }
 
-    // Method to apply ColorAdjust effect to highlight an ImageView
+/**
+ * Applies a highlight effect to an ImageView based on specified color and opacity values.
+ *
+ * This method creates a ColorInput with the specified color and opacity and uses it as the top input
+ * for a Blend effect with the MULTIPLY blending mode. The resulting Blend effect is then set as the effect
+ * for the provided ImageView. This process creates a visual highlight effect by adjusting the color and opacity
+ * of the original image.
+ *
+ * @param imageView The ImageView to which the highlight effect will be applied.
+ * @param red       The red component of the highlight color (0.0 to 1.0).
+ * @param green     The green component of the highlight color (0.0 to 1.0).
+ * @param blue      The blue component of the highlight color (0.0 to 1.0).
+ * @param opacity   The opacity of the highlight effect (0.0 to 1.0).
+ */
     private void applyHighlight(ImageView imageView, double red, double green, double blue, double opacity) {
         ColorInput colorInput = new ColorInput(
                 0, 0, imageView.getBoundsInLocal().getWidth(), imageView.getBoundsInLocal().getHeight(),
@@ -887,7 +971,17 @@ public class MainSceneController {
         imageView.setEffect(blend);
     }
 
-    // this method is being used to show an error alert whenever is needed to pop
+/**
+ * Displays an error alert with the specified title and content.
+ *
+ * This method creates and shows an error alert using the JavaFX Alert class with the ERROR alert type.
+ * The alert includes a title, optional header text (null in this case), and content text that describes
+ * the error or provides additional information. The alert is displayed modally, and the execution is
+ * paused until the user closes the alert using the "OK" button.
+ *
+ * @param title   The title of the error alert.
+ * @param content The content text of the error alert describing the error or providing information.
+ */
     public static void showErrorAlert(String title, String content) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
@@ -895,11 +989,25 @@ public class MainSceneController {
         alert.setContentText(content);
         alert.showAndWait();
     }
-
+/**
+ * Loads customer data into the customer table.
+ *
+ * This method populates the data in the customer table by adding all customers to the table's items.
+ * The method utilizes the JavaFX TableView class and assumes that the customerTable has been properly
+ * initialized and configured with the necessary columns. By calling this method, the customer data is
+ * displayed in the UI within the customer table.
+ */
     private void loadCustomersTable() {
         customerTable.getItems().addAll(customers);
     }
-
+/**
+ * Updates the content of specific columns in the customer table.
+ *
+ * This method is responsible for updating the content of specific columns in the customer table.
+ * It sets the cell value factories for the AWTcolumn (Average Wait Time) and MAXTcolumn (Max Wait Time)
+ * columns to retrieve the corresponding values from each customer. The TableView is then refreshed to
+ * reflect the changes in the displayed data.
+ */
     private void updateCustomersTable() {
         // Load numbers into the second column when the button is clicked
 
@@ -917,7 +1025,17 @@ public class MainSceneController {
         customerTable.refresh();
     }
 
-    // this method is called when the menubar item "Save as" is clicked
+/**
+ * Handles the action when the "Save as" menu item is clicked in the File menu.
+ *
+ * This method displays a FileChooser dialog allowing the user to select a location to save the call center
+ * data as a ZIP file. It then writes CSV files for customers, agents, problems, and departments to the specified
+ * output directory. After writing the CSV files, it compresses them into a ZIP file and deletes the intermediate
+ * extraction directory. The final ZIP file is saved to the user-selected location.
+ *
+ * @param event The ActionEvent triggered when the "Save as" menu item is clicked.
+ * @throws IOException If an I/O exception occurs during file operations.
+ */
     @FXML
     void saveAsbtnClicked(ActionEvent event) throws IOException {
         FileChooser fileChooser = new FileChooser();
@@ -952,16 +1070,30 @@ public class MainSceneController {
 
     }
 
-    // when a file is clicked from the menubar item "recents" the file is handled
-    // similarly to choosing an old environment
+/**
+ * Handles the opening of a recently used file from the "Open Recent" menu.
+ *
+ * This method is called when a specific MenuItem in the "Open Recent" menu is clicked. It retrieves the selected
+ * file from the UserData of the MenuItem and then delegates the file opening process to the {@code handleOpenFile}
+ * method. The {@code handleOpenFile} method typically loads the data from the selected file into the application,
+ * treating it similarly to choosing an old environment.
+ *
+ * @param menuItem The MenuItem representing the recently used file that was clicked.
+ */
     @FXML
     private void handleOpenRecent(MenuItem menuItem) {
         File selectedFile = (File) menuItem.getUserData();
         handleOpenFile(selectedFile);
     }
 
-    // this method is responsible for updating the recentFiles whenever a file was
-    // opened
+/**
+ * Updates the "Open Recent" menu with the list of recently used files.
+ *
+ * This method clears the existing items in the "Open Recent" menu and populates it with new MenuItems,
+ * each representing a recently used file. The MenuItems are created based on the files stored in the
+ * {@code recentFiles} list. Each MenuItem is associated with an event handler that calls the {@code handleOpenRecent}
+ * method when clicked, passing the corresponding file as a parameter.
+ */
     @FXML
     private void updateRecentFilesMenu() {
         OpenRecentMenu.getItems().clear();
@@ -973,8 +1105,16 @@ public class MainSceneController {
         }
     }
 
-    // this method is being called once the program runs to load the recentFiles
-    // list with the recently opened files
+/**
+ * Loads the list of recently used files from the "recent_files.txt" file.
+ *
+ * This method reads the file paths of recently used files from a text file named "recent_files.txt".
+ * It populates the {@code recentFiles} list with File objects representing these files, ensuring uniqueness
+ * and limiting the number of recent files to {@code MAX_RECENT_FILES}. If the file "recent_files.txt" does not
+ * exist, an empty file is created. Any IOException during the process is printed to the standard error stream.
+ *
+ * @throws IOException If an I/O exception occurs during file operations.
+ */
     private void loadRecentFiles() throws IOException {
         // the loading method depends on reading the recent file paths from a text file
         // named recent_files.txt
@@ -1001,8 +1141,14 @@ public class MainSceneController {
         }
     }
 
-    // this method is called during the file handling process and it insures to save
-    // the opened file in the recent_files.txt
+/**
+ * Saves the list of recently used files to the "recent_files.txt" file.
+ *
+ * This method is called during the file handling process to ensure that the opened file is saved in the
+ * "recent_files.txt" file. It writes the absolute paths of the recently used files to the text file, ensuring
+ * uniqueness and saving only the last {@code MAX_RECENT_FILES} files. Any IOException during the process is
+ * printed to the standard error stream.
+ */
     private void saveRecentFiles() {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(RECENT_FILES_FILE))) {
             Set<String> uniquePaths = new HashSet<>();
@@ -1022,49 +1168,90 @@ public class MainSceneController {
             e.printStackTrace();
         }
     }
-
+/**
+ * Handles the action when the "Pause" button is clicked.
+ *
+ * This method is invoked in response to the "Pause" button being clicked. It pauses the timer timeline.
+ *
+ * @param event The ActionEvent triggered by the "Pause" button click.
+ */
     @FXML
     void pausebtnClicked(ActionEvent event) {
         timerTimeline.pause();
     }
-
+/**
+ * Handles the action when the "Play" button is clicked.
+ *
+ * This method is invoked in response to the "Play" button being clicked. It plays the timer timeline.
+ *
+ * @param event The ActionEvent triggered by the "Play" button click.
+ */
     @FXML
     void playbtnClicked(ActionEvent event) {
         timerTimeline.play();
     }
-
+/**
+ * Initiates the process of connecting a call by displaying a "Connecting..." label, activating the call,
+ * and connecting it to the call center.
+ *
+ * This method is responsible for updating the UI to indicate that the call is in the process of connecting.
+ * It adds a "Connecting..." label to the call's HBox, and after a brief delay, removes the label and proceeds
+ * to activate the call and connect it to the call center.
+ *
+ * @param call The Call object representing the call to be connected.
+ */
     public void connectingCall(Call call) {
         Label label = new Label("Connecting...");
-        Platform.runLater(() -> call.hbox.getChildren().add(label));
+        Platform.runLater(() -> 
+            call.getHbox().getChildren().add(label));
         PauseTransition delay = new PauseTransition(Duration.millis(600));
         delay.setOnFinished(event -> {
             // Code to execute after the delay
-            Platform.runLater(() -> call.hbox.getChildren().remove(label));
-            this.activateCall(call.hbox, call.getReceiver(), call);
+            Platform.runLater(() -> call.getHbox().getChildren().remove(label));
+            this.activateCall(call.getHbox(), call.getReceiver(), call);
             call.connectCall(CallCenter.getCallCentre());
         });
         delay.play();
     }
-
+/**
+ * Activates a call by updating the UI with relevant information such as call icon, agent details, and call number.
+ *
+ * This method is responsible for enhancing the visual representation of an active call in the UI. It adds
+ * components like the call icon, agent image, checkbox, and call number to the specified HBox. Additionally,
+ * it associates a tooltip with the agent's details for informational purposes.
+ *
+ * @param hBox  The HBox in the UI where the call components will be added.
+ * @param agent The Agent associated with the call.
+ * @param call  The Call object representing the active call.
+ */
     public void activateCall(HBox hBox, Agent agent, Call call) {
         ImageView callIcon = new ImageView(callImage);
         ImageView callImageViews = new ImageView(agentImage);
         CheckBox checkBox = call.getCheckBox();
-        Text callNumber = call.callNumber;
+        Text callNumber = call.getCallNumber();
         callIcon.setFitWidth(15);
         callIcon.setFitHeight(15);
         callImageViews.setFitWidth(30);
         callImageViews.setFitHeight(30);
-        Platform.runLater(() -> {
-            Rectangle rectangle = new Rectangle(20, 20, Color.TRANSPARENT);
-            StackPane stackPane = new StackPane();
+        Rectangle rectangle = new Rectangle(20, 20, Color.TRANSPARENT);
+        StackPane stackPane = new StackPane();
+        Platform.runLater(() -> {            
             stackPane.getChildren().addAll(callImageViews, rectangle);
             hBox.getChildren().addAll(checkBox, callIcon, stackPane, callNumber);
             addTooltip(rectangle, agent.getStringInfo());
         });
     }
 
-    public Node[] createHbox() {
+    /**
+     * Creates and returns an array of JavaFX nodes representing a graphical
+     * representation
+     * of a customer's call in the user interface.
+     *
+     * @param customer The customer associated with the call.
+     * @return An array of JavaFX nodes representing the graphical representation of
+     *         the call.
+     */
+    public Node[] createHbox(Customer customer) {
         long thisCallCount = ++callCount;
         HBox hBox = new HBox();
         CheckBox checkBox = new CheckBox();
@@ -1072,49 +1259,68 @@ public class MainSceneController {
         callnumberr.setText(String.valueOf(thisCallCount));
         hBox.setSpacing(4);
         ImageView callImageView = new ImageView(customerImage);
+        Rectangle rectangle = new Rectangle(20, 20, Color.TRANSPARENT);
+        StackPane stackPane = new StackPane();
+        stackPane.getChildren().addAll(callImageView, rectangle);
         callImageView.setFitWidth(30);
         callImageView.setFitHeight(30);
-        hBox.getChildren().add(callImageView);
+        hBox.getChildren().add(stackPane);
+        addTooltip(rectangle, customer.getStringInfo());
         HBox.setHgrow(checkBox, Priority.ALWAYS);
         checkBox.setAlignment(Pos.BOTTOM_RIGHT);
         checkBox.setOnAction(e -> handleCheckboxAction("Call" + thisCallCount, checkBox));
         Node[] pointers = { hBox, checkBox, callnumberr };
         return pointers;
     }
-
+/**
+ * Handles the action triggered by checking or unchecking a checkbox associated with a call.
+ *
+ * This method is responsible for managing the behavior when a call's checkbox is checked or unchecked.
+ * If a checkbox is checked, it creates or shows the associated dialog window for the call. If unchecked, 
+ * it closes or exits the associated dialog window.
+ *
+ * @param callNumber The identifier of the call associated with the checkbox.
+ * @param checkbox   The checkbox representing the call.
+ */
     public void handleCheckboxAction(String callNumber, CheckBox checkbox) {
-        if (checkedCount >= 3) {
-            checkbox.setSelected(false);
-            return;
-        }
+        HashMap<CheckBox, DialogeBox> checkBoxLink = Call.getLinkBetweenCheckBoxesAndDialoge();
+        HashMap<CheckBox, Call> callLink = Call.getLinkBetweenCheckBoxesAndCalls();
         if (checkbox.isSelected()) {
-            checkedCount++;
-            if (Call.linkCBtoDB.containsKey(checkbox)) {
+            if (checkBoxLink.containsKey(checkbox)) {
                 if (!endThread) {
-                    Call.linkCBtoDB.get(checkbox).showWindow();
+                    checkBoxLink.get(checkbox).showWindow();
                     return;
                 }
             }
-            Call call = Call.CheckBoxAndCall.get(checkbox);
+            Call call = callLink.get(checkbox);
             Runnable dialoge = new DialogeBox(callNumber, phaser, call);
-            Call.linkCBtoDB.put(checkbox, (DialogeBox) dialoge);
+            checkBoxLink.put(checkbox, (DialogeBox) dialoge);
             executor.execute(dialoge);
 
         } else {
-            checkedCount--;
             if (!endThread) {
-                Call.linkCBtoDB.get(checkbox).closeWindow();
+                checkBoxLink.get(checkbox).closeWindow();
                 return;
             }
             try {
-                Call.linkCBtoDB.get(checkbox).exit();
-                Call.linkCBtoDB.remove(checkbox);
+                
+                checkBoxLink.get(checkbox).exit();
+                checkBoxLink.remove(checkbox);
             } catch (NullPointerException e) {
+                return;
             }
 
         }
     }
-
+/**
+ * Checks the simulation progress and prompts the user for a decision at regular intervals.
+ *
+ * This method is called periodically to assess the simulation progress. If the current time is a multiple
+ * of 50, the simulation is paused, and a custom confirmation dialog is presented to the user. The user can choose
+ * to end the simulation and view the results or continue with the simulation.
+ *
+ * The results include total call count, total wait time, and average wait time for all customers.
+ */
     public void checkPoint() {
         if (Timekeeper.getTime() % 50 == 0) {
             pause();
@@ -1151,7 +1357,15 @@ public class MainSceneController {
 
         }
     }
-
+/**
+ * Displays an exit message with simulation results and prompts the user to close the application.
+ *
+ * This method creates an information dialog with the provided message, displaying simulation results.
+ * It includes a "Close" button for the user to acknowledge the results. If the user clicks the "Close" button,
+ * the application is exited.
+ *
+ * @param message The message containing simulation results to be displayed in the dialog.
+ */
     private void displayExitMessage(String message) {
         ButtonType closeButton = new ButtonType("Close");
         Alert alert = new Alert(Alert.AlertType.INFORMATION, message, closeButton);
@@ -1165,10 +1379,12 @@ public class MainSceneController {
             System.out.println("User clicked Yes --> Ended");
         }
     }
-
-    public static boolean running = true;
-    public static int i = 0;
-
+/**
+ * Handles the ActionEvent when the "phase2MenItem" menu item is selected or deselected.
+ * Updates the "Vars.projectPhase" variable based on the selection state of the menu item.
+ *
+ * @param event The ActionEvent triggered by selecting or deselecting the menu item.
+ */    
     @FXML
     void phaseChecked(ActionEvent event) {
         if (phase2MenItem.isSelected()) {
@@ -1177,7 +1393,13 @@ public class MainSceneController {
             Vars.projectPhase = false;
         }
     }
-
+/**
+ * Handles the ActionEvent when the "Start" button is clicked.
+ * Initiates the simulation by creating a new CallCenter and starting a thread to simulate the call center operations.
+ * Additionally, starts the timer for time tracking during the simulation.
+ *
+ * @param event The ActionEvent triggered by clicking the "Start" menu.
+ */
     @FXML
     void startbtnClicked(ActionEvent event) {
         try {
@@ -1193,12 +1415,9 @@ public class MainSceneController {
                         customer.step();
                     }
 
-                    for (Call call : Call.activeCalls) {
+                    for (Call call : Call.getActiveCalls()) {
                         call.step();
-
                     }
-                    // TODO: Why is this causing problems?
-                    // ActiveText.setText(String.valueOf(Call.activeCalls.size()));
                     Call.terminateCalls();
                     callCenter.step();
                     Timekeeper.step();
@@ -1209,16 +1428,12 @@ public class MainSceneController {
                     try {
                         Thread.sleep(Timekeeper.getDelayMs());
                     } catch (InterruptedException e) {
-                        // TODO Auto-generated catch block
                         e.printStackTrace();
                     } finally {
                         phaser.arriveAndAwaitAdvance();
                         HeapSizeChecker.checkMemory();
                         Platform.setImplicitExit(true);
                     }
-                    // if(i==100)
-                    // {System.out.println("step");}
-                    // i++;
                 }
             }).start();
 
@@ -1233,6 +1448,7 @@ public class MainSceneController {
             }
         } catch (Exception e) {
             showErrorAlert("Starting Simulation", "Environment is not Loaded");
+            return;
         }
     }
 }

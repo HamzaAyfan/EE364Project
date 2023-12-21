@@ -6,12 +6,19 @@ import com.ee364project.Fx.MainSceneController;
 
 /**
  * Represents a simulated call center with agents, call handling, and availability tracking.
- * <p>
+ * 
  * This class models the behavior of a call center, managing agents, call assignments, and availability.
  * It is part of a simulation and implements the {@link Simulated} interface for time-based steps.
- * </p>
+ * 
  *
- * <p><b>Thread Safety:</b> Ensure proper synchronization if used in a multi-threaded environment.</p>
+ * <b>Fields:</b>
+ * <ul>
+ *     <li>{@code HashMap<Agent, Boolean> agentAvailability}: A mapping of agents to their availability status.
+ *     <li>{@code LinkedList<Agent> availableAgents}: A linked list containing available agents.
+ *     <li>{@code MainSceneController msc}: The main scene controller for the call center simulation.
+ *     <li>{@code static CallCenter callCenter}: The static instance of the {@code CallCenter}.
+ * </ul>
+ * 
  *
  * @author Team 2
  * @version 1.0
@@ -19,13 +26,9 @@ import com.ee364project.Fx.MainSceneController;
  * */
 public class CallCenter implements Simulated {    
     private HashMap<Agent, Boolean> agentAvailability = new HashMap<>();
-    //Hashmap with key representing each agent and value represnting the avaiblity through true(availble) and false(unavailble)
     private LinkedList<Agent> availableAgents;
-    //LinkedList showing all avaible agents
     private MainSceneController msc = new MainSceneController();
-    // Object of MainSceneController used to edit GUI
     private static CallCenter callCenter;
-    //Instant of the call centre is saved as a static variable in the contructor to each access
 
 /**
 * Constructs a CallCenter object with the given array of agents. Initializes the list

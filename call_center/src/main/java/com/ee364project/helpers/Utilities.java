@@ -1,6 +1,5 @@
 package com.ee364project.helpers;
 
-
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -16,7 +15,13 @@ import net.datafaker.providers.base.Job;
  */
 
 public class Utilities {
+    /**
+     * Used as unified RNG across the project.
+     */
     public static Random random = new Random();
+    /**
+     * Used as unified fake data generator across the project.
+     */
     public static Faker faker = new Faker();
 
     /**
@@ -32,7 +37,7 @@ public class Utilities {
         try {
             for (int i = 0; i < count; i++) {
                 Class<?> dataClass = Class.forName(Vars.projectPrefix + cls);
-                object = (HasData) dataClass.getDeclaredConstructor().newInstance();    // chain: java
+                object = (HasData) dataClass.getDeclaredConstructor().newInstance(); // chain: java
                 object.shuffle();
                 objects.add(object);
             }
@@ -51,12 +56,20 @@ public class Utilities {
      * @return a string representation of the object
      */
     public static String prettyToString(String cls, Object... attrs) {
+        // defines a common these for string printing for data classes.
+
         String accumlate = "";
+
+        // sepeartes each attr with command add applies this format: attrName=attrValue
         for (int i = 0; i < attrs.length; i++) {
             accumlate += "" + attrs[i] + ", ";
         }
+        
+        // this exludes the extra space and comma of the last element
         int length = accumlate.length();
         accumlate = accumlate.substring(0, length - 2);
+
+        // close with parens
         return cls + "(" + accumlate + ")";
     }
 
@@ -94,19 +107,25 @@ public class Utilities {
      * @return a random LocalDateTime object that is n months in the past
      */
     public static LocalDateTime getRandomLocalDateTime(int n) {
+        // first get the local time
         LocalDateTime now = LocalDateTime.now();
+
+        // deduct the number of months from now
         LocalDateTime startDate = now.minus(n, ChronoUnit.MONTHS);
+
+        // will use seconds since it is the base time unit for the entire sim
         ChronoUnit seconds = ChronoUnit.SECONDS;
         long secondsBetween = seconds.between(startDate, now);
 
+        // return the random date
         long duration = (long) (secondsBetween * random.nextDouble());
         return startDate.plus(duration, ChronoUnit.SECONDS);
     }
 
     /**
-     * This method generates a random LocalDateTime object that is n months in the
-     * past.
-     * Defaults to n=6.
+     * Generates and returns a random LocalDateTime within the past 6 days.
+     *
+     * @return A random LocalDateTime within the past 6 days.
      */
     public static LocalDateTime getRandLocalDateTime() {
         return getRandomLocalDateTime(6);
@@ -125,8 +144,11 @@ public class Utilities {
     }
 
     /**
-     * This method returns a random object from the specified array.
-     * 
+     * Returns a random element from the provided ArrayList.
+     *
+     * @param objects An ArrayList of objects from which to select a random element.
+     * @return A randomly selected element from the ArrayList, or null if the
+     *         ArrayList is empty.
      */
     public static Object getRandomFromArray(ArrayList<?> objects) {
         int length = objects.size();
@@ -143,12 +165,16 @@ public class Utilities {
      * @return a random array of strings of the specified length
      */
     public static String[] getRandomStringArray(int len) {
+
+        // the array must have at least one element.
         if (len <= 0) {
             len = 1;
         }
         int x;
         String inStr;
         String[] str = new String[len];
+
+        // will populate the array with random words
         Job fakerCategory = faker.job();
         for (int i = 0; i < len; i++) {
             x = random.nextInt(19);

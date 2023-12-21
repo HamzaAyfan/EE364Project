@@ -49,6 +49,11 @@ public class Ratio {
         return this.value;
     }
 
+    /**
+     * Sets the value for the object.
+     *
+     * @param value The new value to set.
+     */
     public void setValue(double value) {
         this.value = value;
     }

@@ -11,9 +11,9 @@ import net.datafaker.providers.base.Company;
 
 /**
  * Represents a department implementing the HasData interface.
- * <p>
+ * 
  * This class provides methods for creating, retrieving, and manipulating Department objects.
- * </p>
+ * 
   *
  * @author Team 2
  * @version 1.0
@@ -33,11 +33,11 @@ public class Department implements HasData {
 
     /**
     * Creates a new department with the specified name.
-    * <p>
+    * 
     * This method provides a convenient way to instantiate a new {@code Department}
     * object with the given name. It is designed for simplicity and is equivalent
     * to calling the {@link Department#Department(String)} constructor directly.
-    * </p>
+    * 
     *
     * @param name The name of the new department.
     * @return A new {@code Department} instance with the specified name.
@@ -50,11 +50,11 @@ public class Department implements HasData {
 
     /**
     * Returns the provided department without creating a new instance.
-    * <p>
+    * 
     * This method simply returns the same {@code Department} instance that is
     * passed as a parameter. It is designed for cases where you want to provide
     * a method that does not create a new department but returns an existing one.
-    * </p>
+    * 
     *
     * @param department The department to be returned.
     * @return The same {@code Department} instance that is passed as a parameter.
@@ -66,12 +66,12 @@ public class Department implements HasData {
 
     /**
     * Retrieves a department by its name, creating a new instance if not found.
-    * <p>
+    * 
     * This method attempts to retrieve a {@code Department} instance from a collection
     * of all departments based on the provided name. If a department with the given
     * name is found, it is returned. Otherwise, a new {@code Department} instance is
     * created with the provided name and added to the collection before being returned.
-    * </p>
+    * 
     *
     * @param name The name of the department to retrieve or create.
     * @return The {@code Department} instance associated with the provided name. If
@@ -89,16 +89,16 @@ public class Department implements HasData {
 
     /**
     * Retrieves a constant instance representing the absence of a department.
-    * <p>
+    * 
     * This method returns a predefined constant instance of the {@code Department}
     * class, indicating the absence of a specific department. It is useful when you
     * want to represent scenarios where an object does not belong to any particular
     * department.
-    * </p>
-    * <p>
+    * 
+    * 
     * The constant instance returned by this method is shared among all callers
     * and remains unchanged throughout the program's execution.
-    * </p>
+    * 
     *
     * @return The predefined instance representing the absence of a department.
     */
@@ -109,10 +109,10 @@ public class Department implements HasData {
 
     /**
     * Constructs a new department with the specified name.
-    * <p>
+    * 
     * This constructor creates a new {@code Department} instance with the provided name.
     * The department is added to the collection of all departments for easy retrieval.
-    * </p>
+    * 
     *
     * @param name The name of the new department.
     */
@@ -123,11 +123,11 @@ public class Department implements HasData {
 
     /**
     * Constructs a new department with a default name.
-    * <p>
+    * 
     * This constructor creates a new {@code Department} instance with a default name,
     * equivalent to calling the parameterized constructor with the default name provided
     * by the {@link Vars#NONE} constant.
-    * </p>
+    * 
     */
     public Department() {
         this(Vars.NONE);
@@ -143,10 +143,10 @@ public class Department implements HasData {
     }
     /**
     * Returns a formatted string representation of the department.
-    * <p>
+    * 
     * This method generates a string containing the class name and the name of the department
     * in a human-readable format. It is intended for debugging and logging purposes.
-    * </p>
+    * 
     *
     * @return A formatted string representation of the department.
     */
@@ -156,10 +156,10 @@ public class Department implements HasData {
     }
     /**
     * Retrieves a collection of all departments.
-    * <p>
+    * 
     * This method returns a reference to the internal collection containing all department instances.
     * It allows external access to the complete set of departments for informational or manipulative purposes.
-    * </p>
+    * 
     *
     * @return A {@code HashMap} containing all departments, where keys are department names, and values are department instances.
     */
@@ -168,11 +168,11 @@ public class Department implements HasData {
     }
     /**
     * Retrieves the data type name associated with the department.
-    * <p>
+    * 
     * This method returns the class name representing the data type of the department.
     * It is used to identify the type of data when working with classes that implement
     * the {@code HasData} interface.
-    * </p>
+    * 
     *
     * @return The data type name associated with the department.
     */
@@ -182,11 +182,11 @@ public class Department implements HasData {
     }
     /**
     * Retrieves the headers representing data fields in the department.
-    * <p>
+    * 
     * This method returns an array of strings representing the headers or names of data fields
     * associated with the department. It is used in conjunction with the {@code getData} method
     * when working with classes that implement the {@code HasData} interface.
-    * </p>
+    * 
     *
     * @return An array of strings representing the headers of data fields in the department.
     */
@@ -196,11 +196,11 @@ public class Department implements HasData {
     }
     /**
     * Retrieves the data representation of the department.
-    * <p>
+    * 
     * This method returns a two-dimensional array of strings representing the data
     * associated with the department. The array typically includes a row of headers
     * obtained from the {@code getHeaders} method and a row of data fields.
-    * </p>
+    * 
     *
     * @return A two-dimensional array of strings representing the data of the department.
     */
@@ -213,12 +213,12 @@ public class Department implements HasData {
     }
     /**
     * Parses an array of data fields and updates the department's properties.
-    * <p>
+    * 
     * This method takes an array of strings representing data fields and updates the
     * properties of the department accordingly. The order and format of data fields
     * should match the expected structure defined by the {@code getHeaders} and {@code getData}
     * methods when working with classes that implement the {@code HasData} interface.
-    * </p>
+    * 
     *
      * @param dataFields An array of strings representing data fields for the department.
     * @return The updated department instance.
@@ -230,12 +230,12 @@ public class Department implements HasData {
     }
     /**
     * Shuffles the department, updating its name with a random department name.
-    * <p>
+    * 
     * This method removes the department from the collection of all departments, generates
     * a new random industry name using a utility method, updates the department's name, and
     * adds it back to the collection. It is designed for scenarios where a department's name
     * needs to be refreshed randomly.
-    * </p>
+    * 
     *
     * @return The updated department instance with a new random name.
     */
@@ -251,15 +251,16 @@ public class Department implements HasData {
     }
     /**
     * Retrieves a randomly selected department from the collection of all departments.
-    * <p>
+    * 
     * This method returns a randomly selected {@code Department} instance from the
     * collection of all departments. It is useful when you need to obtain a department
     * at random for various scenarios, such as simulations or testing.
-    * </p>
+    * 
     *
     * @return A randomly selected {@code Department} instance.
     */
     public static Department getRandomDepartment() {
+        // a sequence for getting a random department.
         HashMap<String, Department> deps = Department.getAllDepartments();
         int size = deps.size();
         int randomIndex = Utilities.random.nextInt(size);
