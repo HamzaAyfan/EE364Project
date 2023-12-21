@@ -16,13 +16,11 @@ import javafx.stage.Stage;
  */
 public class MainFx extends Application {
     /**
-    * This method is the entry point for the JavaFX application after launch in the {@link MainClass#main(String[])} method.. 
-    * It initializes and displays the main stage with the specified FXML file. Additionally, it sets up the main scene,
-    * handles the close request event, and initializes the Yes/No dialog through the MainSceneController.
-    *
-    * @param primaryStage The primary stage of the JavaFX application.
-    * @throws Exception If an error occurs during the initialization of the program.
-    */
+     * The starting point of the JavaFX application.
+     *
+     * @param primaryStage The primary stage for the application.
+     * @throws Exception If an error occurs during application initialization.
+     */
     @Override
     public void start(Stage primaryStage) throws Exception {
         try {

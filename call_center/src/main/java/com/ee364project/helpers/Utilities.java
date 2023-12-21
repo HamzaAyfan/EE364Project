@@ -1,6 +1,5 @@
 package com.ee364project.helpers;
 
-
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -16,7 +15,13 @@ import net.datafaker.providers.base.Job;
  */
 
 public class Utilities {
+    /**
+     * Used as unified RNG across the project.
+     */
     public static Random random = new Random();
+    /**
+     * Used as unified fake data generator across the project.
+     */
     public static Faker faker = new Faker();
 
     /**
@@ -32,7 +37,7 @@ public class Utilities {
         try {
             for (int i = 0; i < count; i++) {
                 Class<?> dataClass = Class.forName(Vars.projectPrefix + cls);
-                object = (HasData) dataClass.getDeclaredConstructor().newInstance();    // chain: java
+                object = (HasData) dataClass.getDeclaredConstructor().newInstance(); // chain: java
                 object.shuffle();
                 objects.add(object);
             }
@@ -104,9 +109,9 @@ public class Utilities {
     }
 
     /**
-     * This method generates a random LocalDateTime object that is n months in the
-     * past.
-     * Defaults to n=6.
+     * Generates and returns a random LocalDateTime within the past 6 days.
+     *
+     * @return A random LocalDateTime within the past 6 days.
      */
     public static LocalDateTime getRandLocalDateTime() {
         return getRandomLocalDateTime(6);
@@ -125,8 +130,11 @@ public class Utilities {
     }
 
     /**
-     * This method returns a random object from the specified array.
-     * 
+     * Returns a random element from the provided ArrayList.
+     *
+     * @param objects An ArrayList of objects from which to select a random element.
+     * @return A randomly selected element from the ArrayList, or null if the
+     *         ArrayList is empty.
      */
     public static Object getRandomFromArray(ArrayList<?> objects) {
         int length = objects.size();

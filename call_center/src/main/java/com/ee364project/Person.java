@@ -8,15 +8,19 @@ import java.util.Random;
  * All instances of the class share a common list, {@code allPersons}, which
  * stores references to every created person.
  *
- * <p>Each person has a randomly generated tag, and the class provides methods
+ * 
+ * Each person has a randomly generated tag, and the class provides methods
  * to access and manipulate the person's information.
  *
- * <p><b>Fields:</b>
+ * 
+ * <b>Fields:</b>
  * <ul>
- *   <li>{@code allPersons}: A static {@code ArrayList} containing references to all created persons.</li>
- *   <li>{@code name}: The name of the person.</li>
- *   <li>{@code random}: A {@code Random} instance for generating random values.</li>
- *   <li>{@code tag}: The tag associated with the person.</li>
+ * <li>{@code allPersons}: A static {@code ArrayList} containing references to
+ * all created persons.</li>
+ * <li>{@code name}: The name of the person.</li>
+ * <li>{@code random}: A {@code Random} instance for generating random
+ * values.</li>
+ * <li>{@code tag}: The tag associated with the person.</li>
  * </ul>
  * 
  * @author Team 2
@@ -54,7 +58,6 @@ public abstract class Person implements HasData, Simulated {
         this.name = name;
     }
 
-    
     /**
      * Returns the number of milliseconds of sleep time for the person
      * 

@@ -6,10 +6,10 @@ import com.ee364project.Fx.MainSceneController;
 
 /**
  * Represents a simulated call center with agents, call handling, and availability tracking.
- * <p>
+ * 
  * This class models the behavior of a call center, managing agents, call assignments, and availability.
  * It is part of a simulation and implements the {@link Simulated} interface for time-based steps.
- * </p>
+ * 
  *
  * <b>Fields:</b>
  * <ul>

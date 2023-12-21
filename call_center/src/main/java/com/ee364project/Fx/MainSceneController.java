@@ -144,6 +144,9 @@ public class MainSceneController {
     private static final int MAX_RECENT_FILES = 5;
     private static Phaser phaser = new Phaser(0);
     private Thread pausePlay = new Thread();
+    /**
+     * Indicates whehter to end the current thread or not.
+     */
     public static boolean endThread;
     private static ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
     private ChangeListener<Number> timePropertyListener;
@@ -156,6 +159,10 @@ public class MainSceneController {
     private Image callImage = new Image("com\\ee364project\\Fx\\resources\\green.jpg");
     private CallCenter callCenter;
     private Timeline timerTimeline;
+
+    /**
+     * Indicate whehter the UI is running or not.
+     */
     public static boolean running = true;
 
     @FXML
@@ -190,6 +197,9 @@ public class MainSceneController {
     private CheckMenuItem phase2MenItem;
     @FXML
     private VBox Vox;
+    /**
+     * The VBox for the call.
+     */
     @FXML
     public VBox CallVbox;
     @FXML
@@ -653,7 +663,7 @@ public class MainSceneController {
 /**
  * Adds a tooltip to a rectangle, providing additional information when the mouse hovers over it.
  *
- * <p>This method helps to add tooltips for both customers and agents by associating a rectangle
+ * This method helps to add tooltips for both customers and agents by associating a rectangle
  * representing them and the text to be displayed in the tooltip.
  *
  * @param rectangle The rectangle representing the customer or agent.
@@ -678,7 +688,7 @@ public class MainSceneController {
 /**
  * Opens an input dialog to allow the user to create a new call center environment by entering parameters.
  *
- * <p>This method displays an input dialog prompting the user to enter the main parameters that define a call center:
+ * This method displays an input dialog prompting the user to enter the main parameters that define a call center:
  * the number of customers, agents, departments, and problems. After the user enters the parameters, it generates fake
  * problems and departments based on the user's input and creates fake customers and agents accordingly.
  */
@@ -750,7 +760,7 @@ public class MainSceneController {
 /**
  * Generates fake customers based on the user's input and updates the UI accordingly.
  *
- * <p>This method generates a specified number of fake customers and updates the UI to display them.
+ * This method generates a specified number of fake customers and updates the UI to display them.
  * It uses a FlowPane to organize the visual representation of customers, consisting of an image view
  * and a transparent rectangle. Tooltips are added to provide additional information when hovering
  * over each customer's representation.
@@ -789,7 +799,7 @@ public class MainSceneController {
 /**
  * Generates fake agents based on the user's input and updates the UI accordingly.
  *
- * <p>This method generates a specified number of fake agents and updates the UI to display them.
+ * This method generates a specified number of fake agents and updates the UI to display them.
  * It uses a VBox (vertical box) to organize the visual representation of agents, consisting of an
  * image view and a transparent rectangle. Tooltips are added to provide additional information when
  * hovering over each agent's representation.
@@ -832,7 +842,7 @@ public class MainSceneController {
 /**
  * Highlights the row of the customer with the maximum wait time in the customer table.
  *
- * <p>This method identifies the customer with the maximum wait time, finds its corresponding row index in
+ * This method identifies the customer with the maximum wait time, finds its corresponding row index in
  * the customer table, and highlights that row. If the identified row index is the same as the last highlighted
  * index, the method does nothing to avoid unnecessary refreshes. The method utilizes the {@code resetHighlightRows}
  * and {@code highlightRow} methods to handle the highlighting logic.
@@ -860,7 +870,7 @@ public class MainSceneController {
 /**
  * Highlights a specific row in the customer table.
  *
- * <p>This method sets a custom background color for the specified row in the customer table.
+ * This method sets a custom background color for the specified row in the customer table.
  * It utilizes the {@code setStyle} method to apply the styling. The highlighted row will have
  * a red background color, and other rows will have the default background color. This method is
  * typically used in conjunction with the {@code highlightMax} method to visually emphasize specific
@@ -885,7 +895,7 @@ public class MainSceneController {
 /**
  * Resets the highlighting of all rows in the customer table.
  *
- * <p>This method sets the style of all rows in the customer table to the default background color,
+ * This method sets the style of all rows in the customer table to the default background color,
  * effectively removing any previous highlighting. It utilizes the {@code setStyle} method to apply
  * the styling. This method is typically used when there's a need to clear or reset the highlighting
  * of rows in the customer table, ensuring a clean visual state.
@@ -902,7 +912,7 @@ public class MainSceneController {
 /**
  * Highlights the visual representation of customers in the UI based on their current state.
  *
- * <p>This method iterates through the array of customers, retrieves their visual representation from
+ * This method iterates through the array of customers, retrieves their visual representation from
  * the UI, and applies specific highlights based on their current state. The highlights are applied by
  * adjusting the properties of the ImageView associated with each customer. Different states result in
  * different highlight colors (green for INCALL, yellow for WAITING, blue for CHECK_FAQS), while the
@@ -939,7 +949,7 @@ public class MainSceneController {
 /**
  * Applies a highlight effect to an ImageView based on specified color and opacity values.
  *
- * <p>This method creates a ColorInput with the specified color and opacity and uses it as the top input
+ * This method creates a ColorInput with the specified color and opacity and uses it as the top input
  * for a Blend effect with the MULTIPLY blending mode. The resulting Blend effect is then set as the effect
  * for the provided ImageView. This process creates a visual highlight effect by adjusting the color and opacity
  * of the original image.
@@ -964,7 +974,7 @@ public class MainSceneController {
 /**
  * Displays an error alert with the specified title and content.
  *
- * <p>This method creates and shows an error alert using the JavaFX Alert class with the ERROR alert type.
+ * This method creates and shows an error alert using the JavaFX Alert class with the ERROR alert type.
  * The alert includes a title, optional header text (null in this case), and content text that describes
  * the error or provides additional information. The alert is displayed modally, and the execution is
  * paused until the user closes the alert using the "OK" button.
@@ -982,7 +992,7 @@ public class MainSceneController {
 /**
  * Loads customer data into the customer table.
  *
- * <p>This method populates the data in the customer table by adding all customers to the table's items.
+ * This method populates the data in the customer table by adding all customers to the table's items.
  * The method utilizes the JavaFX TableView class and assumes that the customerTable has been properly
  * initialized and configured with the necessary columns. By calling this method, the customer data is
  * displayed in the UI within the customer table.
@@ -993,7 +1003,7 @@ public class MainSceneController {
 /**
  * Updates the content of specific columns in the customer table.
  *
- * <p>This method is responsible for updating the content of specific columns in the customer table.
+ * This method is responsible for updating the content of specific columns in the customer table.
  * It sets the cell value factories for the AWTcolumn (Average Wait Time) and MAXTcolumn (Max Wait Time)
  * columns to retrieve the corresponding values from each customer. The TableView is then refreshed to
  * reflect the changes in the displayed data.
@@ -1018,7 +1028,7 @@ public class MainSceneController {
 /**
  * Handles the action when the "Save as" menu item is clicked in the File menu.
  *
- * <p>This method displays a FileChooser dialog allowing the user to select a location to save the call center
+ * This method displays a FileChooser dialog allowing the user to select a location to save the call center
  * data as a ZIP file. It then writes CSV files for customers, agents, problems, and departments to the specified
  * output directory. After writing the CSV files, it compresses them into a ZIP file and deletes the intermediate
  * extraction directory. The final ZIP file is saved to the user-selected location.
@@ -1063,7 +1073,7 @@ public class MainSceneController {
 /**
  * Handles the opening of a recently used file from the "Open Recent" menu.
  *
- * <p>This method is called when a specific MenuItem in the "Open Recent" menu is clicked. It retrieves the selected
+ * This method is called when a specific MenuItem in the "Open Recent" menu is clicked. It retrieves the selected
  * file from the UserData of the MenuItem and then delegates the file opening process to the {@code handleOpenFile}
  * method. The {@code handleOpenFile} method typically loads the data from the selected file into the application,
  * treating it similarly to choosing an old environment.
@@ -1079,7 +1089,7 @@ public class MainSceneController {
 /**
  * Updates the "Open Recent" menu with the list of recently used files.
  *
- * <p>This method clears the existing items in the "Open Recent" menu and populates it with new MenuItems,
+ * This method clears the existing items in the "Open Recent" menu and populates it with new MenuItems,
  * each representing a recently used file. The MenuItems are created based on the files stored in the
  * {@code recentFiles} list. Each MenuItem is associated with an event handler that calls the {@code handleOpenRecent}
  * method when clicked, passing the corresponding file as a parameter.
@@ -1098,7 +1108,7 @@ public class MainSceneController {
 /**
  * Loads the list of recently used files from the "recent_files.txt" file.
  *
- * <p>This method reads the file paths of recently used files from a text file named "recent_files.txt".
+ * This method reads the file paths of recently used files from a text file named "recent_files.txt".
  * It populates the {@code recentFiles} list with File objects representing these files, ensuring uniqueness
  * and limiting the number of recent files to {@code MAX_RECENT_FILES}. If the file "recent_files.txt" does not
  * exist, an empty file is created. Any IOException during the process is printed to the standard error stream.
@@ -1134,7 +1144,7 @@ public class MainSceneController {
 /**
  * Saves the list of recently used files to the "recent_files.txt" file.
  *
- * <p>This method is called during the file handling process to ensure that the opened file is saved in the
+ * This method is called during the file handling process to ensure that the opened file is saved in the
  * "recent_files.txt" file. It writes the absolute paths of the recently used files to the text file, ensuring
  * uniqueness and saving only the last {@code MAX_RECENT_FILES} files. Any IOException during the process is
  * printed to the standard error stream.
@@ -1161,7 +1171,7 @@ public class MainSceneController {
 /**
  * Handles the action when the "Pause" button is clicked.
  *
- * <p>This method is invoked in response to the "Pause" button being clicked. It pauses the timer timeline.
+ * This method is invoked in response to the "Pause" button being clicked. It pauses the timer timeline.
  *
  * @param event The ActionEvent triggered by the "Pause" button click.
  */
@@ -1172,7 +1182,7 @@ public class MainSceneController {
 /**
  * Handles the action when the "Play" button is clicked.
  *
- * <p>This method is invoked in response to the "Play" button being clicked. It plays the timer timeline.
+ * This method is invoked in response to the "Play" button being clicked. It plays the timer timeline.
  *
  * @param event The ActionEvent triggered by the "Play" button click.
  */
@@ -1184,7 +1194,7 @@ public class MainSceneController {
  * Initiates the process of connecting a call by displaying a "Connecting..." label, activating the call,
  * and connecting it to the call center.
  *
- * <p>This method is responsible for updating the UI to indicate that the call is in the process of connecting.
+ * This method is responsible for updating the UI to indicate that the call is in the process of connecting.
  * It adds a "Connecting..." label to the call's HBox, and after a brief delay, removes the label and proceeds
  * to activate the call and connect it to the call center.
  *
@@ -1206,7 +1216,7 @@ public class MainSceneController {
 /**
  * Activates a call by updating the UI with relevant information such as call icon, agent details, and call number.
  *
- * <p>This method is responsible for enhancing the visual representation of an active call in the UI. It adds
+ * This method is responsible for enhancing the visual representation of an active call in the UI. It adds
  * components like the call icon, agent image, checkbox, and call number to the specified HBox. Additionally,
  * it associates a tooltip with the agent's details for informational purposes.
  *
@@ -1231,14 +1241,16 @@ public class MainSceneController {
             addTooltip(rectangle, agent.getStringInfo());
         });
     }
-/**
- * Creates an HBox containing components for a call in the UI.
- *
- * <p>This method generates an HBox that represents a call, including a checkbox, a call number, and an image.
- * The checkbox allows interaction with the call, and the call number provides a unique identifier for the call.
- *
- * @return An array of Nodes representing the components of the created HBox: [HBox, CheckBox, Text].
- */
+
+    /**
+     * Creates and returns an array of JavaFX nodes representing a graphical
+     * representation
+     * of a customer's call in the user interface.
+     *
+     * @param customer The customer associated with the call.
+     * @return An array of JavaFX nodes representing the graphical representation of
+     *         the call.
+     */
     public Node[] createHbox(Customer customer) {
         long thisCallCount = ++callCount;
         HBox hBox = new HBox();
@@ -1263,7 +1275,7 @@ public class MainSceneController {
 /**
  * Handles the action triggered by checking or unchecking a checkbox associated with a call.
  *
- * <p>This method is responsible for managing the behavior when a call's checkbox is checked or unchecked.
+ * This method is responsible for managing the behavior when a call's checkbox is checked or unchecked.
  * If a checkbox is checked, it creates or shows the associated dialog window for the call. If unchecked, 
  * it closes or exits the associated dialog window.
  *
@@ -1303,11 +1315,11 @@ public class MainSceneController {
 /**
  * Checks the simulation progress and prompts the user for a decision at regular intervals.
  *
- * <p>This method is called periodically to assess the simulation progress. If the current time is a multiple
+ * This method is called periodically to assess the simulation progress. If the current time is a multiple
  * of 50, the simulation is paused, and a custom confirmation dialog is presented to the user. The user can choose
  * to end the simulation and view the results or continue with the simulation.
  *
- * <p>The results include total call count, total wait time, and average wait time for all customers.
+ * The results include total call count, total wait time, and average wait time for all customers.
  */
     public void checkPoint() {
         if (Timekeeper.getTime() % 50 == 0) {
@@ -1348,7 +1360,7 @@ public class MainSceneController {
 /**
  * Displays an exit message with simulation results and prompts the user to close the application.
  *
- * <p>This method creates an information dialog with the provided message, displaying simulation results.
+ * This method creates an information dialog with the provided message, displaying simulation results.
  * It includes a "Close" button for the user to acknowledge the results. If the user clicks the "Close" button,
  * the application is exited.
  *

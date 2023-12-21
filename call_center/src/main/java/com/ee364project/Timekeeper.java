@@ -7,30 +7,40 @@ import com.ee364project.helpers.Ratio;
 
 import javafx.beans.property.SimpleIntegerProperty;
 
-
 /**
- The {@code TimeManager} class manages time-related properties for simulation.
- * It includes a starting point, a step size, a time property, and a delay in milliseconds.
+ * The {@code TimeManager} class manages time-related properties for simulation.
+ * It includes a starting point, a step size, a time property, and a delay in
+ * milliseconds.
  *
- * <p><b>Fields:</b>
+ * 
+ * <b>Fields:</b>
  * <ul>
- *   <li>{@code startPoint}: The starting point of the simulation time, set to January 1, 2001, 00:00:00.</li>
- *   <li>{@code step}: The step size representing the duration of each time step, initially set to 1 second.</li>
- *   <li>{@code time}: A {@code SimpleIntegerProperty} representing the current simulated time in seconds.</li>
- *   <li>{@code delayMs}: The delay in milliseconds used for controlling the simulation speed.</li>
+ * <li>{@code startPoint}: The starting point of the simulation time, set to
+ * January 1, 2001, 00:00:00.</li>
+ * <li>{@code step}: The step size representing the duration of each time step,
+ * initially set to 1 second.</li>
+ * <li>{@code time}: A {@code SimpleIntegerProperty} representing the current
+ * simulated time in seconds.</li>
+ * <li>{@code delayMs}: The delay in milliseconds used for controlling the
+ * simulation speed.</li>
  * </ul>
  * 
  * 
  * @author Hamza Ayfan
- *  
+ * 
  */
 public class Timekeeper {
     private static LocalDateTime startPoint = LocalDateTime.of(2001, 1, 1, 0, 0, 0);
-    private static int step = 1; 
+    private static int step = 1;
     private static SimpleIntegerProperty time = new SimpleIntegerProperty(0);
     private static long delayMs = 100;
-   /**
-     * Returns the current delay value in milliseconds.
+
+    /**
+     * Sets the delay in milliseconds for simulated operations.
+     * The delay determines the speed of the simulation.
+     *
+     * @param newDelayMs The new delay in milliseconds. Must be greater than or
+     *                   equal to 1.
      */
     public static void setDelayMs(long newDelayMs) {
         if (newDelayMs < 1) {
@@ -39,29 +49,34 @@ public class Timekeeper {
         delayMs = newDelayMs;
     }
 
-       /**
-     * Gets the delay value in milliseconds.
+    /**
+     * Gets the current delay in milliseconds used for simulated operations.
      *
+     * @return The current delay in milliseconds.
      */
     public static long getDelayMs() {
         return delayMs;
     }
 
-       /**
-     * Returns the current time in seconds.
+    /**
+     * Gets the current time value.
+     *
+     * @return The current time value.
      */
     public static int getTime() {
         return time.get(); // return time
     }
 
-       /**
-     * Returns the current time as an observable property.
+    /**
+     * Gets the observable time property.
+     *
+     * @return The observable time property.
      */
-    public static SimpleIntegerProperty getTimeProperty(){
+    public static SimpleIntegerProperty getTimeProperty() {
         return time; // return the observable time property
     }
 
-        /**
+    /**
      * Advances the time by one step.
      */
     public static void step() {
@@ -70,14 +85,15 @@ public class Timekeeper {
         // System.out.println("Time now: " + getProperTime());
     }
 
-        /**
-     * Returns the current step value.
+    /**
+     * Gets the current step value.
+     *
+     * @return The current step value.
      */
     public static int getStep() {
         return step;
     }
 
-    
     /**
      * Sets the step value.
      *
@@ -101,24 +117,28 @@ public class Timekeeper {
         startPoint = newStartPoint;
     }
 
-    
     /**
-     * Returns the current start point.
+     * Gets the starting point of the simulation.
+     *
+     * @return The LocalDateTime representing the starting point of the simulation.
      */
     public static LocalDateTime getStartPoint() {
         return startPoint;
     }
 
-        /**
-     * Returns the current time, adjusted for the start point.
+    /**
+     * Gets the current simulation time adjusted from the starting point.
+     *
+     * @return The LocalDateTime representing the adjusted simulation time.
      */
     public static LocalDateTime getProperTime() {
-        int time =getTime();
+        int time = getTime();
         return startPoint.plus(time, ChronoUnit.SECONDS);
     }
 
-        /**
-     * Calculates an adjusted chance based on the original chance and the original period.
+    /**
+     * Calculates an adjusted chance based on the original chance and the original
+     * period.
      *
      * @param originalChance the original chance
      * @param originalPeriod the original period
@@ -128,22 +148,23 @@ public class Timekeeper {
     public static Ratio adjustedChance(Ratio originalChance, long originalPeriod, long newPeriod) {
         double power = (double) newPeriod / (double) originalPeriod;
         double chance = 1 - originalChance.getValue();
-        return new Ratio( 1 - Math.pow(chance, power ));
+        return new Ratio(1 - Math.pow(chance, power));
     }
 
-        /**
-     * Calculates an adjusted chance based on the original chance and the original period.
+    /**
+     * Calculates an adjusted chance based on the original chance and the original
+     * period.
      *
      * @param originalChance the original chance
      * @param originalPeriod the original period
      * @return the adjusted chance
      */
     public static Ratio adjustedChance(Ratio originalChance, long originalPeriod) {
-            return originalChance;
+        return originalChance;
         // return adjustedChance(originalChance, originalPeriod, Timekeeper.step);
     }
 
-        /**
+    /**
      * Returns the number of seconds in a given number of days.
      *
      * @param n the number of days
@@ -153,7 +174,7 @@ public class Timekeeper {
         return n * 24 * 60 * 60;
     }
 
-      /**
+    /**
      * Returns the number of seconds in a given number of weeks.
      *
      * @param n the number of weeks
@@ -163,7 +184,7 @@ public class Timekeeper {
         return n * getSecondsInDay(7);
     }
 
-        /**
+    /**
      * Returns the number of seconds in a given number of months.
      *
      * @param n the number of months
@@ -173,7 +194,7 @@ public class Timekeeper {
         return n * getSecondsInDay(30);
     }
 
-        /**
+    /**
      * Returns the number of seconds in a given number of years.
      *
      * @param n the number of months
